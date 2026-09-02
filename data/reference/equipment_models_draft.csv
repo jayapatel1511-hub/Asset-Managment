@@ -1,0 +1,66 @@
+Asset Group,Equipment Type,Manufacturer,Model / Station,count,prefix
+Acoustics,Acoustic Calibrator,B&K,Type 4231,7,AC
+Acoustics,Acoustic Calibrator,Bruel & Kjaer,4231,1,AC
+Acoustics,Acoustic Calibrator,Larson Davis,CAL200,3,AC
+Acoustics,Acoustic Measuring,SINUS,Soundbook,3,SB
+Acoustics,"Microphone, Sound Level Meter",Larson Davis,831C,5,DST-LD
+Air Quailty Monitroing,Dust Sentry,Aeroqual,PCX,2,AQDS
+Communications,Cellular Service,,SIM / ISP,232,
+Communications,Server,Instantel,,2,SRV
+Communications,Server,Microsoft,Azure,13,SRV-THOR
+Communications,Server,Sigicom,,1,SRV
+General,Bluetooth Asset Tracker,Apple,AirTag,8,AT
+Geomatics,Automated Total Station,Settop M1,,5,TS
+Geomatics,Automated Total Station,Trimble,"S7 - 1"" Autolock AMTS",2,TS
+Geomatics,Field Controller,Leica,CS20,1,FC
+Geomatics,Total Station,Leica,TS10,2,TS
+Geomatics,Total Station,Leica,TS16,1,TS
+Geomatics,Total Station,Trimble,"S5 - 2"" Autolock",2,TS
+Geomatics,Total Station,Trimble,S5 - 3s Robotic,1,TS
+Geomatics,Total Station,Trimble,S7 - 2s Robotic,3,TS
+Geotechnical Monitoring,,Campbell Scientific,VW-Analyzer,1,VWR
+Geotechnical Monitoring,,Campbell Scientific,VWANALYZER,1,
+Geotechnical Monitoring,,Campbell Scientific,VWANALZYER,1,VWR
+Geotechnical Monitoring,,Encardio Rite,EDI-54V,2,VWR
+Geotechnical Monitoring,,Encardio Rite,,1,
+Geotechnical Monitoring,,Loadsensing,,2,
+Geotechnical Monitoring,,Measurand,SAAX,2,
+Geotechnical Monitoring,,RST,MEMS Digital,4,VWR
+Geotechnical Monitoring,,RST,Model 23600,2,
+Geotechnical Monitoring,,RST,Reel,1,
+Geotechnical Monitoring,,RST,,3,
+Geotechnical Monitoring,,Slope Indicator,EL Tilt Sensor,3,TLT
+Geotechnical Monitoring,,Slope Indicator,VWP,1,TLT
+Geotechnical Monitoring,,Slope indicator,EL Tilt Sensor,1,TLT
+Geotechnical Monitoring,,Slope indicator,VWP,1,TLT
+Imaging,HD Camera,GoPro,Black 12,1,GoPro
+Imaging,HD Camera,GoPro,Black 7,1,GoPro
+Imaging,HD Camera,GoPro,White 7,2,GoPro
+Imaging,HD Camera,Sony,AX-700,2,CAM
+Imaging,HD Camera,Sony,CoolPix L32,1,CAM
+Imaging,HD Camera,Sony,HDR - CX455,1,CAM
+Imaging,HD Camera,Sony,HDR-CX455,3,CAM
+Imaging,HD Camera,Sony,HDR-PJ340,2,CAM
+Seismographs,Data Logger,Instantel,Micomate,1,DL-UM
+Seismographs,Data Logger,Instantel,Micromate,126,DL-UM
+Seismographs,Data Logger,Instantel,Minimate,8,DL-BE
+Seismographs,Data Logger,Instantel,Minimate Plus,126,DL-BE
+Seismographs,Data Logger,Instantel,Minimate Pro4,1,DL-MP
+Seismographs,Data Logger,Instantel,V12,1,GEO-V12
+Seismographs,Data Logger,Minimate Pro,Instantel,6,DL-MP
+Seismographs,Data Logger,Sigicom,C22,2,GEO-C22
+Seismographs,Data Logger,Sigicom,D10,37,DL-D10
+Seismographs,Data Logger,Sigicom,D10M,22,DL-D10
+Seismographs,Data Logger,Sigicom,Minimate Plus,1,DL-BE
+Seismographs,Data Logger,Sigicom,S50,3,SLM-S50
+Seismographs,Data Logger,Sigicom,V12,4,GEO-V12
+Seismographs,Geohpone,Series IV,Instantel,6,GEO-SE
+Seismographs,Geophone,Instantel,Micromate,124,GEO-UM
+Seismographs,Geophone,Instantel,Series III,76,GEO-BG
+Seismographs,Geophone,Sigicom,C22,32,GEO-C22
+Seismographs,Geophone,Sigicom,V12,62,GEO-V12
+Seismographs,"Microphone, Sound Level Meter",Instantel,Micromate,4,SLM-UA
+Seismographs,"Microphone, Sound Level Meter",Instantel,SLM,6,SLM-UA
+Seismographs,"Microphone, Sound Level Meter",Sigicom,C50,9,SLM-C50
+Seismographs,"Microphone, Sound Level Meter",Sigicom,S50,62,SLM-S50
+,,,,1,

@@ -1,0 +1,106 @@
+[
+  {
+    "id": "683ecee1-fe39-54ea-bb8f-98d28c67d9bb",
+    "name": "Ontario",
+    "locationtype": "Region",
+    "parentlocation": null,
+    "isactive": true,
+    "note": null
+  },
+  {
+    "id": "11ee85ad-7514-5f99-973d-dade1e389191",
+    "name": "Ottawa",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": null
+  },
+  {
+    "id": "9e50a5f4-7fc1-5407-81b8-8326883ddbfe",
+    "name": "Toronto",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": null
+  },
+  {
+    "id": "4f190f82-075d-5690-915f-48e437db2f53",
+    "name": "Sudbury",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": null
+  },
+  {
+    "id": "7cae3e8f-0157-57b9-858d-401fa202442c",
+    "name": "SWO",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Seeded flat per 2026-09-02 decision. Re-parent in-app if SWO is a region."
+  },
+  {
+    "id": "08a36e51-e2e1-574b-a4ff-272d722568e9",
+    "name": "London",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Re-parent under SWO in-app if that is the structure."
+  },
+  {
+    "id": "8052ded4-ac29-54c2-afa1-cab357d625f9",
+    "name": "Kitchener",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Re-parent under SWO in-app if that is the structure."
+  },
+  {
+    "id": "c9dbc073-9085-5392-b890-1e1998e4a703",
+    "name": "Waterloo",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Re-parent under SWO in-app if that is the structure."
+  },
+  {
+    "id": "ca459dbd-b046-51d8-a229-fdcf9533e14b",
+    "name": "Stoney Creek",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Re-parent under SWO in-app if that is the structure."
+  },
+  {
+    "id": "aaac9818-864e-5019-8d8b-a371ae6a3e33",
+    "name": "Mississauga",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Re-parent under Toronto in-app when confirmed."
+  },
+  {
+    "id": "7555eff5-b95d-5c02-bf4b-ed6e7939fd77",
+    "name": "Thunder Bay",
+    "locationtype": "Office",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Re-parent under Sudbury in-app when confirmed."
+  },
+  {
+    "id": "61995af6-2cfd-52de-9b33-e105480b1520",
+    "name": "Montreal Calibration",
+    "locationtype": "CalLab",
+    "parentlocation": null,
+    "isactive": true,
+    "note": null
+  },
+  {
+    "id": "10176bed-7250-527c-bba5-cd36ac7ac181",
+    "name": "Unassigned",
+    "locationtype": "Storage",
+    "parentlocation": "Ontario",
+    "isactive": true,
+    "note": "Placeholder home office for assets whose source row had zero recorded office (6 SIMs + 3 servers; see migration/reports/02_clean_report.md). Not a guess \u2014 these genuinely have no source office. On the field-completion queue (feature 002 FR-032); an admin assigns the real home office and this location can eventually hold nothing."
+  }
+]

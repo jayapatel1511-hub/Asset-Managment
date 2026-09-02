@@ -1,0 +1,17 @@
+# Local, unpinned dev toolchain fetched for this session (portable Node, exported corp CA cert).
+# Not part of the deliverable — see docs/09-build-report.md for how it was set up.
+.tools/
+
+# Node
+app/node_modules/
+app/dist/
+app/coverage/
+
+# Python
+migration/__pycache__/
+migration/**/__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,19 @@
+{
+  "profiled_at": "2026-09-02T15:31:51.441392-04:00",
+  "registry_sha256": "6f25a9dfbcb769126d5f231795d5cea5e9e6b3c94f5061992c37f02cbf754c9e",
+  "measured": {
+    "registry_rows": 1053,
+    "duplicated_asset_ids": 29,
+    "blank_or_prefix_only_asset_ids": 27,
+    "shared_serial_different_type": 132,
+    "distinct_offices": 10,
+    "no_serial_pct": 25.8,
+    "no_manufacturer_pct": 22.1
+  },
+  "calibration_corrected": {
+    "calibration_rows": 253,
+    "has_serial_col": true,
+    "serial_populated": 253
+  },
+  "status": "PASS"
+}

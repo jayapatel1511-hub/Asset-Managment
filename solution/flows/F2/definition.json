@@ -1,0 +1,24 @@
+{
+  "_note": "Specification-level flow definition, not a pac-exported artifact — no tenant to build this in yet (docs/09-build-report.md).",
+  "displayName": "F2 - Calibration recorded",
+  "description": "Updates the asset's derived calibration dates when a calibration record is saved, and — if the asset was in the lab — brings it home through the normal transaction mechanism rather than an admin setting status by hand (feature 004 FR-024).",
+  "trigger": { "type": "Dataverse.RowAdded", "table": "eng_calibrationrecord", "scope": "Organization" },
+  "retryPolicy": { "type": "exponential", "count": 4 },
+  "onTerminalFailure": { "postTo": "Teams channel AMS-Alerts" },
+  "actions": [
+    {
+      "step": 1,
+      "name": "Recompute_asset_calibration_dates",
+      "type": "Dataverse.ListRows + UpdateRow",
+      "detail": "List every eng_calibrationrecord for this asset, take the one with the latest eng_calibrationdate (NOT the most recently created — feature 004 FR-012/FR-013), set eng_asset.eng_lastcaldate/eng_nextcaldue from it.",
+      "derivesFrom": "api/mock/index.ts: MockAmsBackend.recordCalibration() — `store.calibrationRecords.filter(...).reduce((a,b) => a.calibrationdate > b.calibrationdate ? a : b)`"
+    },
+    {
+      "step": 2,
+      "name": "Return_from_calibration_if_needed",
+      "type": "Condition + Dataverse.CreateRow (eng_transaction + eng_transactionline)",
+      "detail": "If eng_asset.eng_status = InCalibration: create one eng_transaction (type ReturnFromCalibration, performedby = the calibration record's creator) and its line. F1 then derives the asset back to Available at its home office. Never sets eng_status directly.",
+      "derivesFrom": "api/mock/index.ts: MockAmsBackend.recordCalibration() — calls `store.applyTransaction({ transactiontype: 'ReturnFromCalibration', ... })` exactly when the asset's status is InCalibration."
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "_note": "Specification-level flow definition, not a pac-exported artifact — no tenant to build this in yet (docs/09-build-report.md).",
+  "displayName": "F3 - Calibration reminders",
+  "description": "Daily summary of what's due/overdue, fanned out to whatever offices exist right now (feature 004 FR-027) — no fixed office list anywhere, per the N-offices decision in docs/08-decisions.md.",
+  "trigger": { "type": "Recurrence", "schedule": "daily 06:00 America/Toronto" },
+  "retryPolicy": { "type": "exponential", "count": 4 },
+  "onTerminalFailure": { "postTo": "Teams channel AMS-Alerts" },
+  "actions": [
+    {
+      "step": 1,
+      "name": "List_offices",
+      "type": "Dataverse.ListRows",
+      "table": "eng_location",
+      "filter": "eng_locationtype = Office AND eng_isactive = true",
+      "note": "FR-027: derived from the location table at run time, so a newly added office is covered with zero configuration change. This is the step that makes data/reference/office_admins.csv obsolete (see its own README) — a fixed file cannot do this."
+    },
+    {
+      "step": 2,
+      "name": "For_each_office",
+      "type": "Apply to each",
+      "detail": "Query Active assets where eng_nextcaldue <= today+horizon (configurable, default 30) OR overdue, grouped to this office by eng_homeoffice. Look up the office's assigned administrator(s) (a relationship on eng_location, maintained by the System Owner in-app per docs/04-calibration-management's admin-to-office note — NOT a CSV).",
+      "onNoAdmin": {
+        "action": "Report as a gap",
+        "detail": "FR-027a: an office with due/overdue assets and no administrator assigned is posted to AMS-Alerts by name, not silently skipped.",
+        "derivesFrom": "app: no direct equivalent yet — feature 004's admin-to-office assignment screen is not built in this session (see docs/09-build-report.md, 'What is stubbed'). Flagged so it isn't forgotten."
+      },
+      "onNothingDue": { "action": "Send nothing for this office (FR-028)" }
+    },
+    {
+      "step": 3,
+      "name": "Send_notification",
+      "type": "Teams adaptive card + email",
+      "detail": "One per office admin. Overdue items visually distinguished from due-soon (FR-029). Links to the due list in the app (FR-030). Cadence-limited so the same asset doesn't notify every single day — see the open cadence question in specs/clarifications.md.",
+      "note": "ASSUMPTION: cadence (unnumbered, open clarification) — once per threshold crossing (due-soon, then again on going overdue) until the calibration is recorded, not daily. Pending Jay's confirmation; recorded in docs/08-decisions.md."
+    }
+  ]
+}

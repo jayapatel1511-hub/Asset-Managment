@@ -1,0 +1,22 @@
+{
+  "_note": "Specification-level flow definition, not a pac-exported artifact — no tenant to build this in yet (docs/09-build-report.md).",
+  "displayName": "F5 - Reprocess unprocessed lines",
+  "description": "Safety net for F1: catches any eng_transactionline that never got processed (F1 crashed, was throttled, or the org hit an API limit) and replays F1's logic against it.",
+  "trigger": [
+    { "type": "Recurrence", "schedule": "every 6 hours" },
+    { "type": "Manual", "detail": "button, for an admin to force a sweep immediately after a known incident" }
+  ],
+  "retryPolicy": { "type": "exponential", "count": 4 },
+  "onTerminalFailure": { "postTo": "Teams channel AMS-Alerts" },
+  "actions": [
+    {
+      "step": 1,
+      "name": "Find_stuck_lines",
+      "type": "Dataverse.ListRows",
+      "detail": "eng_transactionline where eng_processed = false AND createdon < now-15min, ordered by createdon ascending (oldest first — preserves per-asset ordering, FR-015/FR-019).",
+      "note": "The 15-minute grace window avoids racing a line F1 is still legitimately in the middle of."
+    },
+    { "step": 2, "name": "Reprocess", "type": "Child flow call", "detail": "Calls F1's logic directly (not a re-trigger of the Dataverse event) for each line, in order." },
+    { "step": 3, "name": "Report", "type": "Teams message to AMS-Alerts", "detail": "Count of lines found and reprocessed, so a recurring problem is visible even if every individual retry eventually succeeds." }
+  ]
+}

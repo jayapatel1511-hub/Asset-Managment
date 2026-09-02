@@ -1,0 +1,56 @@
+[
+  {
+    "parent_assetid": "DST-LD-01",
+    "child_assetid": "SLM-LD-PA-1712.0",
+    "child_manufacturer": "Larson Davis",
+    "child_model": "831C Pre-Amp",
+    "child_equipmenttype": "Microphone",
+    "child_serial": "1712.0",
+    "relationshiptype": "Component"
+  },
+  {
+    "parent_assetid": "DST-LD-01",
+    "child_assetid": "SLM-LD-EL-323309.0",
+    "child_manufacturer": "Larson Davis",
+    "child_model": "831C Element",
+    "child_equipmenttype": "Microphone",
+    "child_serial": "323309.0",
+    "relationshiptype": "Component"
+  },
+  {
+    "parent_assetid": "DST-LD-02",
+    "child_assetid": "SLM-LD-PA-1714.0",
+    "child_manufacturer": "Larson Davis",
+    "child_model": "831C Pre-Amp",
+    "child_equipmenttype": "Microphone",
+    "child_serial": "1714.0",
+    "relationshiptype": "Component"
+  },
+  {
+    "parent_assetid": "DST-LD-02",
+    "child_assetid": "SLM-LD-EL-323316.0",
+    "child_manufacturer": "Larson Davis",
+    "child_model": "831C Element",
+    "child_equipmenttype": "Microphone",
+    "child_serial": "323316.0",
+    "relationshiptype": "Component"
+  },
+  {
+    "parent_assetid": "DST-LD-03",
+    "child_assetid": "SLM-LD-PA-1717.0",
+    "child_manufacturer": "Larson Davis",
+    "child_model": "831C Pre-Amp",
+    "child_equipmenttype": "Microphone",
+    "child_serial": "1717.0",
+    "relationshiptype": "Component"
+  },
+  {
+    "parent_assetid": "DST-LD-03",
+    "child_assetid": "SLM-LD-EL-323155.0",
+    "child_manufacturer": "Larson Davis",
+    "child_model": "831C Element",
+    "child_equipmenttype": "Microphone",
+    "child_serial": "323155.0",
+    "relationshiptype": "Component"
+  }
+]

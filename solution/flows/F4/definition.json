@@ -1,0 +1,19 @@
+{
+  "_note": "Specification-level flow definition, not a pac-exported artifact — no tenant to build this in yet (docs/09-build-report.md).",
+  "displayName": "F4 - Overdue returns",
+  "description": "Nudges a technician who hasn't returned something by its expected-return date, and gives the office admin a weekly summary.",
+  "trigger": { "type": "Recurrence", "schedule": "daily 07:00 America/Toronto" },
+  "retryPolicy": { "type": "exponential", "count": 4 },
+  "onTerminalFailure": { "postTo": "Teams channel AMS-Alerts" },
+  "actions": [
+    {
+      "step": 1,
+      "name": "Find_overdue_checkouts",
+      "type": "Dataverse.ListRows",
+      "detail": "eng_transaction where eng_transactiontype = Checkout AND eng_expectedreturn < today, joined to its lines where the asset's eng_status is still CheckedOut (i.e. not yet returned).",
+      "note": "ASSUMPTION: Q8 (open) — expected return is currently optional on checkout (specs/clarifications.md recommendation), so this query only ever covers checkouts where the technician supplied a date. Every skipped checkout is invisible to this flow by construction, not a bug in it. See app/src/features/checkout/CheckoutPage.tsx's 'Expected return (optional)' field and its own note."
+    },
+    { "step": 2, "name": "DM_custodian", "type": "Teams direct message", "detail": "One message per overdue asset (or grouped per custodian), deep-linking to the Return screen." },
+    { "step": 3, "name": "Weekly_summary_to_admin", "type": "Condition (day-of-week) + Teams/email", "detail": "Once a week, an office admin gets everything overdue at their office. Snooze-via-reply is explicitly out of scope for Phase 1 (docs/03-automation.md)." }
+  ]
+}

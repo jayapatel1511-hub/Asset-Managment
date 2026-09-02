@@ -1,0 +1,60 @@
+{
+  "_comment": "Single source of truth for allowed transitions. Consumed by app/src/domain/stateMachine.ts and flow F1. Missing key = not allowed.",
+  "statuses": [
+    "Available",
+    "CheckedOut",
+    "Deployed",
+    "InCalibration",
+    "NeedsRepair",
+    "Missing",
+    "Retired"
+  ],
+  "transitions": {
+    "Available": {
+      "Checkout": "CheckedOut",
+      "Transfer": "Available",
+      "Deploy": "Deployed",
+      "SendToCalibration": "InCalibration",
+      "ReportFault": "NeedsRepair",
+      "MarkMissing": "Missing",
+      "Retire": "Retired",
+      "Audit": "Available",
+      "AddToInventory": "Available"
+    },
+    "CheckedOut": {
+      "Return": "Available",
+      "Transfer": "CheckedOut",
+      "Deploy": "Deployed",
+      "ReportFault": "NeedsRepair",
+      "MarkMissing": "Missing",
+      "Audit": "CheckedOut"
+    },
+    "Deployed": {
+      "Return": "Available",
+      "Undeploy": "CheckedOut",
+      "ReportFault": "NeedsRepair",
+      "MarkMissing": "Missing",
+      "Audit": "Deployed"
+    },
+    "InCalibration": {
+      "ReturnFromCalibration": "Available",
+      "ReportFault": "NeedsRepair",
+      "Retire": "Retired",
+      "Audit": "InCalibration"
+    },
+    "NeedsRepair": {
+      "SendToCalibration": "InCalibration",
+      "RepairComplete": "Available",
+      "Retire": "Retired",
+      "Audit": "NeedsRepair"
+    },
+    "Missing": {
+      "Found": "Available",
+      "Retire": "Retired",
+      "Audit": "Missing"
+    },
+    "Retired": {
+      "Audit": "Retired"
+    }
+  }
+}

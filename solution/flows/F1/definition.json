@@ -1,0 +1,72 @@
+{
+  "_note": "Specification-level flow definition, not a pac-exported artifact — there is no tenant to build this in yet (see docs/09-build-report.md). Written so a Power Platform admin can build the real flow from this file plus F1/README.md with no guessing. Trigger/action shapes follow the Power Automate Dataverse connector's real action names so the mapping onto the Maker Portal is mechanical.",
+  "displayName": "F1 - Derive asset state",
+  "description": "Derives eng_asset.status/currentlocation/custodian/currentproject/parentasset from a newly-created eng_transactionline. The ONLY write path to those five columns other than migration (constitution Principle I). Consumes data/reference/state_machine.json — the same file app/scripts/generate-state-machine.mjs turns into app/src/domain/stateMachine.ts, so the app's client-side check and this flow's server-side enforcement can never disagree (Principle V, Principle VI).",
+  "trigger": {
+    "type": "Dataverse.RowAdded",
+    "table": "eng_transactionline",
+    "scope": "Organization",
+    "concurrencyControl": {
+      "runs": 1,
+      "note": "Sequential — lines within one transaction must process in order, and two runs must not race on the same asset (docs/03-automation.md, docs/01-data-model.md Indexes note on eng_transactionline)."
+    }
+  },
+  "retryPolicy": { "type": "exponential", "count": 4 },
+  "onTerminalFailure": {
+    "postTo": "Teams channel AMS-Alerts",
+    "leave": "eng_processed = false",
+    "note": "So F5 (reprocess unprocessed lines) can retry it later without a human noticing in real time."
+  },
+  "actions": [
+    {
+      "step": 1,
+      "name": "Get_line_transaction_asset",
+      "type": "Dataverse.GetRow (x3, chained)",
+      "detail": "line -> eng_transaction (lookup) -> eng_asset (lookup). Read the asset's CURRENT eng_status before any write.",
+      "derivesFrom": "deriveState.ts: the caller reads AssetSnapshot before calling deriveState()."
+    },
+    {
+      "step": 2,
+      "name": "Look_up_transition",
+      "type": "Compose",
+      "detail": "Compose action pastes data/reference/state_machine.json verbatim. Look up transitions[asset.eng_status][transaction.eng_transactiontype].",
+      "derivesFrom": "deriveState.ts: `const allowed = STATE_MACHINE[asset.status]; const statusAfter = allowed[line.type];`",
+      "onMiss": {
+        "action": "Reject",
+        "detail": "Set eng_transactionline.eng_processed = true, append 'REJECTED: illegal transition' to eng_notes, post asset id + submitter to AMS-Alerts, STOP. No eng_asset column is written.",
+        "derivesFrom": "deriveState.ts: `if (!statusAfter) return { ok: false, reason: ... }` — the flow's rejection branch and the app's pre-submit rejection are the same rule, checked independently (FR-024, constitution Test for Principle V).",
+        "note": "The app should have already refused this before it reached the platform. Reaching here means either a bug or a direct API write bypassing the app — exactly the case FR-024 / SC-005 requires this flow to still catch."
+      }
+    },
+    {
+      "step": 3,
+      "name": "Update_eng_asset",
+      "type": "Dataverse.UpdateRow",
+      "table": "eng_asset",
+      "detail": "Set eng_status = statusAfter. Then, by eng_transactiontype, set custodian/currentlocation/currentproject exactly as deriveState.ts's deriveFields() switch does (see F1/README.md's line-by-line table). Retire also sets eng_lifecycle = Retired and eng_retirementreason.",
+      "derivesFrom": "deriveState.ts: deriveFields()"
+    },
+    {
+      "step": 4,
+      "name": "Kit_relationships",
+      "type": "Condition + Dataverse.CreateRow/UpdateRow",
+      "detail": "If eng_transaction.eng_primaryasset is set and this line's asset is not the primary, and the transaction type is Checkout or Deploy: create eng_assetrelationship (parent=primary, child=this asset, type=Kit, start=transaction date, createdbyline=this line); set child.eng_parentasset = primary. If the type is Return, Undeploy, Retire or MarkMissing: close every open Kit relationship where this asset is the child (end=transaction date, closedbyline=this line, clear its eng_parentasset), AND close every open Kit relationship where this asset is the PARENT (same end/closedbyline, clearing eng_parentasset on each child).",
+      "derivesFrom": "deriveState.ts: deriveRelationshipOps() — returns { op: 'open' | 'closeAsChild' | 'closeAllAsParent' }, one-to-one with this step's three branches."
+    },
+    {
+      "step": 5,
+      "name": "Mirror_component_children",
+      "type": "Dataverse.ListRows + UpdateRow (loop)",
+      "detail": "List every OPEN eng_assetrelationship where relationshiptype=Component and parentasset=this line's asset. For each, copy the parent's NEW eng_status/eng_currentlocation/eng_custodian/eng_currentproject onto the child. Do NOT create an eng_transactionline for the child — the parent's line is its history (Q5/Q7).",
+      "derivesFrom": "api/mock/store.ts: MockStore.mirrorComponentChildren() — deliberately NOT part of deriveState.ts itself (see that file's header comment on why this is store-level, not a single-asset derivation)."
+    },
+    {
+      "step": 6,
+      "name": "Mark_processed",
+      "type": "Dataverse.UpdateRow",
+      "table": "eng_transactionline",
+      "detail": "eng_processed = true.",
+      "derivesFrom": "api/mock/store.ts: MockStore.applyTransaction sets `processed: true` when it pushes the line — the mock plays F1's role synchronously since there is no flow runtime in this build."
+    }
+  ]
+}

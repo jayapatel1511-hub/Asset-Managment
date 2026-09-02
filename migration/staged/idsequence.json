@@ -1,0 +1,83 @@
+{
+  "AC": {
+    "nextvalue": 12
+  },
+  "AQDS": {
+    "nextvalue": 3
+  },
+  "AT": {
+    "nextvalue": 9
+  },
+  "CAM": {
+    "nextvalue": 10
+  },
+  "DL-BA": {
+    "nextvalue": 18571
+  },
+  "DL-BE": {
+    "nextvalue": 22119
+  },
+  "DL-D10": {
+    "nextvalue": 112608
+  },
+  "DL-MP": {
+    "nextvalue": 13449
+  },
+  "DL-UM": {
+    "nextvalue": 23131
+  },
+  "DST-LD": {
+    "nextvalue": 6
+  },
+  "FC": {
+    "nextvalue": 2
+  },
+  "GEO-BE": {
+    "nextvalue": 20109
+  },
+  "GEO-BG": {
+    "nextvalue": 22104
+  },
+  "GEO-BT": {
+    "nextvalue": 3234
+  },
+  "GEO-C22": {
+    "nextvalue": 119237
+  },
+  "GEO-SE": {
+    "nextvalue": 13147
+  },
+  "GEO-UM": {
+    "nextvalue": 23131
+  },
+  "GEO-V12": {
+    "nextvalue": 109564
+  },
+  "GoPro": {
+    "nextvalue": 5
+  },
+  "SB": {
+    "nextvalue": 202172
+  },
+  "SLM-C50": {
+    "nextvalue": 118988
+  },
+  "SLM-S50": {
+    "nextvalue": 109564
+  },
+  "SLM-UA": {
+    "nextvalue": 10900
+  },
+  "TLT": {
+    "nextvalue": 7
+  },
+  "TMP": {
+    "nextvalue": 36
+  },
+  "TS": {
+    "nextvalue": 17
+  },
+  "VWR": {
+    "nextvalue": 6
+  }
+}

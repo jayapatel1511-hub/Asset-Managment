@@ -1,0 +1,14 @@
+name,locationtype,parent,note
+Ontario,Region,,
+Ottawa,Office,Ontario,
+Toronto,Office,Ontario,
+Sudbury,Office,Ontario,
+SWO,Office,Ontario,"Seeded flat per 2026-09-02 decision. Re-parent in-app if SWO is a region."
+London,Office,Ontario,"Re-parent under SWO in-app if that is the structure."
+Kitchener,Office,Ontario,"Re-parent under SWO in-app if that is the structure."
+Waterloo,Office,Ontario,"Re-parent under SWO in-app if that is the structure."
+Stoney Creek,Office,Ontario,"Re-parent under SWO in-app if that is the structure."
+Mississauga,Office,Ontario,"Re-parent under Toronto in-app when confirmed."
+Thunder Bay,Office,Ontario,"Re-parent under Sudbury in-app when confirmed."
+Montreal Calibration,CalLab,,
+Unassigned,Storage,Ontario,"Placeholder home office for assets whose source row had zero recorded office (6 SIMs + 3 servers; see migration/reports/02_clean_report.md). Not a guess — these genuinely have no source office. On the field-completion queue (feature 002 FR-032); an admin assigns the real home office and this location can eventually hold nothing."
