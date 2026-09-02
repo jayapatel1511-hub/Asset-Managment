@@ -30,7 +30,7 @@ This feature owns `domain/pointInTime.ts`, `domain/utilisation.ts`, `api/mock/re
 
 ## Phase 1: Setup
 
-- [ ] T001 Set up the toolchain per `AGENT-BRIEF.md` §1 — **use the `/c/…` PATH form, not `C:/…`; the latter silently fails**; confirm `npx tsc -b && npm run test` shows **163 passing**. Stop and report if not
+- [ ] T001 Set up the toolchain per `AGENT-BRIEF.md` §1 — **use the `/c/…` PATH form, not `C:/…`; the latter silently fails**; confirm `npx tsc -b && npm run test` shows **281 passing**. Stop and report if not
 - [ ] T002 Read `app/src/api/types.ts` (`HistoryEntry`, `Asset`), `app/src/domain/deriveState.ts` (`AssetSnapshot` — the shape `stateAsOf` must match), and `docs/09-build-report.md`
 
 ---
@@ -58,7 +58,7 @@ This feature owns `domain/pointInTime.ts`, `domain/utilisation.ts`, `api/mock/re
   `getCalibrationCounts(horizonDays: number): Promise<CalibrationCounts>`
 - [ ] T004 Create `app/src/api/mock/reporting.ts` with both methods throwing `new Error("not implemented")`; add the same stubs to `api/dataverse/index.ts` marked `// DATAVERSE-ONLY`
 - [ ] T005 Add `reports.*` i18n keys to `app/src/i18n/en.json` and routes `/reports`, `/reports/compliance`, `/reports/timeline/:assetId`, `/reports/utilisation` to `app/src/App.tsx`
-- [ ] T006 Verify `npx tsc -b` compiles and tests still show **163 passing**. Commit
+- [ ] T006 Verify `npx tsc -b` compiles and tests still show **281 passing**. Commit
 
 **Checkpoint**: shared files frozen for this feature.
 
@@ -180,7 +180,7 @@ figure. With synthesised longer history, confirm the proportions are right.
 
 - [ ] T035 [P] `docs/09-build-report.md` — what was built, verified with real output, what is stubbed. State plainly that FR-003/SC-005 (field security in reporting) and the Power BI publish are **not verified**
 - [ ] T036 [P] `docs/08-decisions.md` — record the no-charting-library and PBIP-over-PBIX decisions
-- [ ] T037 Final verification from `app/`: `npx tsc -b && npm run test && npm run build`. Report actual output; count must be ≥ 163 plus this feature's tests
+- [ ] T037 Final verification from `app/`: `npx tsc -b && npm run test && npm run build`. Report actual output; count must be ≥ 281 plus this feature's tests
 - [ ] T038 Drive the reports surface at 390×844 against real migrated data. Verify the live figures against the known baselines — **107** assets overdue at a 30-day horizon, **592** with unknown custodian, **44** in the field-completion queue. A mismatch is a bug in this feature, not a stale baseline
 
 ---

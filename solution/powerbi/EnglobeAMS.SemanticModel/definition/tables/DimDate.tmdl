@@ -1,0 +1,42 @@
+/// A calculated (Import-mode) calendar table alongside the DirectQuery fact tables above — a
+/// deliberate composite model, the standard pattern for adding a proper date dimension to a
+/// DirectQuery source that has none of its own. Spans from the earliest real transaction
+/// (migration day-one) to two years past today, comfortably covering both historical and
+/// near-future (expected-return, next-due) dates without hand-maintaining a range.
+///
+/// After opening in Power BI Desktop: Modeling ribbon > Mark as Date Table > Date column. Not
+/// done here as a hand-written XMLA property — this project has not been opened in Desktop this
+/// session (no tenant) to confirm the exact property shape, and it is a five-second click once it
+/// is opened. See ../../README.md.
+table DimDate
+
+	column Date
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+
+	column Year = YEAR([Date])
+		dataType: int64
+		summarizeBy: none
+
+	column MonthNumber = MONTH([Date])
+		dataType: int64
+		summarizeBy: none
+		isHidden
+
+	column MonthName = FORMAT([Date], "MMMM")
+		dataType: string
+		summarizeBy: none
+
+	column YearMonth = FORMAT([Date], "YYYY-MM")
+		dataType: string
+		summarizeBy: none
+
+	column Quarter = "Q" & FORMAT([Date], "Q")
+		dataType: string
+		summarizeBy: none
+
+	partition DimDate = calculated
+		mode: import
+		source = CALENDAR(DATE(2024, 1, 1), DATE(YEAR(TODAY()) + 2, 12, 31))
+

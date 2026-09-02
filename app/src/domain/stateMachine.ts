@@ -66,6 +66,7 @@ export const STATE_MACHINE: Readonly<
   "Deployed": {
     "Return": "Available",
     "Undeploy": "CheckedOut",
+    "Transfer": "Deployed",
     "ReportFault": "NeedsRepair",
     "MarkMissing": "Missing",
     "Audit": "Deployed"

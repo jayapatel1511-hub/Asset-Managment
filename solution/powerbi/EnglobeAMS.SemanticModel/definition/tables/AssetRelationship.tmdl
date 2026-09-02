@@ -1,0 +1,70 @@
+/// Mirrors eng_assetrelationship — Kit (temporary, opened/closed by transactions) and Component
+/// (permanent) attachment spans. FR-019: naming the other asset and the role for an attach/detach
+/// event in a timeline visual joins this table back to TransactionLine via CreatedByLine /
+/// ClosedByLine, exactly like app/src/domain/pointInTime.ts's `buildTimeline` does.
+table AssetRelationship
+
+	column RelationshipId
+		dataType: string
+		sourceColumn: eng_assetrelationshipid
+		summarizeBy: none
+		isHidden
+
+	column ParentAsset
+		dataType: string
+		sourceColumn: ParentAsset
+		summarizeBy: none
+
+	column ChildAsset
+		dataType: string
+		sourceColumn: ChildAsset
+		summarizeBy: none
+
+	column RelationshipType
+		dataType: string
+		sourceColumn: eng_relationshiptype
+		summarizeBy: none
+
+	column Start
+		dataType: dateTime
+		formatString: General Date
+		sourceColumn: eng_start
+		summarizeBy: none
+
+	column End
+		dataType: dateTime
+		formatString: General Date
+		sourceColumn: eng_end
+		summarizeBy: none
+
+	column CreatedByLine
+		dataType: string
+		sourceColumn: CreatedByLine
+		summarizeBy: none
+		isHidden
+
+	column ClosedByLine
+		dataType: string
+		sourceColumn: ClosedByLine
+		summarizeBy: none
+		isHidden
+
+	/// A relationship with no End date is open right now — the common "what is attached to this
+	/// asset today" filter, without every report author re-deriving ISBLANK([End]) themselves.
+	column IsOpen = ISBLANK([End])
+		dataType: boolean
+		summarizeBy: none
+
+	partition AssetRelationship = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_assetrelationship = Source{[Name="eng_assetrelationship"]}[Data],
+					#"Expanded parent" = Table.ExpandRecordColumn(eng_assetrelationship, "eng_parentasset", {"eng_assetid"}, {"ParentAsset"}),
+					#"Expanded child" = Table.ExpandRecordColumn(#"Expanded parent", "eng_childasset", {"eng_assetid"}, {"ChildAsset"}),
+					#"Expanded created" = Table.ExpandRecordColumn(#"Expanded child", "eng_createdbyline", {"eng_name"}, {"CreatedByLine"}),
+					#"Expanded closed" = Table.ExpandRecordColumn(#"Expanded created", "eng_closedbyline", {"eng_name"}, {"ClosedByLine"})
+				in
+					#"Expanded closed"
+

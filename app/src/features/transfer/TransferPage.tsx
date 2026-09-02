@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Button, Field, Input, MessageBar, MessageBarBody, Select, Text, Title2, tokens } from "@fluentui/react-components";
 import { DeleteRegular } from "@fluentui/react-icons";
 import { backend } from "../../api";
+import { getSubmissionQueue } from "../../api/queue";
 import type { Asset, Location, Project } from "../../api/types";
 import { t } from "../../i18n";
 
@@ -19,6 +20,7 @@ export function TransferPage() {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [queued, setQueued] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +50,8 @@ export function TransferPage() {
       return;
     }
     setSubmitting(true);
-    const result = await backend.submitTransfer({
+    // FR-036: routed through the offline queue — see CheckoutPage.tsx's identical comment.
+    const outcome = await getSubmissionQueue(backend).submit("Transfer", {
       assetIds: assets.map((a) => a.assetid),
       touser: touser || null,
       tolocation: tolocation || null,
@@ -57,22 +60,34 @@ export function TransferPage() {
       clientSubmissionId: `transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     });
     setSubmitting(false);
-    if (!result.ok) {
-      setError(result.reason);
+    if (!outcome.delivered) {
+      setQueued(true);
+      setAssets([]);
+      setReason("");
       return;
     }
-    setConfirmation(t("transfer.confirmation", { txn: result.transactionName }));
+    if (!outcome.outcome.ok) {
+      setError(outcome.outcome.reason);
+      return;
+    }
+    setConfirmation(t("transfer.confirmation", { txn: outcome.outcome.transactionName }));
     setAssets([]);
     setReason("");
   }
 
-  if (confirmation) {
+  if (confirmation || queued) {
     return (
       <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-        <MessageBar intent="success">
-          <MessageBarBody>{confirmation}</MessageBarBody>
+        <MessageBar intent={queued ? "warning" : "success"}>
+          <MessageBarBody>{queued ? t("offline.submissionQueued") : confirmation}</MessageBarBody>
         </MessageBar>
-        <Button appearance="primary" onClick={() => setConfirmation(null)}>
+        <Button
+          appearance="primary"
+          onClick={() => {
+            setConfirmation(null);
+            setQueued(false);
+          }}
+        >
           {t("common.back")}
         </Button>
       </div>

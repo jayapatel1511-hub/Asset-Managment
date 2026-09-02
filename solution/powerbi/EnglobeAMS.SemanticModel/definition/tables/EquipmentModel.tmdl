@@ -1,0 +1,65 @@
+/// Mirrors eng_equipmentmodel. ModelKey uses manufacturer+model+equipmenttype, NOT
+/// manufacturer+model alone — docs/01-data-model.md's documented alternate key is wrong (it would
+/// silently merge three real catalogue rows, e.g. "Instantel Micromate" the DataLogger, its
+/// Geophone sibling, and its Microphone accessory, into one). docs/08-decisions.md records the
+/// correction; this table uses the corrected key so this artifact doesn't repeat the bug.
+table EquipmentModel
+
+	column Manufacturer
+		dataType: string
+		sourceColumn: eng_manufacturer
+		summarizeBy: none
+
+	column Model
+		dataType: string
+		sourceColumn: eng_model
+		summarizeBy: none
+
+	column EquipmentType
+		dataType: string
+		sourceColumn: eng_equipmenttype
+		summarizeBy: none
+
+	column AssetGroup
+		dataType: string
+		sourceColumn: eng_assetgroup
+		summarizeBy: none
+
+	column IdPrefix
+		dataType: string
+		sourceColumn: eng_idprefix
+		summarizeBy: none
+		isHidden
+
+	column IsSerialised
+		dataType: boolean
+		sourceColumn: eng_isserialised
+		summarizeBy: none
+
+	column IdentifierType
+		dataType: string
+		sourceColumn: eng_identifiertype
+		summarizeBy: none
+
+	column DefaultCalIntervalMonths
+		dataType: int64
+		sourceColumn: eng_defaultcalintervalmonths
+		summarizeBy: none
+
+	/// DAX string concatenation — deliberately the same "|"-joined shape as Asset's own
+	/// EquipmentModelKey column (built in M, inside that table's partition query) so the
+	/// relationship between them lines up on identical text in both directions.
+	column ModelKey = [Manufacturer] & "|" & [Model] & "|" & [EquipmentType]
+		dataType: string
+		summarizeBy: none
+		isHidden
+
+	partition EquipmentModel = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_equipmentmodel = Source{[Name="eng_equipmentmodel"]}[Data]
+				in
+					eng_equipmentmodel
+

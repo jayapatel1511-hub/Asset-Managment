@@ -138,6 +138,17 @@ describe("Transfer — FR-018", () => {
     }
   });
 
+  it("transferring a Deployed station to a new project leaves status/location untouched (feature 005 FR-027, requires Transfer:Deployed in state_machine.json)", () => {
+    const deployed: AssetSnapshot = { ...available, status: "Deployed", currentlocation: "337 Power Street", currentproject: "02208928" };
+    const result = deriveState(deployed, { type: "Transfer", date: "2026-09-02T09:00:00-04:00", toproject: "02999999" });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.fields.statusAfter).toBe("Deployed");
+      expect(result.fields.currentlocation).toBe("337 Power Street");
+      expect(result.fields.currentproject).toBe("02999999");
+    }
+  });
+
   it("transferring an Available asset between offices keeps it Available (edge case)", () => {
     const result = deriveState(available, {
       type: "Transfer",
@@ -207,6 +218,28 @@ describe("Calibration round trip — feature 004 FR-022/FR-024", () => {
       expect(result.fields.statusAfter).toBe("Available");
       expect(result.fields.currentlocation).toBe("Ottawa");
     }
+  });
+
+  it("Undeploy returns a recovered component to the RECOVERING USER's custody, not to nobody (feature 005 FR-013, fixing a docs/03-automation.md-era assumption)", () => {
+    const deployed: AssetSnapshot = { ...available, status: "Deployed", currentlocation: "337 Power Street", custodian: null, currentproject: "02208928" };
+    const result = deriveState(deployed, {
+      type: "Undeploy",
+      date: "2026-09-02T09:00:00-04:00",
+      touser: "tech@englobecorp.com",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.fields.statusAfter).toBe("CheckedOut");
+      expect(result.fields.custodian).toBe("tech@englobecorp.com");
+      expect(result.fields.currentproject).toBeNull();
+    }
+  });
+
+  it("Undeploy with no touser given leaves custodian unknown rather than fabricating one", () => {
+    const deployed: AssetSnapshot = { ...available, status: "Deployed", currentlocation: "337 Power Street" };
+    const result = deriveState(deployed, { type: "Undeploy", date: "2026-09-02T09:00:00-04:00" });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.fields.custodian).toBeNull();
   });
 
   it("refuses checkout of an asset in calibration (feature 004 FR-023)", () => {

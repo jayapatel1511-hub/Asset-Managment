@@ -71,7 +71,11 @@ pac solution export --name EnglobeAMS --path ./solution/export --managed false
 
 # app
 cd app && npm install && npm run dev      # local against Dev env
-npm run build && pac code push           # publish to environment
+npm run build && pa app push             # publish to environment (see docs/10-integration.md)
+# NOTE: `pac code init/push` is the DEPRECATED CLI. From @microsoft/power-apps v1.0.4 the
+# npm-based CLI (`pa app init` / `pa app run` / `pa app push`) replaces it. We are on v1.3.1.
+# NEVER push with VITE_AMS_BACKEND=mock — it would publish real asset data, including secured
+# ICCID/phone/static-IP fields, to a public endpoint. See docs/10-integration.md § Hosting.
 
 # migration
 cd migration && python 01_profile.py && python 02_clean.py && python 03_models.py && python 04_load.py --env dev

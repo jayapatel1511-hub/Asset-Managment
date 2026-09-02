@@ -1,0 +1,44 @@
+/// Mirrors eng_project.
+table Project
+
+	column ProjectNumber
+		dataType: string
+		sourceColumn: eng_projectnumber
+		summarizeBy: none
+
+	column ProjectName
+		dataType: string
+		sourceColumn: eng_name
+		summarizeBy: none
+
+	column Client
+		dataType: string
+		sourceColumn: eng_client
+		summarizeBy: none
+
+	column Status
+		dataType: string
+		sourceColumn: eng_status
+		summarizeBy: none
+
+	column Office
+		dataType: string
+		sourceColumn: Office
+		summarizeBy: none
+
+	column ProjectManager
+		dataType: string
+		sourceColumn: ProjectManager
+		summarizeBy: none
+
+	partition Project = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_project = Source{[Name="eng_project"]}[Data],
+					#"Expanded office" = Table.ExpandRecordColumn(eng_project, "eng_office", {"eng_name"}, {"Office"}),
+					#"Expanded pm" = Table.ExpandRecordColumn(#"Expanded office", "eng_pm", {"fullname"}, {"ProjectManager"})
+				in
+					#"Expanded pm"
+

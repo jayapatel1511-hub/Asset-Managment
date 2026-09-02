@@ -1,0 +1,48 @@
+/// Mirrors eng_location. Hierarchical (Region > Office > Site/Vehicle/...) via ParentLocationName
+/// — flattened to a name string here rather than modelled as a Tabular parent-child hierarchy,
+/// since the fleet's real depth is shallow (Region -> Office -> a few Sites) and a flat filterable
+/// column is simpler for a manager to slice by than a navigation hierarchy would be.
+table Location
+
+	column LocationName
+		dataType: string
+		sourceColumn: eng_name
+		summarizeBy: none
+
+	column LocationType
+		dataType: string
+		sourceColumn: eng_locationtype
+		summarizeBy: none
+
+	column ParentLocationName
+		dataType: string
+		sourceColumn: ParentLocationName
+		summarizeBy: none
+
+	column IsActive
+		dataType: boolean
+		sourceColumn: eng_isactive
+		summarizeBy: none
+
+	column Latitude
+		dataType: double
+		sourceColumn: eng_latitude
+		summarizeBy: none
+		isHidden
+
+	column Longitude
+		dataType: double
+		sourceColumn: eng_longitude
+		summarizeBy: none
+		isHidden
+
+	partition Location = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_location = Source{[Name="eng_location"]}[Data],
+					#"Expanded parent" = Table.ExpandRecordColumn(eng_location, "eng_parentlocation", {"eng_name"}, {"ParentLocationName"})
+				in
+					#"Expanded parent"
+

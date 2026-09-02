@@ -26,13 +26,16 @@ in `docs/08-decisions.md`.
 | `IM30 - Asset Managment via M365.docx` | The original ask — objective, needed fields, design principles |
 | `Asset AMS - SharePoint.xlsx` | The evidence — 1,053 live asset rows, current sheet design, ID conventions, form drafts. **Authoritative** over the CSV exports |
 | `docs/` | Narrative design reference and decision log |
+| `docs/10-integration.md` | **Which Microsoft service satisfies which requirement** — the integration surface map, and its open gaps. `specs/` is technology-agnostic by design, so this is where SharePoint, Teams, Entra and the Dataverse seam are pinned down |
 | `.specify/memory/constitution.md` | Non-negotiable principles; gates every plan |
 | `specs/###-*/` | Per-feature spec → plan → tasks |
 
 ## Features
 
-Delivery order was top to bottom. `001`–`004` are built and tested (163 tests, verified live at
-390 px against the real migrated data); `005` and `006` are specified, planned and not started.
+Delivery order was top to bottom. `001`–`004` are built and tested and verified live at 390 px against the real migrated data;
+`005` and `006` have since been built too. **281 tests passing across 12 files**, re-verified
+2026-09-02. `docs/09-build-report.md` predates the 005/006 work — treat this table and the report
+as needing a refresh against the current tree.
 
 | # | Feature | Delivers | Build status |
 |---|---|---|---|

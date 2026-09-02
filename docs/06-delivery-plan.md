@@ -4,7 +4,13 @@ Work in this order. Each step has a definition of done (DoD). Do not start the a
 in Dev with real migrated data — every screen should be built against actual Ottawa assets.
 
 ## Step 0 — Human prerequisites (Jay / IT) — blocks everything
-- [ ] Power Apps premium licences confirmed (per-app or per-user) for pilot users
+- [ ] **Power Apps Premium licence for every END USER who runs the app** — not just makers. Code apps
+      require it to *play*, so that is all 25–45 technicians plus admins. Confirm count and SKU
+- [ ] **Code apps enabled on both environments**: Power Platform admin center → Manage → Environments
+      → *env* → Settings → Product → Features → "Power Apps code apps" → Enable → Save. Blocks
+      `pa app init` entirely (docs/10-integration.md § Hosting)
+- [ ] **Verify offline behaviour and mobile-player support on day one** — neither is stated in the
+      code-apps documentation, and the pilot's field use depends on both (docs/10-integration.md)
 - [ ] Dev + Prod environments created, Canada region; Jay = System Administrator on both
 - [ ] `svc-ams` account + Entra groups from `05-security.md`
 - [ ] `pac auth create` done on the build machine

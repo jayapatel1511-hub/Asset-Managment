@@ -7,6 +7,11 @@ complete and tested, demoable on a phone viewport. Features 002 (Inventory Migra
 substantially exceeded as a foundation; 005 (Deployment & Kits, explicitly Phase 2) and 006 (Fleet
 Reporting / Power BI) were not attempted — out of the requested scope, not a gap.
 
+**Update, same day, later session**: features 005 and 006, plus the two stories deferred above
+(003 US5 offline queue, 004 US4 office→admin assignment), were built in a follow-on multi-agent
+session. See "Phase 0–2 — multi-agent extension" below for that work; it supersedes some of the
+"What is stubbed" list further down (marked inline where it does).
+
 **Session constraints, respected throughout**: no `pac auth`, no Dataverse object created, no
 Power Platform environment touched. `data/source/` was not edited. Every one of the 8 open
 `specs/clarifications.md` items was proceeded on under its stated recommendation, each recorded in
@@ -146,6 +151,156 @@ fan-out rather than a single-asset derivation — F1 does the Dataverse equivale
 5). F3 and F4 each flag, in their own `definition.json` `note` fields, exactly which upstream
 answer or screen they still depend on.
 
+## Phase 0–2 — multi-agent extension: Deployment & Kits, Fleet Reporting, offline queue, office admin assignment
+
+Built in a follow-on session, same day. **Scope**: feature 005 (Deployment & Kits) and feature 006
+(Fleet Reporting) in full, plus two stories deferred from the original build — feature 003 US5
+(offline queue) and feature 004 US4 (office→administrator assignment). Orchestrated as: one
+serial phase to extend every shared/frozen file first, four parallel agents each owning a disjoint
+set of files, then one serial integration pass. WS-E (`api/dataverse/` real implementation) and
+WS-F (real Dataverse schema) were explicitly skipped — neither is verifiable without a tenant, and
+WS-E must not be reported as working.
+
+### Phase 0 — shared scaffolding (orchestrator alone, serial)
+
+Added every new `AmsBackend` method, type, i18n key and route needed by workstreams A–D, with
+bodies throwing `not implemented` in both `api/mock/` and `api/dataverse/`. Split
+`api/mock/index.ts` into per-domain modules (`deployment.ts`, `reporting.ts`, `offline.ts`,
+`admin.ts`) composed by a thin `MockAmsBackend` constructor, per `specs/AGENT-BRIEF.md` §5's
+ownership map. Gate — `npx tsc -b` clean and the suite still exactly 163 passing — was met before
+committing and before any agent was spawned.
+
+### Phase 1 — four parallel agents, disjoint file ownership, no worktree isolation
+
+- **WS-A — feature 005, Deployment & Kits** (largest, highest value). Delivered `DeployPage`,
+  `RecoverPage`, `SitesListPage`/`SiteDetailPage` (with an "as of" date picker over the
+  installation snapshot), `SwapDialog` (component swap) and configuration-change (project
+  reassignment while deployed), the 8 `AmsBackend` deployment methods, `Installation` /
+  `InstallationComponent` mock storage, and `domain/installation.ts`'s point-in-time kit-membership
+  helpers. 40 new tests (11 domain, 29 feature). Found and flagged, rather than silently working
+  around in a frozen file, two real gaps: `deriveState.ts`'s `Undeploy` case wrongly grouped with
+  `Return`, and no `Transfer` transition existed from `Deployed` — both fixed by the orchestrator
+  in Phase 2 below. Deferred T039 (extending `solution/flows/F1/README.md`) to avoid touching
+  `solution/`, which is WS-F's row.
+- **WS-B — feature 006, Fleet Reporting**. Built US3 (`domain/pointInTime.ts`, point-in-time state
+  replay) first per its own `tasks.md` ordering, then `getFleetCounts`/`getCalibrationCounts`,
+  `ReportsHomePage`, `TimelinePage` (per-asset history with CSV export), `CompliancePage`, and
+  `UtilisationPage` — the last one refuses to compute a figure when there isn't enough history
+  rather than guess (FR-027/FR-028), verified live: *"Not enough history yet for a reliable
+  figure."* Also delivered the licence-free PBIP (Power BI Project, TMDL text format, diffable)
+  deliverable under `solution/powerbi/`. 41 new tests. Flagged that `AssetFilter.assetgroup` was
+  declared on the type but silently ignored by `listAssets` — mirrored the gap deliberately in its
+  own filter copy (to keep SC-003's exact reconciliation with `listAssets`) rather than diverge
+  silently, and flagged it for the orchestrator; fixed in both places in Phase 2.
+- **WS-C — feature 003 US5, offline queue**. Built a transport-agnostic `SubmissionQueue`
+  (`api/queue/`) — `SubmissionTransport = Pick<AmsBackend, "submitCheckout"|"submitReturn"|
+  "submitTransfer">`, a `getSubmissionQueue()` singleton, idempotent submit/replay keyed on
+  `clientSubmissionId`, and `NeedsAttentionPage` for reviewing/retrying failed replays. 24 new
+  tests. This workstream's own row didn't reach the Checkout/Return/Transfer screens themselves —
+  the orchestrator wired the queue into all three in Phase 2. WS-C reported a transient `tsc -b`
+  failure from a concurrent WS-A edit to a file it didn't own, self-correcting 15 seconds later —
+  a real, if small, confirmation that disjoint-file-ownership without git-worktree isolation held
+  up under actual concurrent edits.
+- **WS-D — feature 004 US4, office→administrator assignment**. Built `OfficeAdminsPage` and
+  `createAdminMethods` — the office list is derived live from `locations`, and an empty
+  `adminUpns` array *is* the gap signal required by FR-027a (no separate `isGap` field needed);
+  `setOfficeAdmins` replaces rather than merges. 10 new tests.
+
+### Phase 2 — integration (orchestrator alone)
+
+**Three real bugs found at the seams between workstreams, all fixed at the root:**
+
+1. **`deriveState.ts`'s `Undeploy` case was grouped with `Return`**, unconditionally clearing
+   custodian and defaulting location to the home office — wrong per FR-013 (a recovered component
+   belongs to the recovering technician, not to nobody). WS-A had worked around this in its own
+   file with a same-dated compensating `Transfer` transaction after every `Undeploy`. Fixed at the
+   root by splitting the case out: `custodian: line.touser ?? null`, `currentlocation: null`
+   (unknown, not falsely "at the office" — the same honesty rule `Checkout` already followed).
+   The compensating-`Transfer` workaround (`deployment.ts`, two call sites: `submitRecovery`,
+   `submitComponentSwap`) was then removed as redundant. Verified: `tsc -b` clean and 281/281
+   passing after removal — a pure simplification, no test needed changing — and a live
+   deploy→recover cycle now produces one clean `Undeploy` history line where it previously showed
+   two (`Undeploy` plus a redundant `Transfer`).
+2. **`data/reference/state_machine.json` had no `Transfer` transition from `Deployed`** — FR-027
+   (move a live station to a new project without recovering it first) had no legal transition to
+   use. Added `"Transfer": "Deployed"` to the `Deployed` block and regenerated `stateMachine.ts`;
+   `deriveState.ts`'s existing generic `Transfer` case needed no change, since it already applies
+   only the fields a transaction names and leaves the rest untouched.
+3. **`AssetFilter.assetgroup` was declared on the type but never applied by `listAssets`** — a
+   dead filter field, independently caught by WS-B while building `getFleetCounts` (see above).
+   Fixed both `listAssets` and `reporting.ts`'s reconciliation copy together, keeping them in sync.
+
+**Also added in Phase 2** (small and cross-cutting, appropriate for the orchestrator rather than
+any one workstream): `AssetDetailPage.tsx`'s "Sites" section — every installation an asset is or
+was part of, with its kit role and orientation, linking to the site detail page. This is WS-A's
+own recommended T021, which WS-A deferred because it touches a page outside its row.
+
+**Final verified command output**, this session, not asserted:
+
+```
+$ npx tsc -b
+(clean — no output)
+
+$ npm run test
+ Test Files  12 passed (12)
+      Tests  281 passed (281)
+
+$ npm run build
+✓ 2213 modules transformed.
+dist/index.html                  0.40 kB │ gzip:   0.26 kB
+dist/assets/index-C-sXtKK6.js   793.44 kB │ gzip: 215.63 kB
+✓ built in 3.80s
+```
+
+Test count, stage by stage, confirming zero were lost: 163 baseline → 173 (+WS-D) → 276 (+WS-C) →
+278 (+WS-A, +WS-B) → 281 (+3 orchestrator regression tests for the `Undeploy`/`Transfer`-while-
+`Deployed` fixes, added to `tests/domain/deriveState.test.ts`).
+
+### Acceptance questions 1–7, verified live against the real migrated data (390×844, pristine `localStorage`)
+
+The seven questions are `specs/README.md`'s definition of done for the whole programme.
+
+| # | Question | Verified via | Result |
+|---|---|---|---|
+| 1 | What do we own? | Reports → Fleet | **1026** total, broken down by office / asset group / equipment type; 35 temporary tags, 2 third-party owned |
+| 2 | Where is asset X right now? | Asset detail, `DL-UM-16984` | `Location: —` (Checked out — honestly unknown, not falsely "at the office"); `Home office: Sudbury` |
+| 3 | Who has asset X? | Asset detail, `DL-UM-16984` | `Custodian: James Ross` |
+| 4 | What is available at office Y? | Reports → Availability | **375** total, broken down by office (Sudbury 98, London 54, Ottawa 49, Kitchener 49, …) |
+| 5 | What needs calibration in the next N days? | Calibration due, 30-day horizon | **107** overdue — matches the known baseline exactly |
+| 6 | What is assigned to project Z? | Reports → By project, `01937805` | 6 assets returned (`DL-UM-15387/15713/16842/16956/16984/21947`), all Sudbury — consistent with Q2/Q3's own custody data |
+| 7 | Where was asset X on date D, and what was attached to it? | Deployed a fresh primary+sensor kit, then read Site detail's "as of" installation snapshot and the sensor's own Asset detail "Sites" section | Site page: `DL-BA-18570` Primary, `GEO-BE-20108` Sensor1 · V. Asset page (sensor's own): `Parent asset: DL-BA-18570`, `Sites: … Sensor1 · V · 2026-09-02` — both directions agree |
+
+All three of the session's known baselines were re-verified against a freshly-cleared
+`localStorage` (pristine migrated snapshot), after the Phase 2 fixes: **107** overdue
+(Calibration due), **592** unknown-custodian (Admin → Return sweep), **44** completion queue
+(Admin → Field-completion queue) — exact matches, no drift.
+
+### Superseding "What is stubbed" below
+
+- **Offline queueing** (feature 003 US5) is no longer unimplemented — see WS-C above. The original
+  reasoning (no real network boundary to fail against) is now moot: the queue is transport-generic
+  and Checkout/Return/Transfer route through it uniformly, showing a "queued" message when delivery
+  fails and replaying idempotently on reconnect.
+- **Calibration reminder notifications'** missing dependency, the office→administrator assignment
+  screen, is now built (WS-D's `OfficeAdminsPage.tsx`). The F3 flow itself remains a
+  specification-level file only — sending a real Teams/email notification needs a tenant.
+- **Power BI** (feature 006) is no longer entirely out of scope: the in-app Reports section is the
+  interim, licence-free deliverable, and a real PBIP project exists at `solution/powerbi/` for a
+  DirectQuery dashboard once Dataverse exists.
+
+### Known remaining gaps, honestly
+
+- **No "pending submission" badge** is rendered anywhere in the UI (`AssetRow` / `SearchPage` /
+  `AssetDetailPage`) for an asset with a queued-but-undelivered transaction. The queue and
+  `NeedsAttentionPage`'s review/retry flow both work; the at-a-glance visual indicator does not
+  exist yet. Deferred as polish, not correctness — flagged, not hidden.
+- **WS-A's T039** (extending `solution/flows/F1/README.md` with Deploy/Undeploy step mapping) was
+  deferred to avoid colliding with WS-F's ownership of `solution/` — not done this session.
+- WS-E and WS-F remain untouched stubs, as instructed.
+- Two more table requests are now pending Jay's agreement in `docs/08-decisions.md`
+  (`eng_installation`/`eng_installationcomponent` for feature 005; an office→admin assignment table
+  or column for feature 004) — do not create either in Dataverse until he confirms.
+
 ## What is stubbed
 
 - **Camera scanning** (`ScanDialog.tsx`, marked `MOCK-ONLY`): accepts typed/pasted text instead of
@@ -156,18 +311,9 @@ answer or screen they still depend on.
 - **Role switching** (`RoleSwitcher.tsx`, marked `MOCK-ONLY`): a manual picker standing in for
   Entra security-group membership, which doesn't exist without a tenant. Deleted the day
   `api/dataverse/` goes live.
-- **Offline queueing** (feature 003 US5, P5 — lowest priority by the spec's own ranking): not
-  implemented. The mock backend has no real network round-trip to queue against (it's a same-
-  origin static-file fetch plus `localStorage`), so the *specific* failure modes US5 tests for
-  (queue-while-offline, replay-in-order-on-reconnect, surface-a-rejected-replay) aren't
-  meaningfully exercisable against this backend regardless of effort spent — they need a real
-  Dataverse network boundary to fail against. `SearchPage.tsx` does show a basic
-  online/offline banner via `navigator.onLine`.
-- **Calibration reminder notifications** (feature 004 US4, F3): specified as a file
-  (`solution/flows/F3`), not running — no tenant, no Teams/email to send to. Also depends on an
-  office→administrator assignment screen that was not built this session (flagged in
-  `solution/flows/F3/README.md`).
-- **Power BI** (feature 006): out of the requested scope for this session entirely.
+- **Offline queueing**, **calibration reminder notifications' missing dependency**, and **Power
+  BI** — all three superseded by the Phase 0–2 addendum above; see that section rather than this
+  bullet list for the current state.
 
 ## What needs the tenant
 

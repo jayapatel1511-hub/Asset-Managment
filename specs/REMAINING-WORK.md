@@ -25,7 +25,7 @@ are. So:
 4. Add every new route to `App.tsx`.
 5. Split `api/mock/index.ts` into the per-domain modules named in `AGENT-BRIEF.md` §5, then treat
    `index.ts` and `store.ts` as frozen.
-6. Verify `npx tsc -b` compiles and `npm run test` still shows **163 passing**.
+6. Verify `npx tsc -b` compiles and `npm run test` still passes (**281 as of 2026-09-02**).
 
 Then fan out. Phase 0 is roughly an hour of careful work and it is what makes the rest parallel.
 
@@ -43,7 +43,8 @@ Fully buildable against the mock backend. Deploy a station to a site, recover it
 read a site's installation history, swap a component in service. This is the feature that turns
 "James has a Micromate" into "a Micromate is monitoring 337 Power Street for project 02208928".
 
-Owns `features/deploy/**`, `features/site/**`, `api/mock/deployment.ts`, `domain/installation.ts`.
+Owns `features/deploy/**`, `features/recover/**`, `features/site/**`, `api/mock/deployment.ts`,
+`domain/installation.ts`.
 
 One open clarification (FR-006, site coordinates) — proceed on hand-entered with an optional
 device capture, marked `// ASSUMPTION`.
@@ -100,9 +101,14 @@ Owns `features/admin/OfficeAdminsPage.tsx`, `api/mock/admin.ts`.
 
 ### WS-E — `api/dataverse/` implementation *(compiles, cannot be tested)*
 
-Every method currently throws. The interface is fixed and every screen already calls only it, so
-this is mechanical: implement each `AmsBackend` method against the Power Apps SDK, `$batch` for
-atomic multi-line submissions (FR-003), `If-Match` etags for the ID sequence.
+Every method currently throws. **Read the 95-line docstring at the top of
+`app/src/api/dataverse/index.ts` first — it is the contract**, and it fixes the four decisions that
+matter: one file per table, every write as a single `$batch` of one transaction plus N lines
+(FR-003), `If-Match` etag retry for `eng_idsequence`, and — the easiest thing to get wrong — the
+implementation **must not** call `deriveState()` to write `eng_asset` itself. Flow F1 does that.
+Doing it here gives the app a second unaudited write path to derived fields and breaks Principle V.
+
+See `docs/10-integration.md` for how this sits against the other six Microsoft surfaces.
 
 **Cannot be verified without a tenant.** Must compile, must be reviewed, must not be reported as
 working. Keep every file marked `// DATAVERSE-ONLY`.
@@ -146,7 +152,10 @@ skip the rest.
 From `docs/09-build-report.md` § "What needs the tenant" — listed here so nobody spends a session
 attempting them:
 
-- `pac auth create`, `pac solution init`, `pac code init` / `pac code push`
+- `pac auth create`, `pac solution init`, and `pa app init` / `pa app run` / `pa app push`
+  (**not** `pac code init/push` — that CLI is deprecated; see `docs/10-integration.md` § Hosting)
+- Enabling the "Power Apps code apps" environment feature, and Power Apps Premium licences for
+  every end user who plays the app
 - Creating any Dataverse table, role or field security profile
 - Publishing flows F1–F5 in the Maker Portal
 - Camera barcode scanning (needs a Code App running inside Power Apps — `ScanDialog.tsx` is the

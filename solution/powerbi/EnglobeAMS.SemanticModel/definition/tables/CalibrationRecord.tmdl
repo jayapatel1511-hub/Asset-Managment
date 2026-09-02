@@ -1,0 +1,67 @@
+/// Mirrors eng_calibrationrecord. FR-016: CertificateUrl points at the SharePoint document
+/// library (docs/01-data-model.md) — a hyperlink-formatted measure/column so it is directly
+/// clickable from a table visual, satisfying "make a calibration certificate reachable from the
+/// calibration view" without the report needing to embed the file itself.
+table CalibrationRecord
+
+	column RecordId
+		dataType: string
+		sourceColumn: eng_calibrationrecordid
+		summarizeBy: none
+		isHidden
+
+	column AssetId
+		dataType: string
+		sourceColumn: AssetId
+		summarizeBy: none
+
+	column CalibrationDate
+		dataType: dateTime
+		formatString: Short Date
+		sourceColumn: eng_calibrationdate
+		summarizeBy: none
+
+	column NextDueDate
+		dataType: dateTime
+		formatString: Short Date
+		sourceColumn: eng_nextduedate
+		summarizeBy: none
+
+	column Lab
+		dataType: string
+		sourceColumn: Lab
+		summarizeBy: none
+
+	column CertificateNumber
+		dataType: string
+		sourceColumn: eng_certificatenumber
+		summarizeBy: none
+
+	column CertificateUrl
+		dataType: string
+		sourceColumn: eng_certificateurl
+		summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+
+	column Cost
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		sourceColumn: eng_cost
+		summarizeBy: sum
+
+	column Result
+		dataType: string
+		sourceColumn: eng_result
+		summarizeBy: none
+
+	partition CalibrationRecord = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_calibrationrecord = Source{[Name="eng_calibrationrecord"]}[Data],
+					#"Expanded asset" = Table.ExpandRecordColumn(eng_calibrationrecord, "eng_asset", {"eng_assetid"}, {"AssetId"}),
+					#"Expanded lab" = Table.ExpandRecordColumn(#"Expanded asset", "eng_lab", {"eng_name"}, {"Lab"})
+				in
+					#"Expanded lab"
+

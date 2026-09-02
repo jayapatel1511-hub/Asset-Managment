@@ -1,0 +1,96 @@
+/// A dedicated, disconnected measures table (standard Tabular practice) — every measure that
+/// answers one of docs/00-brief.md's seven acceptance questions lives here, named after the
+/// question it answers rather than scattered across the fact tables they're computed from.
+/// FR-030: every one of these is a live CALCULATE over the DirectQuery tables above — there is no
+/// separate stored figure that could disagree with the operational data.
+table _Measures
+
+	/// FR-002/SC-008: DirectQuery means this is already near-real-time, not a periodic refresh —
+	/// but the requirement is that currency is STATED, not merely true, so every page shows this
+	/// as a card/text visual rather than relying on viewers to know that.
+	measure 'Data As Of' = "Data as of " & FORMAT(NOW(), "yyyy-mm-dd hh:mm") & " (DirectQuery)"
+
+	/// Acceptance question 1 / FR-005 / FR-029: current fleet, excluding retired.
+	measure 'Total Assets' = CALCULATE(COUNTROWS(Asset), Asset[Lifecycle] = "Active")
+
+	/// FR-029: the historical counterpart — every asset ever registered, retired or not.
+	measure 'Total Assets (All Time)' = COUNTROWS(Asset)
+
+	/// Acceptance question 4 / FR-007. "Available" here means literally Status = Available — the
+	/// FR's own exclusion list (retired, deployed, in-calibration, needing-repair, missing) is
+	/// read as clarifying emphasis, not as implying CheckedOut assets should also count as
+	/// available, which would contradict the plain meaning of "available". Same reading
+	/// app/src/api/mock/reporting.ts uses for getFleetCounts's Available-status filter.
+	measure 'Available Assets' = CALCULATE([Total Assets], Asset[Status] = "Available")
+
+	/// FR-011: distinct from fully catalogued, never excluded from the total.
+	measure 'Temporary Tags' = CALCULATE([Total Assets], Asset[IsTemporaryTag])
+
+	/// FR-012: marked, not excluded — see Asset.tmdl's IsThirdPartyOwned column comment for why,
+	/// and app/src/api/mock/reporting.ts's identical reasoning (SC-003 exact-reconciliation).
+	measure 'Third-Party Owned' = CALCULATE([Total Assets], Asset[IsThirdPartyOwned])
+
+	/// FR-010 / acceptance question 3's edge case: honestly distinct from "held by a named
+	/// person" — the Q3 sweep pattern, 592 real assets at go-live.
+	measure 'Unknown Custodian' = CALCULATE([Total Assets], Asset[IsUnknownCustodian])
+
+	/// Acceptance question 5 / FR-013 / FR-015. Excludes assets already at the lab (their own
+	/// bucket, not double-counted as overdue).
+	measure 'Calibration Overdue' =
+			CALCULATE(
+				[Total Assets],
+				Asset[IsCalibrationTracked],
+				Asset[Status] <> "InCalibration",
+				NOT ISBLANK(Asset[NextCalDue]),
+				Asset[NextCalDue] < TODAY()
+			)
+
+	measure 'Calibration Due Soon (30d)' =
+			CALCULATE(
+				[Total Assets],
+				Asset[IsCalibrationTracked],
+				Asset[Status] <> "InCalibration",
+				NOT ISBLANK(Asset[NextCalDue]),
+				Asset[NextCalDue] >= TODAY(),
+				Asset[NextCalDue] <= TODAY() + 30
+			)
+
+	measure 'Calibration In Progress' = CALCULATE([Total Assets], Asset[Status] = "InCalibration")
+
+	/// FR-017: counted explicitly, never omitted.
+	measure 'Calibration Unknown' =
+			CALCULATE(
+				[Total Assets],
+				Asset[IsCalibrationTracked],
+				Asset[Status] <> "InCalibration",
+				ISBLANK(Asset[NextCalDue])
+			)
+
+	/// FR-015, for a table visual's per-row "days overdue" column.
+	measure 'Days Overdue' =
+			VAR NextDue = SELECTEDVALUE(Asset[NextCalDue])
+			RETURN IF(NOT ISBLANK(NextDue), DATEDIFF(NextDue, TODAY(), DAY))
+
+	/// FR-024 (US4/utilisation): nothing transacted in the last 90 days. 90 is one reasonable
+	/// selectable default, not the only one — a report author adds a What-If parameter for this
+	/// in Desktop; the measure itself is period-shaped (swap 90 for a parameter cell) rather than
+	/// hard depending on it.
+	measure 'Idle Assets (90d)' = CALCULATE([Total Assets], Asset[LastActivityDate] < TODAY() - 90)
+
+	/// FR-027/FR-028, the migration-boundary honesty guard's Power BI equivalent to
+	/// domain/utilisation.ts's `hasSufficientHistory`. TRUE only once the earliest transaction on
+	/// record is at least as old as the requested look-back window — a visual bound to this
+	/// measure (e.g. a KPI's conditional formatting, or a page-level "insufficient history"
+	/// text box driven by IF([Has Sufficient History (90d)], ..., "Not enough history yet")) is
+	/// how a second Power BI author gets the same protection app/src/domain/utilisation.ts's
+	/// return-type trick gives a second TypeScript consumer — it must be wired in by whoever
+	/// builds each visual, since DAX (unlike TypeScript) cannot force a caller to check a result
+	/// shape before using it. Documented here, and again in ../../README.md, precisely because it
+	/// is the one guarantee this file format cannot enforce structurally the way the app's own
+	/// domain/utilisation.ts does.
+	measure 'Has Sufficient History (90d)' = CALCULATE(MIN(Transaction[TransactionDate])) <= TODAY() - 90
+
+	partition _Measures = calculated
+		mode: import
+		source = {BLANK()}
+

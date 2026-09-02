@@ -1,0 +1,55 @@
+/// Every asset-facing relationship keys on Asset[AssetId] — the Dataverse GUID surfaced as the
+/// human-readable tag for reporting purposes, same principle as everywhere else in this system
+/// (Principle III: the tag is unique and stable, so it is safe to relate on; the serial is not —
+/// 132 real serials are shared across two physically distinct assets).
+
+relationship rel-line-transaction
+	fromColumn: TransactionLine.TransactionName
+	toColumn: Transaction.TransactionName
+
+relationship rel-line-asset
+	fromColumn: TransactionLine.AssetId
+	toColumn: Asset.AssetId
+
+relationship rel-asset-equipmentmodel
+	fromColumn: Asset.EquipmentModelKey
+	toColumn: EquipmentModel.ModelKey
+
+/// Asset has two roles against Location (home office vs. current, possibly-unknown location) —
+/// only one relationship between a pair of tables may be active, so HomeOffice is active and
+/// CurrentLocation is inactive; measures reporting "where equipment is right now" activate it
+/// explicitly with USERELATIONSHIP(Asset[CurrentLocation], Location[LocationName]).
+relationship rel-asset-homeoffice
+	fromColumn: Asset.HomeOffice
+	toColumn: Location.LocationName
+
+relationship rel-asset-currentlocation
+	fromColumn: Asset.CurrentLocation
+	toColumn: Location.LocationName
+	isActive: false
+
+relationship rel-asset-currentproject
+	fromColumn: Asset.CurrentProject
+	toColumn: Project.ProjectNumber
+
+/// Same role-playing pattern as Location above: an AssetRelationship row names two assets. The
+/// child-side relationship is active (the common query — "what is this asset attached to" — see
+/// FR-019); the parent-side is inactive and activated per-measure for "what is attached to this
+/// asset" style questions.
+relationship rel-assetrelationship-child
+	fromColumn: AssetRelationship.ChildAsset
+	toColumn: Asset.AssetId
+
+relationship rel-assetrelationship-parent
+	fromColumn: AssetRelationship.ParentAsset
+	toColumn: Asset.AssetId
+	isActive: false
+
+relationship rel-calibrationrecord-asset
+	fromColumn: CalibrationRecord.AssetId
+	toColumn: Asset.AssetId
+
+relationship rel-transaction-date
+	fromColumn: Transaction.TransactionDate
+	toColumn: DimDate.Date
+

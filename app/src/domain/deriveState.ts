@@ -124,12 +124,28 @@ function deriveFields(asset: AssetSnapshot, line: TransactionLineInput, statusAf
       };
 
     case "Return":
-    case "Undeploy":
       return {
         ...base,
         custodian: null,
         currentproject: null,
         currentlocation: line.tolocation ?? asset.homeoffice,
+      };
+
+    case "Undeploy":
+      // DEVIATION from docs/03-automation.md (written before feature 005 existed), recorded in
+      // docs/08-decisions.md: that doc originally grouped Undeploy with Return (custodian: null,
+      // location: home office). Feature 005's FR-013 is explicit and more specific — a recovered
+      // component returns to the RECOVERING USER's custody, not to nobody, and being in someone's
+      // custody means location is unknown until a later Return, exactly like Checkout — not
+      // "at the office" (that would be a false claim about where the item physically is, the
+      // same dishonesty Principle I forbids for Checkout). specs/ wins over docs/ where they
+      // disagree (specs/README.md). currentproject follows Return's behavior (cleared) since
+      // recovery ends the component's assignment to the installation's project.
+      return {
+        ...base,
+        custodian: line.touser ?? null,
+        currentproject: null,
+        currentlocation: null,
       };
 
     case "Transfer":

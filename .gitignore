@@ -15,3 +15,6 @@ migration/**/__pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code runtime state (per-machine, per-session — not part of the deliverable)
+.claude/scheduled_tasks.lock

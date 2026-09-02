@@ -1,0 +1,76 @@
+/// Mirrors eng_transactionline — append-only (Principle II), Create+Read only for every role
+/// except System Owner. This is the table `stateAsOf`/`buildTimeline`
+/// (app/src/domain/pointInTime.ts) replay in the app; here it is the fact table every
+/// point-in-time or history-volume visual filters through.
+table TransactionLine
+
+	column LineId
+		dataType: string
+		sourceColumn: eng_name
+		summarizeBy: none
+		isHidden
+
+	column TransactionName
+		dataType: string
+		sourceColumn: TransactionName
+		summarizeBy: none
+		isHidden
+
+	column AssetId
+		dataType: string
+		sourceColumn: AssetId
+		summarizeBy: none
+		isHidden
+
+	column StatusBefore
+		dataType: string
+		sourceColumn: eng_statusbefore
+		summarizeBy: none
+
+	column StatusAfter
+		dataType: string
+		sourceColumn: eng_statusafter
+		summarizeBy: none
+
+	column KitRole
+		dataType: string
+		sourceColumn: eng_kitrole
+		summarizeBy: none
+
+	column Orientation
+		dataType: string
+		sourceColumn: eng_orientation
+		summarizeBy: none
+
+	column PowerSource
+		dataType: string
+		sourceColumn: eng_powersource
+		summarizeBy: none
+
+	column Condition
+		dataType: string
+		sourceColumn: eng_condition
+		summarizeBy: none
+
+	column Processed
+		dataType: boolean
+		sourceColumn: eng_processed
+		summarizeBy: none
+
+	column Notes
+		dataType: string
+		sourceColumn: eng_notes
+		summarizeBy: none
+		isHidden
+
+	partition TransactionLine = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_transactionline = Source{[Name="eng_transactionline"]}[Data],
+					#"Expanded transaction" = Table.ExpandRecordColumn(eng_transactionline, "eng_transaction", {"eng_name"}, {"TransactionName"}),
+					#"Expanded asset" = Table.ExpandRecordColumn(#"Expanded transaction", "eng_asset", {"eng_assetid"}, {"AssetId"})
+				in
+					#"Expanded asset"
+

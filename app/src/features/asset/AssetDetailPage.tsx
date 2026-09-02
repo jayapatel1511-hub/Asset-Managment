@@ -12,7 +12,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { backend } from "../../api";
-import type { Asset, CalibrationRecord, HistoryEntry } from "../../api/types";
+import type { Asset, CalibrationRecord, HistoryEntry, Installation, KitRole, Orientation } from "../../api/types";
 import { STATE_MACHINE, type TransactionType } from "../../domain/stateMachine";
 import { isIncompleteAssetId } from "../../domain/assetId";
 import { StatusPill } from "../../components/StatusPill";
@@ -50,6 +50,11 @@ export function AssetDetailPage() {
   const [tab, setTab] = useState<"history" | "calibration">("history");
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [calRecords, setCalRecords] = useState<CalibrationRecord[]>([]);
+  // Feature 005 (WS-A T021 recommendation) — this asset's deployments, with its own role in
+  // each. getAssetInstallations doesn't carry role/orientation (that's per-installation, shared
+  // across every component), so each is paired with a getInstallationSnapshot lookup as WS-A's
+  // report recommended.
+  const [deployments, setDeployments] = useState<Array<{ installation: Installation; kitrole: KitRole | null; orientation: Orientation | null }>>([]);
   const [dialog, setDialog] = useState<null | "calibration" | "retire" | "sendToCal" | "fault" | "missing">(null);
 
   async function refresh() {
@@ -58,6 +63,15 @@ export function AssetDetailPage() {
     if (a) {
       setHistory(await backend.getAssetHistory(a.assetid));
       setCalRecords(await backend.getCalibrationHistory(a.assetid));
+      const installations = await backend.getAssetInstallations(a.assetid);
+      const withRole = await Promise.all(
+        installations.map(async (installation) => {
+          const snapshot = await backend.getInstallationSnapshot(installation.id, installation.end ?? new Date().toISOString());
+          const mine = snapshot?.components.find((c) => c.asset === a.assetid);
+          return { installation, kitrole: mine?.kitrole ?? null, orientation: mine?.orientation ?? null };
+        })
+      );
+      setDeployments(withRole);
     }
   }
 
@@ -111,6 +125,39 @@ export function AssetDetailPage() {
       </section>
 
       {isOverdue(asset) && <Badge color="danger">{t("asset.overdue")}</Badge>}
+
+      {deployments.length > 0 && (
+        <section>
+          <Text weight="semibold" size={200} style={{ display: "block", marginBottom: 4 }}>
+            {t("site.title")}
+          </Text>
+          {deployments.map(({ installation, kitrole, orientation }) => (
+            <div
+              key={installation.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/site/${encodeURIComponent(installation.site)}`)}
+              onKeyDown={(e) => e.key === "Enter" && navigate(`/site/${encodeURIComponent(installation.site)}`)}
+              style={{ padding: "8px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}`, cursor: "pointer" }}
+            >
+              <Text weight="semibold" size={200}>
+                {installation.sitename} — {installation.project}
+                {!installation.end && (
+                  <Badge color="informative" style={{ marginLeft: 6 }}>
+                    {t("site.detail.current")}
+                  </Badge>
+                )}
+              </Text>
+              <br />
+              <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                {kitrole ?? "—"}
+                {orientation ? ` · ${orientation}` : ""} · {installation.start.slice(0, 10)}
+                {installation.end ? ` → ${installation.end.slice(0, 10)}` : ""}
+              </Text>
+            </div>
+          ))}
+        </section>
+      )}
 
       <section style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         <ActionButton visible={asset.status === "Available"} onClick={() => navigate(`/checkout?asset=${encodeURIComponent(asset.assetid)}`)}>

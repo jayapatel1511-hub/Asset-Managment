@@ -1,0 +1,96 @@
+/// Mirrors eng_transaction (the header). Read-only in this feature (FR-030/Principle I) — nothing
+/// in this semantic model writes back to Dataverse.
+table Transaction
+
+	column TransactionName
+		dataType: string
+		sourceColumn: eng_name
+		summarizeBy: none
+
+	column TransactionType
+		dataType: string
+		sourceColumn: eng_transactiontype
+		summarizeBy: none
+
+	column TransactionDate
+		dataType: dateTime
+		formatString: General Date
+		sourceColumn: eng_transactiondate
+		summarizeBy: none
+
+	column PerformedBy
+		dataType: string
+		sourceColumn: PerformedBy
+		summarizeBy: none
+
+	column FromLocation
+		dataType: string
+		sourceColumn: FromLocation
+		summarizeBy: none
+		isHidden
+
+	column ToLocation
+		dataType: string
+		sourceColumn: ToLocation
+		summarizeBy: none
+		isHidden
+
+	column FromUser
+		dataType: string
+		sourceColumn: FromUser
+		summarizeBy: none
+		isHidden
+
+	column ToUser
+		dataType: string
+		sourceColumn: ToUser
+		summarizeBy: none
+		isHidden
+
+	column FromProject
+		dataType: string
+		sourceColumn: FromProject
+		summarizeBy: none
+		isHidden
+
+	column ToProject
+		dataType: string
+		sourceColumn: ToProject
+		summarizeBy: none
+		isHidden
+
+	column PrimaryAsset
+		dataType: string
+		sourceColumn: PrimaryAsset
+		summarizeBy: none
+		isHidden
+
+	column Notes
+		dataType: string
+		sourceColumn: eng_notes
+		summarizeBy: none
+		isHidden
+
+	column ExpectedReturn
+		dataType: dateTime
+		formatString: Short Date
+		sourceColumn: eng_expectedreturn
+		summarizeBy: none
+
+	partition Transaction = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_transaction = Source{[Name="eng_transaction"]}[Data],
+					#"Expanded performedby" = Table.ExpandRecordColumn(eng_transaction, "eng_performedby", {"domainname"}, {"PerformedBy"}),
+					#"Expanded fromlocation" = Table.ExpandRecordColumn(#"Expanded performedby", "eng_fromlocation", {"eng_name"}, {"FromLocation"}),
+					#"Expanded tolocation" = Table.ExpandRecordColumn(#"Expanded fromlocation", "eng_tolocation", {"eng_name"}, {"ToLocation"}),
+					#"Expanded fromuser" = Table.ExpandRecordColumn(#"Expanded tolocation", "eng_fromuser", {"domainname"}, {"FromUser"}),
+					#"Expanded touser" = Table.ExpandRecordColumn(#"Expanded fromuser", "eng_touser", {"domainname"}, {"ToUser"}),
+					#"Expanded fromproject" = Table.ExpandRecordColumn(#"Expanded touser", "eng_fromproject", {"eng_projectnumber"}, {"FromProject"}),
+					#"Expanded toproject" = Table.ExpandRecordColumn(#"Expanded fromproject", "eng_toproject", {"eng_projectnumber"}, {"ToProject"}),
+					#"Expanded primaryasset" = Table.ExpandRecordColumn(#"Expanded toproject", "eng_primaryasset", {"eng_assetid"}, {"PrimaryAsset"})
+				in
+					#"Expanded primaryasset"
+

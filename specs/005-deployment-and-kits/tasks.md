@@ -9,7 +9,7 @@ description: "Task list for feature 005 — Deployment & Kits"
 
 **Prerequisites**: [plan.md](plan.md) (required), [spec.md](spec.md) (user stories), [contracts/ams-backend-deployment.md](contracts/ams-backend-deployment.md)
 
-**Tests**: Required. This repository has 163 passing tests and a convention of testing domain logic and backend behaviour. Reducing the count is a regression.
+**Tests**: Required. This repository has 281 passing tests and a convention of testing domain logic and backend behaviour. Reducing the count is a regression.
 
 **Organization**: Tasks are grouped by user story so each can be implemented and tested independently.
 
@@ -31,7 +31,7 @@ tests — nothing else. Every verification command runs from `app/`.
 
 ## Phase 1: Setup
 
-- [ ] T001 Set up the toolchain per `AGENT-BRIEF.md` §1 — **use the `/c/…` PATH form, not `C:/…`; the latter silently fails**, then confirm the baseline: `npx tsc -b && npm run test` shows **163 passing**. If it does not, stop and report — do not build on a broken base.
+- [ ] T001 Set up the toolchain per `AGENT-BRIEF.md` §1 — **use the `/c/…` PATH form, not `C:/…`; the latter silently fails**, then confirm the baseline: `npx tsc -b && npm run test` shows **281 passing**. If it does not, stop and report — do not build on a broken base.
 - [ ] T002 Read `docs/09-build-report.md`, `app/src/api/AmsBackend.ts`, `app/src/api/types.ts`, `app/src/domain/deriveState.ts` and `app/src/features/checkout/CheckoutPage.tsx`. The last is the closest existing model for US1's form.
 
 ---
@@ -45,7 +45,7 @@ tests — nothing else. Every verification command runs from `app/`.
 - [ ] T005 Split `app/src/api/mock/index.ts` into the per-domain modules named in `AGENT-BRIEF.md` §5; create `app/src/api/mock/deployment.ts` with all eight methods throwing `new Error("not implemented")`; add the same eight stubs to `app/src/api/dataverse/index.ts` marked `// DATAVERSE-ONLY`
 - [ ] T006 Add every i18n key to `app/src/i18n/en.json`: the eleven refusal keys from § Refusal reasons plus screen labels for `deploy.*`, `recover.*`, `site.*`, `swap.*`, `config.*`
 - [ ] T007 Add routes to `app/src/App.tsx`: `/deploy`, `/recover/:installationId`, `/sites`, `/site/:site`
-- [ ] T008 Verify `npx tsc -b` compiles and `npm run test` still shows **163 passing**. Commit.
+- [ ] T008 Verify `npx tsc -b` compiles and `npm run test` still shows **281 passing**. Commit.
 
 **Checkpoint**: Foundation ready. `api/mock/index.ts`, `api/mock/store.ts`, `api/types.ts`, `api/AmsBackend.ts`, `i18n/en.json` and `App.tsx` are now **frozen for this feature** — WS-A must not edit them again.
 
@@ -153,7 +153,7 @@ tests — nothing else. Every verification command runs from `app/`.
 - [ ] T040 [P] Verify FR-029 and FR-030 hold: retirement of a deployed asset is refused until recovery, and a deployed asset still appears in calibration due lists with its site and project
 - [ ] T041 [P] `docs/09-build-report.md` — record what was built, what was verified with real output, what is stubbed, and every new `// ASSUMPTION` marker
 - [ ] T042 [P] `docs/08-decisions.md` — record the two new tables as a decision needing Jay's agreement (`CLAUDE.md` § Ask before doing), and the FR-006 coordinate assumption
-- [ ] T043 Final verification from `app/`: `npx tsc -b && npm run test && npm run build`. Report actual output. Test count must be **≥ 163 plus this feature's new tests**
+- [ ] T043 Final verification from `app/`: `npx tsc -b && npm run test && npm run build`. Report actual output. Test count must be **≥ 281 plus this feature's new tests**
 - [ ] T044 Drive the app in a browser at 390×844 against the real migrated data: deploy a station, read the site, recover part of it, reconstruct an as-at date. Report the text read back from the rendered page, not a paraphrase
 
 ---

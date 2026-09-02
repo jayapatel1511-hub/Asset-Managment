@@ -115,6 +115,22 @@ export class MockAmsBackend implements AmsBackend {
     if (filter.equipmenttype) results = results.filter((a) => a.equipmentmodel.equipmenttype === filter.equipmenttype);
     if (filter.custodian) results = results.filter((a) => a.custodian === filter.custodian);
     if (filter.project) results = results.filter((a) => a.currentproject === filter.project);
+    // Phase 2 integration fix: AssetFilter.assetgroup was declared on the type but never applied
+    // here — a dead filter field, independently flagged by WS-B while building getFleetCounts
+    // (whose own filter copy documents that it deliberately matched this gap for SC-003
+    // reconciliation, rather than silently diverging from it). Fixing it here is the correct
+    // direction per that file's own comment: listAssets is the reconciliation target.
+    if (filter.assetgroup) {
+      results = results.filter((a) => {
+        const model = store.equipmentModels.find(
+          (m) =>
+            m.manufacturer === a.equipmentmodel.manufacturer &&
+            m.model === a.equipmentmodel.model &&
+            m.equipmenttype === a.equipmentmodel.equipmenttype
+        );
+        return model?.assetgroup === filter.assetgroup;
+      });
+    }
     return results.map((a) => applySensitiveFieldSecurity(a, user));
   }
 

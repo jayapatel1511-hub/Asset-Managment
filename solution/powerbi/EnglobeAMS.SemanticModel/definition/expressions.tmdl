@@ -1,0 +1,6 @@
+/// Single binding point for which Dataverse environment every table's DirectQuery partition
+/// connects to — change this once (Power BI Desktop: Transform data > Manage Parameters) rather
+/// than editing eight partition queries. README.md documents binding this to Englobe-AMS-Dev.
+expression EnvironmentUrl = "https://englobe-ams-dev.crm3.dynamics.com" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	annotation PBI_ResultType = Text
+

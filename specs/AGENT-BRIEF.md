@@ -6,8 +6,9 @@ agent on a shared file.
 
 Authoritative companions, in this order: `.specify/memory/constitution.md` (governs),
 `docs/09-build-report.md` (what exists — **read fresh, it is the maintained artifact**),
-`specs/REMAINING-WORK.md` (what is left, sliced into parallel workstreams), then the feature spec
-you are implementing.
+`specs/REMAINING-WORK.md` (what is left, sliced into parallel workstreams),
+`docs/10-integration.md` (which Microsoft service satisfies which requirement, and its open gaps),
+then the feature spec you are implementing.
 
 ---
 
@@ -35,7 +36,7 @@ The always-works fallback, independent of `PATH` entirely:
 
 ```bash
 NODE="/c/Files/Asset Managment/.tools/node-v22.14.0-win-x64/node.exe"
-"$NODE" node_modules/vitest/vitest.mjs run     # from app/ — verified, 163 passing
+"$NODE" node_modules/vitest/vitest.mjs run     # from app/ — verified, 281 passing
 ```
 
 `npm run dev` from a preview launcher does **not** work: npm lifecycle scripts do not inherit the
@@ -51,11 +52,11 @@ node scripts/generate-state-machine.mjs && node scripts/copy-staged-data.mjs
 | Layer | Status | Location |
 |---|---|---|
 | Migration pipeline | **Done.** 1,053 source rows → 1,026 staged assets, idempotent, 9 reports | `migration/01_profile.py`…`05_calibrations.py` |
-| Domain layer | **Done.** 136 tests | `app/src/domain/` |
+| Domain layer | **Done.** 179 tests across 6 modules | `app/src/domain/` |
 | Backend seam | **Done.** `mock/` fully working, `dataverse/` typed stub that throws | `app/src/api/` |
 | Screens for 001, 003, 004 (P1–P2, most P3–P4) | **Done**, verified live at 390px against real data | `app/src/features/` |
 | Flow specifications F1–F5 | **Done** as files, not published | `solution/flows/` |
-| Tests | **163 passing**, `npm run build` clean | `app/tests/` |
+| Tests | **281 passing** across 12 files, `npm run build` clean | `app/tests/` |
 
 Features **005** (Deployment & Kits) and **006** (Fleet Reporting) were never attempted. The
 stubs are listed in `docs/09-build-report.md` § "What is stubbed". That is the work.
@@ -153,10 +154,11 @@ npx tsc -b && npm run test && npm run build
 
 all pass, and the agent reports the **actual** output.
 
-**The baseline is 163 passing across 4 files** — `stateMachine` 100, `mockBackend` 27, `assetId` 21,
-`deriveState` 15. Re-verified 2026-09-02, not quoted from the build report. A run showing fewer
-passing tests than 163 plus your own additions is a regression, not a success. Do not report
-anything as verified that you did not run.
+**The baseline is 281 passing across 12 files** — re-verified 2026-09-02 by running it, not
+quoted from a report: `stateMachine` 100, `deploy` 29, `mockBackend` 27, `assetId` 21, `deriveState`
+18, `queue` 17, `pointInTime` 15, `utilisation` 14, `reporting` 12, `installation` 11, `admin` 10,
+`offline` 7. A run showing fewer than 281 plus your own additions is a regression, not a success.
+Do not report anything as verified that you did not run.
 
 ## 6. Data you can rely on
 

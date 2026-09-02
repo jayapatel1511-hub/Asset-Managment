@@ -27,7 +27,7 @@ full.
 
 **Storage**: `api/mock/` — `migration/staged/` JSON loaded via `public/data/`, mutations persisted to `localStorage`. Dataverse behind the same `AmsBackend` interface, unimplemented.
 
-**Testing**: vitest + jsdom. 163 tests pass today; this feature must not reduce that number.
+**Testing**: vitest + jsdom. 281 tests pass across 12 files (re-verified 2026-09-02); this feature must not reduce that number.
 
 **Target Platform**: Power Apps Code App, phone-first at 390 px, scaling to desktop. Dark mode follows OS.
 

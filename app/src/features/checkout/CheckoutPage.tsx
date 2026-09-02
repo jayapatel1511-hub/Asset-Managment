@@ -14,6 +14,7 @@ import {
 } from "@fluentui/react-components";
 import { DeleteRegular } from "@fluentui/react-icons";
 import { backend } from "../../api";
+import { getSubmissionQueue } from "../../api/queue";
 import type { Asset, Project } from "../../api/types";
 import { StatusPill } from "../../components/StatusPill";
 import { t } from "../../i18n";
@@ -43,6 +44,7 @@ export function CheckoutPage() {
   const [primaryAssetId, setPrimaryAssetId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [queued, setQueued] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -98,7 +100,10 @@ export function CheckoutPage() {
         return;
       }
     }
-    const result = await backend.submitCheckout({
+    // FR-036: routed through the offline queue rather than calling backend.submitCheckout
+    // directly — if the transport call throws (no connectivity), the queue accepts it, persists
+    // it, and replays it in order on reconnect (FR-037/FR-038); it is never silently lost.
+    const outcome = await getSubmissionQueue(backend).submit("Checkout", {
       lines: cart.map((c) => ({ assetId: c.asset.assetid, kitRole: c.kitRole })),
       primaryAssetId: primaryAssetId ?? undefined,
       project,
@@ -107,23 +112,36 @@ export function CheckoutPage() {
       clientSubmissionId: `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     });
     setSubmitting(false);
-    if (!result.ok) {
-      setSubmitError(result.reason);
+    if (!outcome.delivered) {
+      setQueued(true);
+      setCart([]);
+      setProject("");
+      setPrimaryAssetId(null);
       return;
     }
-    setConfirmation(t("checkout.confirmation", { txn: result.transactionName }));
+    if (!outcome.outcome.ok) {
+      setSubmitError(outcome.outcome.reason);
+      return;
+    }
+    setConfirmation(t("checkout.confirmation", { txn: outcome.outcome.transactionName }));
     setCart([]);
     setProject("");
     setPrimaryAssetId(null);
   }
 
-  if (confirmation) {
+  if (confirmation || queued) {
     return (
       <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-        <MessageBar intent="success">
-          <MessageBarBody>{confirmation}</MessageBarBody>
+        <MessageBar intent={queued ? "warning" : "success"}>
+          <MessageBarBody>{queued ? t("offline.submissionQueued") : confirmation}</MessageBarBody>
         </MessageBar>
-        <Button appearance="primary" onClick={() => setConfirmation(null)}>
+        <Button
+          appearance="primary"
+          onClick={() => {
+            setConfirmation(null);
+            setQueued(false);
+          }}
+        >
           {t("checkout.title")} — {t("common.back")}
         </Button>
       </div>

@@ -232,6 +232,7 @@
   "reports.notPublished": "This is the in-app interim, not the licence-free deliverable — see solution/powerbi/.",
 
   "offline.pendingBadge": "Pending sync",
+  "offline.submissionQueued": "No connection — queued. It will send automatically when you're back online.",
   "offline.needsAttention.title": "Needs attention",
   "offline.needsAttention.empty": "Nothing needs attention.",
   "offline.retry": "Retry",

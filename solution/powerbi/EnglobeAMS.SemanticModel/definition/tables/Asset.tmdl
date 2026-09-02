@@ -1,0 +1,165 @@
+/// Mirrors eng_asset (docs/01-data-model.md). AssetId is the human-readable tag (Principle III),
+/// not the Dataverse GUID primary key — reporting relates on it because it is unique and
+/// immutable, exactly like every other read path in this system.
+table Asset
+
+	column AssetId
+		dataType: string
+		sourceColumn: eng_assetid
+		summarizeBy: none
+
+	column EquipmentModelKey
+		dataType: string
+		sourceColumn: EquipmentModelKey
+		summarizeBy: none
+		isHidden
+
+	column SerialNumber
+		dataType: string
+		sourceColumn: eng_serialnumber
+		summarizeBy: none
+
+	/// FR-003/SC-005: carries Dataverse's `AMS Sensitive` field security profile
+	/// (docs/05-security.md). Hidden here by default; true enforcement for a viewer without the
+	/// Office Admin+ role needs Object-Level Security bound to the same Entra security groups —
+	/// a Premium/PPU capability that needs the tenant to configure and is UNVERIFIED this
+	/// session. See ../../README.md.
+	column IdentifierValue
+		dataType: string
+		sourceColumn: eng_identifiervalue
+		summarizeBy: none
+		isHidden
+
+	column HomeOffice
+		dataType: string
+		sourceColumn: HomeOffice
+		summarizeBy: none
+
+	column Lifecycle
+		dataType: string
+		sourceColumn: eng_lifecycle
+		summarizeBy: none
+
+	column Status
+		dataType: string
+		sourceColumn: eng_status
+		summarizeBy: none
+
+	column CurrentLocation
+		dataType: string
+		sourceColumn: CurrentLocation
+		summarizeBy: none
+
+	column Custodian
+		dataType: string
+		sourceColumn: Custodian
+		summarizeBy: none
+
+	column CurrentProject
+		dataType: string
+		sourceColumn: CurrentProject
+		summarizeBy: none
+
+	column ParentAsset
+		dataType: string
+		sourceColumn: ParentAsset
+		summarizeBy: none
+		isHidden
+
+	column LastCalDate
+		dataType: dateTime
+		formatString: Short Date
+		sourceColumn: eng_lastcaldate
+		summarizeBy: none
+
+	column NextCalDue
+		dataType: dateTime
+		formatString: Short Date
+		sourceColumn: eng_nextcaldue
+		summarizeBy: none
+
+	column RetirementReason
+		dataType: string
+		sourceColumn: eng_retirementreason
+		summarizeBy: none
+
+	column Notes
+		dataType: string
+		sourceColumn: eng_notes
+		summarizeBy: none
+
+	/// Same field-security note as IdentifierValue above.
+	column PhoneNumber
+		dataType: string
+		sourceColumn: eng_phonenumber
+		summarizeBy: none
+		isHidden
+
+	/// Same field-security note as IdentifierValue above.
+	column StaticIp
+		dataType: string
+		sourceColumn: eng_staticip
+		summarizeBy: none
+		isHidden
+
+	column MigrationSource
+		dataType: string
+		sourceColumn: eng_migrationsource
+		summarizeBy: none
+		isHidden
+
+	/// FR-011: a temporary tag (TMP-####) is a fully-owned asset awaiting catalogue completion,
+	/// not a lesser count — a calculated column so every visual can group by it without repeating
+	/// the LEFT()/"TMP-" test in each measure.
+	column IsTemporaryTag = LEFT([AssetId], 4) = "TMP-"
+		dataType: boolean
+		summarizeBy: none
+
+	/// FR-012: spec.md's own example ("the notes field names at least two") — a plain-text
+	/// pattern match over free text, same rule as app/src/api/mock/reporting.ts's
+	/// THIRD_PARTY_OWNED_PATTERN, kept identical on purpose so the two never disagree.
+	column IsThirdPartyOwned = NOT ISBLANK([Notes]) && ISNUMBER(SEARCH("owned by", [Notes], 1, 0))
+		dataType: boolean
+		summarizeBy: none
+
+	/// FR-010: the Q3 sweep pattern — 592 real assets, honestly distinct from "held by someone
+	/// named".
+	column IsUnknownCustodian = [Status] = "CheckedOut" && ISBLANK([Custodian])
+		dataType: boolean
+		summarizeBy: none
+
+	/// Same "does this model even get calibrated" test as app/src/api/mock/reporting.ts's
+	/// getCalibrationCounts and the app's own listCalibrationDue (feature 004) — a model with no
+	/// interval and an asset with no calibration history was never tracked at all, so it belongs
+	/// in no bucket, not "unknown". RELATED works here because Asset -> EquipmentModel is this
+	/// table's one active relationship to EquipmentModel.
+	column IsCalibrationTracked = NOT ISBLANK([NextCalDue]) || NOT ISBLANK([LastCalDate]) || NOT ISBLANK(RELATED(EquipmentModel[DefaultCalIntervalMonths]))
+		dataType: boolean
+		summarizeBy: none
+
+	/// FR-024 (utilisation, US4): the most recent transaction date this asset appears in, via the
+	/// natural Asset -> TransactionLine -> Transaction join. RELATED (not a relationship
+	/// traversal direction) is what makes this safe regardless of either relationship's
+	/// cross-filter setting.
+	column LastActivityDate = CALCULATE(MAXX(TransactionLine, RELATED(Transaction[TransactionDate])))
+		dataType: dateTime
+		formatString: General Date
+		summarizeBy: none
+		isHidden
+
+	partition Asset = m
+		mode: directQuery
+		source =
+				let
+					Source = CommonDataService.Database(EnvironmentUrl),
+					eng_asset = Source{[Name="eng_asset"]}[Data],
+					#"Expanded lookups" = Table.ExpandRecordColumn(eng_asset, "eng_equipmentmodel", {"eng_manufacturer", "eng_model", "eng_equipmenttype"}, {"EquipmentModel.Manufacturer", "EquipmentModel.Model", "EquipmentModel.EquipmentType"}),
+					#"Added ModelKey" = Table.AddColumn(#"Expanded lookups", "EquipmentModelKey", each Text.Combine({[EquipmentModel.Manufacturer], [EquipmentModel.Model], [EquipmentModel.EquipmentType]}, "|")),
+					#"Expanded home office" = Table.ExpandRecordColumn(#"Added ModelKey", "eng_homeoffice", {"eng_name"}, {"HomeOffice"}),
+					#"Expanded current location" = Table.ExpandRecordColumn(#"Expanded home office", "eng_currentlocation", {"eng_name"}, {"CurrentLocation"}),
+					#"Expanded custodian" = Table.ExpandRecordColumn(#"Expanded current location", "eng_custodian", {"domainname"}, {"Custodian"}),
+					#"Expanded current project" = Table.ExpandRecordColumn(#"Expanded custodian", "eng_currentproject", {"eng_projectnumber"}, {"CurrentProject"}),
+					#"Expanded parent asset" = Table.ExpandRecordColumn(#"Expanded current project", "eng_parentasset", {"eng_assetid"}, {"ParentAsset"})
+				in
+					#"Expanded parent asset"
+
