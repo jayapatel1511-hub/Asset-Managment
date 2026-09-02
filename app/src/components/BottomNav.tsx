@@ -3,6 +3,7 @@ import {
   ArrowExportRegular,
   ArrowImportRegular,
   CalendarClockRegular,
+  LocationRegular,
   SearchRegular,
   SettingsRegular,
 } from "@fluentui/react-icons";
@@ -22,6 +23,9 @@ const ITEMS: NavItem[] = [
   { to: "/calibration", label: t("nav.calibration"), icon: <CalendarClockRegular /> },
   { to: "/checkout", label: t("nav.checkout"), icon: <ArrowExportRegular /> },
   { to: "/return", label: t("nav.return"), icon: <ArrowImportRegular /> },
+  // Feature 005 (WS-A): deploying/recovering a station is a field workflow, not admin-only —
+  // entry point for both is the sites list (its own "deploy here" / "recover" actions).
+  { to: "/sites", label: t("nav.sites"), icon: <LocationRegular /> },
   { to: "/admin", label: t("nav.admin"), icon: <SettingsRegular />, adminOnly: true },
 ];
 

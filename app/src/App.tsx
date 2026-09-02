@@ -13,6 +13,20 @@ import { TransferPage } from "./features/transfer/TransferPage";
 import { CalibrationDuePage } from "./features/calibration/CalibrationDuePage";
 import { AdminHomePage } from "./features/admin/AdminHomePage";
 import { NewAssetPage } from "./features/admin/NewAssetPage";
+// Feature 005 (WS-A)
+import { DeployPage } from "./features/deploy/DeployPage";
+import { RecoverPage } from "./features/recover/RecoverPage";
+import { SiteListPage } from "./features/site/SiteListPage";
+import { SiteDetailPage } from "./features/site/SiteDetailPage";
+// Feature 006 (WS-B)
+import { ReportsHomePage } from "./features/reports/ReportsHomePage";
+import { CompliancePage } from "./features/reports/CompliancePage";
+import { TimelinePage } from "./features/reports/TimelinePage";
+import { UtilisationPage } from "./features/reports/UtilisationPage";
+// Feature 003 US5 (WS-C)
+import { NeedsAttentionPage } from "./features/offline/NeedsAttentionPage";
+// Feature 004 US4 (WS-D)
+import { OfficeAdminsPage } from "./features/admin/OfficeAdminsPage";
 
 export default function App() {
   const theme = useSystemTheme();
@@ -55,6 +69,24 @@ export default function App() {
               <Route path="/calibration" element={<CalibrationDuePage />} />
               <Route path="/admin" element={<AdminHomePage />} />
               <Route path="/admin/new-asset" element={<NewAssetPage />} />
+
+              {/* Feature 005 (WS-A) */}
+              <Route path="/deploy" element={<DeployPage />} />
+              <Route path="/recover/:installationId" element={<RecoverPage />} />
+              <Route path="/sites" element={<SiteListPage />} />
+              <Route path="/site/:site" element={<SiteDetailPage />} />
+
+              {/* Feature 006 (WS-B) */}
+              <Route path="/reports" element={<ReportsHomePage />} />
+              <Route path="/reports/compliance" element={<CompliancePage />} />
+              <Route path="/reports/timeline/:assetId" element={<TimelinePage />} />
+              <Route path="/reports/utilisation" element={<UtilisationPage />} />
+
+              {/* Feature 003 US5 (WS-C) */}
+              <Route path="/needs-attention" element={<NeedsAttentionPage />} />
+
+              {/* Feature 004 US4 (WS-D) */}
+              <Route path="/admin/office-admins" element={<OfficeAdminsPage />} />
             </Routes>
           </main>
 

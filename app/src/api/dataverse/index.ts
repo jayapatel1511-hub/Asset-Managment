@@ -68,4 +68,28 @@ export class DataverseAmsBackend implements AmsBackend {
   previewNextAssetId = unimplemented;
   registerAsset = unimplemented;
   retireAsset = unimplemented;
+
+  // ---- deployment (feature 005, WS-A / WS-E) ----
+  submitDeployment = unimplemented;
+  submitRecovery = unimplemented;
+  submitComponentSwap = unimplemented;
+  submitConfigurationChange = unimplemented;
+  listSites = unimplemented;
+  getSiteInstallations = unimplemented;
+  getInstallationSnapshot = unimplemented;
+  getAssetInstallations = unimplemented;
+
+  // ---- reporting (feature 006, WS-B / WS-E) ----
+  getFleetCounts = unimplemented;
+  getCalibrationCounts = unimplemented;
+
+  // ---- offline queue (feature 003 US5, WS-C / WS-E) ----
+  // NOTE for WS-E: a real Dataverse-backed queue is where offline actually matters — this mock
+  // stub exists only to satisfy the interface; see api/mock/offline.ts's header for why the mock
+  // backend's own "offline" is closer to a demo than a real network boundary.
+  listPendingSubmissions = unimplemented;
+
+  // ---- office admin assignment (feature 004 US4, WS-D / WS-E) ----
+  listOfficeAdminAssignments = unimplemented;
+  setOfficeAdmins = unimplemented;
 }

@@ -32,6 +32,15 @@ export function AdminHomePage() {
         </Button>
       </Card>
 
+      {/* Entry points for features not on the bottom nav (AGENT-BRIEF.md §5: this page is not
+          owned by any single workstream — the orchestrator maintains these three links so WS-B/
+          C/D don't collide adding their own). */}
+      <Card style={{ padding: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <Button onClick={() => navigate("/reports")}>{t("reports.title")}</Button>
+        <Button onClick={() => navigate("/admin/office-admins")}>{t("admin.officeAdmins.title")}</Button>
+        <Button onClick={() => navigate("/needs-attention")}>{t("offline.needsAttention.title")}</Button>
+      </Card>
+
       <Card style={{ padding: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <Title3>Field-completion queue</Title3>

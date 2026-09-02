@@ -156,3 +156,116 @@ export interface CurrentUser {
 export function isAdmin(user: CurrentUser): boolean {
   return user.roles.includes("OfficeAdmin") || user.roles.includes("SystemOwner");
 }
+
+// ============================================================================
+// Feature 005 — Deployment & Kits (WS-A). Entity shapes per
+// specs/005-deployment-and-kits/contracts/ams-backend-deployment.md § Types.
+// DEVIATION recorded in docs/08-decisions.md: Installation and InstallationComponent are two
+// tables beyond docs/01-data-model.md's nine — a request for Jay's agreement, not a decision
+// made unilaterally (CLAUDE.md § Ask before doing: "Adding a table not in
+// docs/01-data-model.md"). See plan.md's Complexity Tracking for why eng_transaction +
+// eng_assetrelationship alone cannot answer acceptance question 7 for a partially-recovered site.
+// ============================================================================
+
+export type Orientation = "H" | "V" | "BH" | "N" | "E" | "S" | "W";
+export type PowerSource = "Battery" | "Solar" | "AC" | "External";
+
+/** One station at one site for one project over one span of time. Dated, not current-only —
+ *  acceptance question 7 asks what was installed where on a PAST date, which the source
+ *  spreadsheet's current-only design could never answer. */
+export interface Installation {
+  id: string;
+  site: string; // location NAME, locationtype "Site"
+  project: string; // project number
+  primaryasset: string; // assetid of the data logger — FR-009 requires one
+  locationtype: LocationType;
+  sitename: string;
+  position: string | null; // free text by explicit decision: "POR-403", "Pier 3"
+  latitude: number | null;
+  longitude: number | null;
+  coordinatesource: "Manual" | "Device" | null; // ASSUMPTION: FR-006
+  powersource: PowerSource;
+  start: string; // ISO
+  end: string | null; // null = currently installed
+  openedbytransaction: string;
+  closedbytransaction: string | null;
+  notes: string | null;
+}
+
+/** An asset's dated membership of an installation, and the role it played. Separate from
+ *  AssetRelationship because a component can be swapped mid-installation (US4) — the
+ *  installation continues while this row ends and a replacement row begins. */
+export interface InstallationComponent {
+  id: string;
+  installation: string; // Installation.id
+  asset: string; // assetid
+  kitrole: KitRole;
+  orientation: Orientation | null; // required where the role requires it — FR-004
+  start: string;
+  end: string | null;
+  openedbyline: string | null;
+  closedbyline: string | null;
+}
+
+/** Reconstruction result for US3 / FR-020 — what was on site, as at a date. */
+export interface InstallationSnapshot {
+  installation: Installation;
+  components: Array<{ asset: string; kitrole: KitRole; orientation: Orientation | null }>;
+  asOf: string;
+}
+
+// ============================================================================
+// Feature 006 — Fleet Reporting (WS-B). specs/006-fleet-reporting/tasks.md T003.
+// ============================================================================
+
+export interface FleetCounts {
+  byOffice: Record<string, number>;
+  byAssetGroup: Record<string, number>;
+  byEquipmentType: Record<string, number>;
+  total: number;
+  temporaryTags: number; // FR-011 — distinct from fully catalogued
+  thirdPartyOwned: number; // FR-012
+}
+
+export interface CalibrationCounts {
+  byOffice: Record<string, { inCalibration: number; dueSoon: number; overdue: number; unknown: number }>;
+  asOf: string;
+}
+
+// ============================================================================
+// Feature 003 US5 — offline queueing (WS-C). No contract doc exists for this workstream (unlike
+// 005/006) — this shape is the orchestrator's own minimal design, made in Phase 0 so WS-C has a
+// fixed target. `PendingSubmission` describes queue state for the UI (a "pending" badge per
+// FR-040, a "needs attention" list per FR-039) — it does NOT imply the queue itself is stored in
+// MockStore; api/queue/** almost certainly keeps its own persistence (its own localStorage key),
+// separate from the Dataverse-mirroring MockStore, and api/mock/offline.ts's implementation of
+// listPendingSubmissions() reads from there. See AmsBackend.ts for the one new method.
+// ============================================================================
+
+export type PendingSubmissionKind = "Checkout" | "Return" | "Transfer";
+export type PendingSubmissionStatus = "Queued" | "Sending" | "Rejected";
+
+export interface PendingSubmission {
+  id: string;
+  kind: PendingSubmissionKind;
+  queuedAt: string;
+  status: PendingSubmissionStatus;
+  affectedAssetIds: string[];
+  /** Set only when status is "Rejected" — FR-039 requires this be shown, never silently dropped. */
+  rejectionReason?: string | null;
+}
+
+// ============================================================================
+// Feature 004 US4 — office → administrator assignment (WS-D). No contract doc exists for this
+// workstream either — orchestrator's own minimal design. FR-027a requires an office with no
+// administrator to be reported as a gap rather than skipped; modelling admins as a plain array
+// per office (empty = gap) makes that a query, not a separate flag to keep in sync.
+// DEVIATION recorded in docs/08-decisions.md, same footing as Installation/InstallationComponent:
+// this needs a table beyond docs/01-data-model.md's nine (or a column on eng_location) — a
+// request for Jay's agreement, not a decision.
+// ============================================================================
+
+export interface OfficeAdminAssignment {
+  office: string; // location name, locationtype "Office"
+  adminUpns: string[]; // empty = FR-027a gap
+}

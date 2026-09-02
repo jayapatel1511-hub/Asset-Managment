@@ -18,7 +18,10 @@ import type {
   AssetRelationship,
   CalibrationRecord,
   EquipmentModel,
+  Installation,
+  InstallationComponent,
   Location,
+  OfficeAdminAssignment,
   Project,
   TransactionHeader,
   TransactionLine,
@@ -64,6 +67,14 @@ export interface StoreSnapshot {
   calibrationRecords: CalibrationRecord[];
   idSequence: Record<string, StagedIdSequenceEntry>;
   processedClientSubmissionIds: string[];
+  // Feature 005 (WS-A). No staged JSON for these — "site history begins at go-live" (the source
+  // spreadsheet's own deployment sheet has 16 columns and zero rows), so they start empty rather
+  // than being fetched from migration/staged/.
+  installations: Installation[];
+  installationComponents: InstallationComponent[];
+  // Feature 004 US4 (WS-D). Starts empty — every office is an FR-027a gap until an admin
+  // assigns someone, which is the honest default, not a migration omission.
+  officeAdminAssignments: OfficeAdminAssignment[];
 }
 
 let cached: MockStore | null = null;
@@ -79,6 +90,13 @@ export class MockStore {
   calibrationRecords: CalibrationRecord[] = [];
   idSequence: Record<string, StagedIdSequenceEntry> = {};
   processedClientSubmissionIds: Set<string> = new Set();
+  /** Feature 005 (WS-A) — owned in the sense that only deployment.ts writes to these; the arrays
+   * themselves live here because store.ts is the one file every write path (and persist/hydrate)
+   * already goes through. See StoreSnapshot's comment for why they start empty. */
+  installations: Installation[] = [];
+  installationComponents: InstallationComponent[] = [];
+  /** Feature 004 US4 (WS-D) — same ownership note as above, for admin.ts. */
+  officeAdminAssignments: OfficeAdminAssignment[] = [];
   private txnCounter = 0;
   ready: Promise<void>;
 
@@ -98,6 +116,9 @@ export class MockStore {
     relationships?: AssetRelationship[];
     calibrationRecords?: CalibrationRecord[];
     idSequence?: Record<string, StagedIdSequenceEntry>;
+    installations?: Installation[];
+    installationComponents?: InstallationComponent[];
+    officeAdminAssignments?: OfficeAdminAssignment[];
   }): MockStore {
     const store = new MockStore({ skipAutoLoad: true });
     for (const a of data.assets) {
@@ -111,6 +132,9 @@ export class MockStore {
     store.relationships = data.relationships ?? [];
     store.calibrationRecords = data.calibrationRecords ?? [];
     store.idSequence = data.idSequence ?? {};
+    store.installations = data.installations ?? [];
+    store.installationComponents = data.installationComponents ?? [];
+    store.officeAdminAssignments = data.officeAdminAssignments ?? [];
     store.txnCounter = store.transactions.length;
     return store;
   }
@@ -184,6 +208,11 @@ export class MockStore {
     this.relationships = snap.relationships;
     this.calibrationRecords = snap.calibrationRecords;
     this.idSequence = snap.idSequence;
+    // ?? [] guards a localStorage snapshot persisted before these fields existed — an old
+    // snapshot must still load cleanly, not throw on a missing key.
+    this.installations = snap.installations ?? [];
+    this.installationComponents = snap.installationComponents ?? [];
+    this.officeAdminAssignments = snap.officeAdminAssignments ?? [];
     this.processedClientSubmissionIds = new Set(snap.processedClientSubmissionIds);
     this.txnCounter = snap.transactions.length;
   }
@@ -200,6 +229,9 @@ export class MockStore {
       calibrationRecords: this.calibrationRecords,
       idSequence: this.idSequence,
       processedClientSubmissionIds: [...this.processedClientSubmissionIds],
+      installations: this.installations,
+      installationComponents: this.installationComponents,
+      officeAdminAssignments: this.officeAdminAssignments,
     };
     try {
       window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snap));
@@ -217,6 +249,9 @@ export class MockStore {
     this.transactionLines = [];
     this.relationships = [];
     this.calibrationRecords = [];
+    this.installations = [];
+    this.installationComponents = [];
+    this.officeAdminAssignments = [];
     this.processedClientSubmissionIds.clear();
     await this.hydrateFromStagedFiles();
     this.persist();
@@ -288,6 +323,11 @@ export class MockStore {
       condition?: TransactionLine["condition"];
       kitRole?: TransactionLine["kitrole"];
       retirementReason?: string | null;
+      // Feature 005 (WS-A): Deploy lines carry orientation/powersource. Optional and unused by
+      // every existing transaction type — added in Phase 0 because store.ts is frozen afterward
+      // and this was the only place that could not otherwise be reached from api/mock/deployment.ts.
+      orientation?: TransactionLine["orientation"];
+      powersource?: TransactionLine["powersource"];
     }>;
   }): { ok: true; transactionId: string; transactionName: string } | { ok: false; reason: string; offendingAssetId?: string } {
     if (this.processedClientSubmissionIds.has(params.clientSubmissionId)) {
@@ -374,8 +414,8 @@ export class MockStore {
         statusbefore: statusBefore,
         statusafter: plan.result.fields.statusAfter,
         kitrole: line.kitRole ?? null,
-        orientation: null,
-        powersource: null,
+        orientation: line.orientation ?? null,
+        powersource: line.powersource ?? null,
         condition: line.condition ?? null,
         processed: true,
         notes: null,

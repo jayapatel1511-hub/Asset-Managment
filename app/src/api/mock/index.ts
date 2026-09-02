@@ -6,17 +6,29 @@
  */
 import { mintAssetId, mintTemporaryId } from "../../domain/assetId";
 import type {
+  AdminAssignmentMethods,
   AmsBackend,
   AssetFilter,
   CheckoutInput,
+  ComponentSwapInput,
+  ConfigurationChangeInput,
+  DeploymentInput,
+  DeploymentMethods,
   FaultReportInput,
+  OfflineMethods,
   RecordCalibrationInput,
+  RecoveryInput,
   RegisterAssetInput,
+  ReportingMethods,
   ReturnInput,
   SubmissionOutcome,
   TransferInput,
 } from "../AmsBackend";
 import type { Asset, AssetRelationship, CalibrationRecord, CurrentUser, EquipmentModel, HistoryEntry, Location, Project } from "../types";
+import { createAdminMethods } from "./admin";
+import { createDeploymentMethods } from "./deployment";
+import { createOfflineMethods } from "./offline";
+import { createReportingMethods } from "./reporting";
 import { getMockStore, type MockStore } from "./store";
 
 const MOCK_ROLE_KEY = "ams-mock-current-user";
@@ -61,7 +73,21 @@ function todayIso(): string {
 }
 
 export class MockAmsBackend implements AmsBackend {
-  constructor(private store: MockStore = getMockStore()) {}
+  // Per-domain composition (AGENT-BRIEF.md §5): each workstream owns exactly one factory's file
+  // and never touches this one after Phase 0. This class only wires them together and keeps the
+  // pre-existing feature 001/003/004 methods it already had.
+  private deployment: DeploymentMethods;
+  private reporting: ReportingMethods;
+  private offline: OfflineMethods;
+  private officeAdmins: AdminAssignmentMethods;
+
+  constructor(private store: MockStore = getMockStore()) {
+    const getUser = () => this.getCurrentUser();
+    this.deployment = createDeploymentMethods(store, getUser);
+    this.reporting = createReportingMethods(store, getUser);
+    this.offline = createOfflineMethods(store, getUser);
+    this.officeAdmins = createAdminMethods(store, getUser);
+  }
 
   private async ready(): Promise<MockStore> {
     await this.store.ready;
@@ -468,6 +494,53 @@ export class MockAmsBackend implements AmsBackend {
       date: new Date().toISOString(),
       lines: [{ assetId, retirementReason: reason }],
     });
+  }
+
+  // ---- deployment (feature 005, WS-A) — delegates to ./deployment.ts ----
+  submitDeployment(input: DeploymentInput) {
+    return this.deployment.submitDeployment(input);
+  }
+  submitRecovery(input: RecoveryInput) {
+    return this.deployment.submitRecovery(input);
+  }
+  submitComponentSwap(input: ComponentSwapInput) {
+    return this.deployment.submitComponentSwap(input);
+  }
+  submitConfigurationChange(input: ConfigurationChangeInput) {
+    return this.deployment.submitConfigurationChange(input);
+  }
+  listSites(onlyCurrent?: boolean) {
+    return this.deployment.listSites(onlyCurrent);
+  }
+  getSiteInstallations(site: string) {
+    return this.deployment.getSiteInstallations(site);
+  }
+  getInstallationSnapshot(installationId: string, asOf: string) {
+    return this.deployment.getInstallationSnapshot(installationId, asOf);
+  }
+  getAssetInstallations(assetId: string) {
+    return this.deployment.getAssetInstallations(assetId);
+  }
+
+  // ---- reporting (feature 006, WS-B) — delegates to ./reporting.ts ----
+  getFleetCounts(filter?: AssetFilter) {
+    return this.reporting.getFleetCounts(filter);
+  }
+  getCalibrationCounts(horizonDays: number) {
+    return this.reporting.getCalibrationCounts(horizonDays);
+  }
+
+  // ---- offline queue (feature 003 US5, WS-C) — delegates to ./offline.ts ----
+  listPendingSubmissions() {
+    return this.offline.listPendingSubmissions();
+  }
+
+  // ---- office admin assignment (feature 004 US4, WS-D) — delegates to ./admin.ts ----
+  listOfficeAdminAssignments() {
+    return this.officeAdmins.listOfficeAdminAssignments();
+  }
+  setOfficeAdmins(office: string, adminUpns: string[], clientSubmissionId: string) {
+    return this.officeAdmins.setOfficeAdmins(office, adminUpns, clientSubmissionId);
   }
 }
 
