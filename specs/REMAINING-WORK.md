@@ -1,268 +1,327 @@
-# Remaining work — parallel workstream map
+# Remaining work — production-readiness workstream map
 
-**As of 2026-09-02**, after the build recorded in `docs/09-build-report.md`. **Refreshed the same
-evening after the spec review**: WS-A to WS-D are complete; WS-G and WS-H were in progress in
-concurrent sessions at the time of writing — check `git status` and `ListAgents` before starting
-either.
+**As of 2026-09-02**, after the local/mock build and independent production review.
 
-Read `specs/AGENT-BRIEF.md` first — especially §1 (environment) and §5 (why Phase 0 is serial).
+Read, in order:
 
-This document exists to answer one question: *what can be built right now, by how many agents at
-once, without a Microsoft tenant?* Everything below is buildable and verifiable locally against
-the real migrated data unless the row says otherwise.
+1. `specs/AGENT-BRIEF.md`
+2. `.specify/memory/constitution.md`
+3. `docs/13-production-readiness-review.md`
+4. `specs/009-production-readiness/spec.md`
+5. `specs/009-production-readiness/checklists/requirements.md`
+6. `docs/06-delivery-plan.md`
 
----
+The previous workstream map optimized parallel local feature construction. That phase produced useful
+mock implementation and is preserved in `docs/09-build-report.md`. The remaining critical work is not
+more local screens; it is proving the production architecture in a real development tenant.
 
-## The gate: Phase 0 is serial and comes first
+## Current status
 
-Four files are shared by every workstream (`api/AmsBackend.ts`, `api/types.ts`, `i18n/en.json`,
-`App.tsx`). Agents editing them concurrently will clobber each other no matter how good the specs
-are. So:
+- Features 001–006: **Mock Implemented**
+- Feature 007: re-check the branch and tests before claiming its current state
+- Feature 008 US1: **Mock Implemented** release guard
+- Feature 009: **Spec Draft** and production gate
+- Real data-platform backend: stub/incomplete
+- Real schema and security roles: not approved or created from the canonical post-review model
+- Hosted scanner/offline behavior: not verified
+- Power BI manager report: not published or security-verified
+- Pilot: not approved
 
-**Phase 0 — orchestrator alone, no subagents.** *(Completed 2026-09-02, commit `cf94ab3`. Kept as
-the procedure for the next fan-out — WS-G's FR-060 `store.ts` change and WS-H's T012/T016 `App.tsx`
-edits are Phase 0-class work.)*
+## The serial gate — do this first
 
-1. Add every new method signature to `AmsBackend.ts` for the workstreams about to fan out, bodies
-   throwing `new Error("not implemented")` in both `api/mock/` and `api/dataverse/`.
-2. Add every new entity type to `types.ts`.
-3. Add every new i18n key to `i18n/en.json`.
-4. Add every new route to `App.tsx`.
-5. Split `api/mock/index.ts` into the per-domain modules named in `AGENT-BRIEF.md` §5, then treat
-   `index.ts` and `store.ts` as frozen.
-6. Verify `npx tsc -b` compiles and `npm run test` still passes (**281 as of 2026-09-02**).
+Do not run schema, backend and flow agents in parallel until the following architecture contract is
+approved. They all otherwise encode different assumptions into the most expensive-to-change layer.
 
-Then fan out. Phase 0 is roughly an hour of careful work and it is what makes the rest parallel.
+### G0.1 Product decisions
 
----
+Record in `docs/08-decisions.md`:
 
-## Workstreams
+- Q6 server/configuration treatment
+- Q8 expected return
+- Q9 backdating
+- Q10 project source
+- Q11 reporting audience/licensing
+- Q18 permanent-component calibration
+- global versus office-scoped administrator
+- permanent home-office rehome workflow
+- failed calibration versus physical lab receipt
+- structured ownership categories
 
-### WS-A — Feature 005, Deployment & Kits *(COMPLETE 2026-09-02)*
+### G0.2 State model
 
-> Delivered — `docs/09-build-report.md` § "Phase 0–2 — multi-agent extension". Its `tasks.md`
-> boxes were never ticked; the build report is the record. Text below kept for reference.
+Approve how the system independently represents:
 
-**Spec**: [`specs/005-deployment-and-kits/spec.md`](005-deployment-and-kits/spec.md) — 30 FRs,
-4 stories. **Plan**: [`plan.md`](005-deployment-and-kits/plan.md). **Tasks**:
-[`tasks.md`](005-deployment-and-kits/tasks.md).
+- lifecycle;
+- physical disposition;
+- serviceability; and
+- calibration currency.
 
-Fully buildable against the mock backend. Deploy a station to a site, recover it whole or in part,
-read a site's installation history, swap a component in service. This is the feature that turns
-"James has a Micromate" into "a Micromate is monitoring 337 Power Street for project 02208928".
+Re-run every current transition and report rule against that model. Do not create the real Asset table
+with the old catch-all status before this is settled.
 
-Owns `features/deploy/**`, `features/recover/**`, `features/site/**`, `api/mock/deployment.ts`,
-`domain/installation.ts`.
+### G0.3 Authoritative command contract
 
-One open clarification (FR-006, site coordinates) — proceed on hand-entered with an optional
-device capture, marked `// ASSUMPTION`.
+Create the technology-neutral contract for one state-changing event:
 
-### WS-B — Feature 006, Fleet Reporting *(COMPLETE 2026-09-02, except the Power BI publish)*
+- caller and authorization context;
+- client submission identifier;
+- event type and effective time;
+- complete asset/item inputs;
+- server-loaded current state;
+- required validation;
+- calculated before/after snapshots;
+- relationship effects;
+- all-or-nothing result;
+- refusal codes;
+- retry/idempotency behavior; and
+- correction/reversal behavior.
 
-> Delivered — domain modules, in-app surface, PBIP text model. **One recorded defect** against the
-> spec as clarified 2026-09-02: the utilisation guard treats an asset's first transaction as the
-> migration boundary, so any asset acquired inside the period reads as insufficient history. See
-> 006 FR-028 and `docs/08-decisions.md`. Text below kept for reference.
+The first proof is a five-asset checkout. Feature 009 SC-001 to SC-005 must pass before any other
+production write path is accepted.
 
-**Spec**: [`specs/006-fleet-reporting/spec.md`](006-fleet-reporting/spec.md) — 30 FRs, 4 stories.
-**Plan**: [`plan.md`](006-fleet-reporting/plan.md). **Tasks**:
-[`tasks.md`](006-fleet-reporting/tasks.md).
+### G0.4 Canonical schema
 
-Power BI itself needs the tenant. Two thirds of this feature does not:
+Produce one versioned data model covering all features, including:
 
-- `domain/pointInTime.ts` — replay an asset's lines to reconstruct its state at any timestamp.
-  This is acceptance question 7 and it is pure, testable domain logic.
-- `domain/utilisation.ts` — spans per status from consecutive transactions, with the honesty rule
-  that it refuses to compute across the migration boundary (FR-028).
-- An in-app reports surface as the interim for managers who do have app access.
-- Power BI semantic model authored as **PBIP** (TMDL text files) — genuinely offline-authorable,
-  importable later.
+- Asset Identifier/Alias;
+- whole-event transaction status and idempotency fields;
+- Installation and Installation Component;
+- Office Administrator Assignment;
+- notification state/history if threshold suppression needs persistence;
+- structured ownership;
+- permanent rehome history; and
+- synthetic-run provenance if tenant loading remains in scope.
 
-Owns `features/reports/**`, `api/mock/reporting.ts`, `domain/pointInTime.ts`,
-`domain/utilisation.ts`.
-
-### WS-C — Feature 003 US5, offline queueing *(COMPLETE 2026-09-02)*
-
-> Delivered — `api/queue/`, `api/mock/offline.ts`, 17 + 7 tests. Text below kept for reference.
-
-**Spec**: [`specs/003-asset-transactions/spec.md`](003-asset-transactions/spec.md) US5, FR-036 to
-FR-040.
-
-`docs/09-build-report.md` is right that the current mock has no network boundary to fail against —
-it is a same-origin static fetch plus `localStorage`. So the work here is to **create** that
-boundary: a queue module with an injectable transport, a fault-injecting fake transport for tests,
-and the three behaviours US5 actually specifies — queue while offline, replay in order on
-reconnect, surface a rejected replay for human resolution and never discard it.
-
-Built this way it is genuinely testable now and drops onto `api/dataverse/` unchanged later.
-Owns `api/queue/**`, `api/mock/offline.ts`.
-
-Lowest priority by the spec's own ranking (P5) — but a wrong offline implementation is worse than
-none, which is exactly why it deserves a real test harness rather than a hopeful one.
-
-### WS-D — Feature 004 US4, office→administrator assignment *(COMPLETE 2026-09-02)*
-
-> Delivered — `OfficeAdminsPage.tsx`, `api/mock/admin.ts`, gap report, 10 tests. Notification
-> delivery still needs the tenant. Text below kept for reference.
-
-**Spec**: [`specs/004-calibration-management/spec.md`](004-calibration-management/spec.md) US4,
-FR-027, FR-027a.
-
-`data/reference/office_admins.csv` is superseded (see its README) — assignment must derive from
-the location table so an eleventh office is covered without configuration. Needs a small admin
-screen, plus the gap report FR-027a requires for an office with no administrator.
-
-Notification delivery itself needs the tenant; the assignment data and the gap report do not, and
-flow F3 cannot be finished without them.
-
-Owns `features/admin/OfficeAdminsPage.tsx`, `api/mock/admin.ts`.
-
-### WS-E — `api/dataverse/` implementation *(compiles, cannot be tested)*
-
-Every method currently throws. **Read the 95-line docstring at the top of
-`app/src/api/dataverse/index.ts` first — it is the contract**, and it fixes the four decisions that
-matter: one file per table, every write as a single `$batch` of one transaction plus N lines
-(FR-003), `If-Match` etag retry for `eng_idsequence`, and — the easiest thing to get wrong — the
-implementation **must not** call `deriveState()` to write `eng_asset` itself. Flow F1 does that.
-Doing it here gives the app a second unaudited write path to derived fields and breaks Principle V.
-
-See `docs/10-integration.md` for how this sits against the other six Microsoft surfaces.
-
-**Cannot be verified without a tenant.** Must compile, must be reviewed, must not be reported as
-working. Keep every file marked `// DATAVERSE-ONLY`.
-
-### WS-F — Schema and solution artefacts
-
-Author the 9 tables, choice sets, alternate keys, relationships, indexes, the three security roles
-and the `AMS Sensitive` field security profile per `docs/01-data-model.md` and `docs/05-security.md`
-— as files, for import later.
-
-**Carry the alternate-key correction**: `eng_equipmentmodel` must key on
-manufacturer + model + **equipmenttype**, not manufacturer + model alone. `docs/01-data-model.md`
-as written would silently merge three real catalogue rows into one. This is recorded in
-`docs/08-decisions.md`; `docs/01-data-model.md` and feature 001's FR-010 were both corrected to match
-on 2026-09-02.
-
-### WS-G — Feature 007, Synthetic fleet history *(IN PROGRESS 2026-09-02 in a concurrent session — still no `plan.md`)*
-
-**Spec**: [`specs/007-synthetic-data/spec.md`](007-synthetic-data/spec.md) — 60 FRs, 5 stories.
-
-A fictional fleet with twenty years of history and five years of full operational detail, shaped like
-the real one, valid under every rule the system enforces, deterministic per seed, impossible to
-mistake for real data. It is what lets the history-dependent screens (timeline, site history,
-utilisation, compliance) and the Power BI model be demonstrated and tested before years of live use
-exist — the real migrated data has one line per asset and, per feature 006's FR-028, correctly refuses
-to compute utilisation over it. Ships with an answer key for the seven acceptance questions and a
-`large` profile for 006's SC-010 (5,000 assets, 100,000 lines).
-
-Fully buildable without a tenant except US5 (a Dev load, gated on Q14). Owns `data/synthetic/**`
-(hand-authored fiction: roster, project and site pools, model windows), `app/scripts/synthetic/**`
-(the generator — TypeScript, so FR-014 holds by construction), its outputs beside — not inside —
-`migration/staged/`, its verification report, and the synthetic-data indicator component. The
-indicator mounts in the app shell, a shared file: coordinate as WS-H does for T016.
-
-**Spec amendments from the 2026-09-02 review bear directly on this work.** 006 FR-028 now
-distinguishes before-acquisition from before-records, and the built utilisation guard does not — until
-that is fixed, SC-013 cannot pass. Q18 (component calibration despatch) decides what FR-019 must
-generate for pre-amps, elements and SIMs. FR-041, FR-049 and FR-060 were corrected. Re-read the spec
-before relying on an earlier copy, and write `plan.md` before calling the generator done.
-
-**One shared-file dependency, orchestrator work**: the spec's FR-060 needs the mock store to serve
-the base dataset from static files and persist only the user's own writes. `api/mock/store.ts` today
-writes the whole snapshot to `localStorage` (about 5 MB ceiling) on every write and silently
-continues in memory when that throws; a `standard`-profile dataset is roughly 60 MB. That file is
-frozen for workstreams, so this lands as a Phase 0-style change before WS-G fans out.
-
-### WS-H — Feature 008, Release & Operations *(US1 BUILT 2026-09-02 in a concurrent session; US2–US5 tenant-bound)*
-
-**Spec**: [`specs/008-release-and-operations/spec.md`](008-release-and-operations/spec.md) — 33 FRs,
-5 stories. **Plan**: [`plan.md`](008-release-and-operations/plan.md) (added 2026-09-02). **Tasks**:
-[`tasks.md`](008-release-and-operations/tasks.md).
-
-**US1 is built**: `release-guard.mjs`, `scan-bundle.mjs`, a mode-conditional `publicDir` and a
-separate `build:release`, verified by its author against the staged data (13 files refused with the
-mock backend; the release bundle scanned clean against every staged Asset ID, ICCID, phone and IP).
-Two loose ends in its `tasks.md`: T012 (removing the `MOCK-ONLY` stand-ins from the bundle) is
-deferred because it needs `App.tsx`; T032 (final `tsc -b`) is blocked on two unused-local errors in
-WS-G's in-progress `sim.ts`. Before this existed, nothing prevented a `pa app push` from publishing
-1,026 real assets — including SIM ICCIDs, phone numbers and static IPs — to a publicly accessible
-endpoint with no IP restriction and no recall (`docs/10-integration.md` § Hosting).
-
-US2–US5 are operator documentation (`docs/11-runbook.md`, not yet written) that can only be
-*verified* with tenant access; `plan.md` now gates them.
-
-Owns `app/scripts/**` except `app/scripts/synthetic/**` (WS-G), `app/vite.config.ts`,
-`app/package.json` scripts, `tests/build/**`, `docs/11-runbook.md`. Two coordination points touch
-`App.tsx`: T012's conditional import and T016's routing fix.
-
-**Note the interaction with WS-G**: synthetic data must never reach a release bundle either. WS-H's
-bundle scanner should cover `data/synthetic/**` outputs as well as `migration/staged/`.
+**Serial gate DoD:** approved command contract, approved state model, approved canonical schema and all
+blocking product decisions recorded.
 
 ---
 
-## Sequencing
+## WS-P1 — Authoritative transaction proof
 
+**Runs after:** serial gate  
+**Blocks:** every production write path
+
+Implement one synchronous, server-authoritative five-asset checkout against a development data
+platform.
+
+Required tests:
+
+1. five valid assets commit as one event;
+2. one invalid asset writes nothing;
+3. deliberate exception after the third item rolls everything back;
+4. two devices compete for one asset and exactly one succeeds;
+5. response is lost, request is retried, one event exists;
+6. same submission ID with changed payload is refused;
+7. client-supplied before/after state cannot alter the result; and
+8. accepted header and lines cannot be edited by normal roles.
+
+**Owned areas:** authoritative server command, transaction contract, idempotency, concurrency tests.  
+**Do not own:** UI redesign, reminder flows, Power BI visuals.
+
+---
+
+## WS-P2 — Canonical Dataverse solution
+
+**Runs after:** serial gate and command contract  
+**Can run with:** WS-P3 after shared schema/security boundaries are frozen
+
+Create the approved tables, fields, choices, alternate keys, indexes, relationships and solution
+packaging. Include environment variables and connection references without embedded secrets.
+
+Required proof:
+
+- clean solution export/import into a fresh development environment;
+- canonical IDs and aliases behave as specified;
+- relationship constraints cannot be bypassed;
+- sequence state is isolated by environment; and
+- schema documentation matches the export.
+
+**Owned areas:** solution schema and ALM artefacts.  
+**Do not own:** role matrix implementation unless explicitly coordinated with WS-P3.
+
+---
+
+## WS-P3 — Authorization and identity
+
+**Runs after:** administrator scope decision and schema boundary freeze  
+**Can run with:** WS-P2, WS-P4
+
+Implement and test:
+
+- Field User, Administrator and Owner roles;
+- global or office-scoped administration at the data/server layer;
+- secured SIM/network fields;
+- least-privilege automation identity;
+- app-sharing versus data-role error behavior;
+- direct API authorization matrix;
+- relationship-write authority; and
+- device cache/queue isolation by user and environment.
+
+Test through app, direct API, export and reporting routes. Interface visibility alone is not evidence.
+
+---
+
+## WS-P4 — Real migration, delta and cutover
+
+**Runs after:** WS-P2 schema and WS-P3 identity resolution are available  
+**Can run with:** hosted-app and reporting work after first Development load
+
+Keep the existing cleaning/reporting logic. Add:
+
+- real target writer;
+- real directory resolution;
+- corrected calibration export as the only calibration input;
+- ambiguous compliance records left unmatched pending confirmation;
+- source/staged/target reconciliation;
+- second-run idempotency against the real platform;
+- rehearsal snapshot and final delta;
+- freeze/read-only procedure; and
+- per-office cutover and rollback criteria.
+
+Production load remains blocked by:
+
+- `migration/reports/03_models_review.md` sign-off; and
+- `migration/reports/02_conflicts.md` sign-off.
+
+---
+
+## WS-P5 — Real backend, hosted app and device evidence
+
+**Runs after:** WS-P1 command and sufficient WS-P2 schema  
+**Can run with:** WS-P4, WS-P6, WS-P7
+
+Implement the real `AmsBackend` adapter. Every state-changing write calls the authoritative command.
+Remove mock-only role switching and scanner substitutes from release builds.
+
+Hosted-device matrix:
+
+- managed iOS and Android;
+- online-to-offline transition;
+- full close/reopen offline;
+- device restart;
+- queued writes and conflict replay;
+- expired authentication;
+- signed-in user change;
+- scanner permission denied/granted/interrupted; and
+- inspection proving secured fields are absent from Field User local storage.
+
+Any failed offline capability is removed from pilot acceptance or marked unsupported. Local queue tests
+do not substitute for this evidence.
+
+---
+
+## WS-P6 — Power BI manager reporting
+
+**Runs after:** first real Development data load and security-model decision  
+**Can run with:** WS-P5, WS-P7
+
+Implement the manager report outside the Code App. Select and document either per-viewer data identity
+or a shared semantic-model identity with tested row/object security.
+
+Requirements:
+
+- ordinary manager model excludes ICCID, phone and static IP entirely;
+- all seven acceptance questions are answerable;
+- every page states data currency;
+- every measure reconciles with operational queries;
+- report works as every intended recipient role; and
+- reader licensing and distribution are confirmed.
+
+The in-app Reports surface remains useful for app users but does not complete this workstream.
+
+---
+
+## WS-P7 — Automation, SharePoint and operations
+
+**Runs after:** WS-P1 authoritative event behavior is fixed  
+**Can run with:** WS-P5 and WS-P6
+
+Build flows for reconciliation, calibration recalculation, reminders and overdue returns without
+reintroducing a second business-state write path.
+
+Complete:
+
+- calibration create/correct/reassociate/replace/void recalculation;
+- failed-result behavior;
+- physical lab-receipt behavior;
+- certificate upload, attach-later, naming, type/size, attribution and retention;
+- best-effort notification delivery and bounded messages;
+- owned alert destination;
+- app rollback;
+- solution recovery;
+- business-data restore;
+- certificate restore; and
+- RPO/RTO and restore-test procedure.
+
+Every flow and procedure gets a successor-readable README.
+
+---
+
+## WS-L1 — Local synthetic/release cleanup
+
+This work is lower priority than WS-P1. Before continuing, re-run:
+
+```bash
+cd app
+npm install
+npx tsc -b
+npm test
+npm run build
+npm run build:release
 ```
-Phase 0  (orchestrator, serial)                  DONE 2026-09-02, commit cf94ab3
-   │
-   ├── WS-A  005 Deployment & Kits                DONE
-   ├── WS-B  006 Reporting domain + PBIP          DONE — Power BI publish needs the tenant; FR-028 guard defect recorded
-   ├── WS-C  003 US5 offline queue                DONE
-   ├── WS-D  004 US4 admin assignment             DONE — delivery needs the tenant
-   ├── WS-E  api/dataverse (compile-only)         open — Jay's Developer environment now allows a real test (docs/08)
-   ├── WS-F  schema + solution files              open
-   ├── WS-G  007 synthetic fleet history          IN PROGRESS — store.ts persistence change still pending; no plan.md
-   └── WS-H  008 release safety                   US1 DONE; T012/T016 need App.tsx; US2–US5 need the tenant
-   │
-Integration (orchestrator, serial)
-   npx tsc -b && npm run test && npm run build && npm run build:release
-   Drive the app at 390px against real data; verify acceptance questions 1–7
-   Update docs/09-build-report.md — the WS-G and WS-H sections are not there yet
+
+Then inspect the current state of features 007 and 008 rather than relying on the old concurrent-agent
+summary. Preserve the release-data guard. Do not load large synthetic history into a shared Development
+environment until Q14 and the environment strategy are approved.
+
+---
+
+## Integration order
+
+```text
+Serial gate
+   ↓
+WS-P1 atomic command proof
+   ↓
+WS-P2 schema ─────┐
+WS-P3 security ───┼─ freeze shared contracts
+   ↓              │
+WS-P4 real load   │
+   ↓              │
+WS-P5 hosted app  │
+WS-P6 reporting   │  may run in parallel after first load
+WS-P7 automation  │
+   └──────────────┘
+   ↓
+Feature 009 checklist
+   ↓
+Ottawa pilot
 ```
 
-WS-A to WS-D are complete and WS-H US1 is built; `docs/09-build-report.md` § "Phase 0–2 —
-multi-agent extension" records the first four. It does **not** yet record WS-G or WS-H — the sessions
-doing that work must add their sections when they finish (`AGENT-BRIEF.md` §8), and the test
-baseline moves from 281 to whatever they add (WS-H reports 291).
+## Pilot gate
 
-## Not buildable in any session without the tenant
+Do not approve the Ottawa pilot until:
 
-From `docs/09-build-report.md` § "What needs the tenant" — listed here so nobody spends a session
-attempting them:
+- feature 009 SC-001 to SC-010 pass;
+- hosted iOS/Android behavior is recorded;
+- all unsupported offline claims are removed;
+- the two migration sign-offs exist;
+- direct API and reporting security tests pass;
+- alert and recovery procedures have owners; and
+- the seven questions are answerable from tenant data.
 
-- `pac auth create`, `pac solution init`, and `pa app init` / `pa app run` / `pa app push`
-  (**not** `pac code init/push` — that CLI is deprecated; see `docs/10-integration.md` § Hosting)
-- Enabling the "Power Apps code apps" environment feature, and Power Apps Premium licences for
-  every end user who plays the app
-- Creating any Dataverse table, role or field security profile
-- Publishing flows F1–F5 in the Maker Portal
-- Camera barcode scanning (needs a Code App running inside Power Apps — `ScanDialog.tsx` is the
-  typed stand-in)
-- Real Entra role membership (`RoleSwitcher.tsx` is the stand-in)
-- Teams or email notification delivery
-- A published Power BI report against DirectQuery
+## Reporting progress
 
-## Still needs Jay, not an agent
+Use these labels in commits, PRs and status notes:
 
-Tracked in `specs/clarifications.md` and `docs/08-decisions.md`. Agents proceed under the recorded
-assumption and mark it; they do not resolve these:
+- Spec Draft
+- Spec Approved
+- Mock Implemented
+- Tenant Implemented
+- Security Verified
+- Device Verified
+- Pilot Accepted
+- Production Accepted
 
-- **Q6** — are the 3 kept "Vision"/"INFRANet" server assets real equipment, or should they be
-  excluded with the 13 Azure rows? *(Proceeded on: 13 excluded, 3 kept.)*
-- **Q8 / Q9** — expected-return requirement *(proceeded on: optional, prefilled +14 days)*; backdating
-  window and the cross-transaction rule *(open)*.
-- **Inactive-project rule** — refuse outright, or warn and permit? *(Proceeded on: refuse outright.)*
-- **Reminder cadence** — daily until actioned, weekly, or once per threshold? *(Proceeded on: once per
-  threshold crossing.)*
-- **Q10** — project master to sync from, or admin-maintained?
-- **Q11** — report recipients and licences.
-- **Q12** — French timing.
-- **Q14 / Q15 / Q16** — synthetic data in Dev; fictional identities' domain; the one-modem catalogue
-  extension *(Q15 and Q16 proceeded on their recommendation by WS-G; Q14 blocks 007 US5 only)*.
-- **Q17** — per-app vs Premium licensing for code apps, roughly four times the dominant cost. Needs
-  the reseller.
-- **Q18** — how a permanent component (pre-amp, element, SIM) is despatched to calibration without its
-  parent. Shapes 003 FR-032b, 004 FR-021 and 007 FR-019; recommendation recorded in `clarifications.md`.
-- **Sign-offs**: `migration/reports/03_models_review.md` (35 corrected model rows) and
-  `02_conflicts.md` (16 cross-office duplicate resolutions) before any production load — FR-026
-  makes the second one a hard gate.
+Do not label a feature **Built** without the qualifier that states which level was actually proved.
