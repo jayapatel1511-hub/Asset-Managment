@@ -4,7 +4,9 @@ import { useSystemTheme } from "./useSystemTheme";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { BottomNav } from "./components/BottomNav";
 import { DatasetBanner } from "./components/DatasetBanner";
-import { RoleSwitcher } from "./components/RoleSwitcher";
+// Feature 008 T012: the two `// MOCK-ONLY` stand-ins are reached only through this module, whose
+// build-time gate keeps them out of a release bundle entirely. See src/devStandins.tsx.
+import { DevRoleSwitcher } from "./devStandins";
 import { t } from "./i18n";
 import { SearchPage } from "./features/search/SearchPage";
 import { AssetDetailPage } from "./features/asset/AssetDetailPage";
@@ -35,7 +37,12 @@ export default function App() {
 
   return (
     <FluentProvider theme={theme} style={{ height: "100%" }}>
-      <BrowserRouter>
+      {/* Feature 008 T016: Power Apps serves a Code App from /play/e/{env}/a/{app}, not from the
+          origin root, so the router's basename must not be hard-coded to "/". It now follows
+          Vite's own `base` (import.meta.env.BASE_URL, "/" everywhere today), which makes hosting
+          under a path a one-line config change in vite.config.ts rather than a code change.
+          PREPARED, NOT RESOLVED: confirming the real prefix needs `pa app run` against a tenant. */}
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <div
           style={{
             display: "flex",
@@ -57,7 +64,7 @@ export default function App() {
             }}
           >
             <Title3>{t("app.title")}</Title3>
-            <RoleSwitcher onChange={reload} />
+            <DevRoleSwitcher onChange={reload} />
           </header>
 
           <DatasetBanner />

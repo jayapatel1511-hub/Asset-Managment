@@ -16,7 +16,9 @@ import type { Asset } from "../../api/types";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { AssetRow } from "../../components/AssetRow";
 import { t } from "../../i18n";
-import { ScanDialog } from "./ScanDialog";
+// Feature 008 T012: the typed-code stand-in for the SDK camera is excluded from a release
+// bundle by src/devStandins.tsx's build-time gate.
+import { DevScanDialog, MOCK_STANDINS_INCLUDED } from "../../devStandins";
 
 type QuickFilter = "mine" | "availableHere" | "calDue30" | null;
 
@@ -127,9 +129,14 @@ export function SearchPage() {
             setFilter(null);
           }}
         />
-        <Button icon={<CameraRegular />} onClick={() => setScanOpen(true)}>
-          {t("search.scan")}
-        </Button>
+        {/* The button goes with the dialog: in a release bundle there is no scanner behind it
+            yet (the SDK barcode scanner needs a Code App running inside Power Apps), and a
+            button that does nothing is worse than no button. Returns with the real camera. */}
+        {MOCK_STANDINS_INCLUDED && (
+          <Button icon={<CameraRegular />} onClick={() => setScanOpen(true)}>
+            {t("search.scan")}
+          </Button>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: 8, padding: "0 12px 8px", flexWrap: "wrap" }}>
@@ -189,7 +196,7 @@ export function SearchPage() {
         </div>
       )}
 
-      <ScanDialog open={scanOpen} onClose={() => setScanOpen(false)} onSubmit={handleScanned} />
+      <DevScanDialog open={scanOpen} onClose={() => setScanOpen(false)} onSubmit={handleScanned} />
     </div>
   );
 }
