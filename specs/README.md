@@ -1,79 +1,83 @@
 # Englobe AMS — Specification Index
 
-Spec-Driven Development structure, following [github/spec-kit](https://github.com/github/spec-kit).
+Spec-driven development structure following `github/spec-kit`.
 
-Governing document: [`.specify/memory/constitution.md`](../.specify/memory/constitution.md). Read it first.
-Every plan is gated against it.
+The governing document is [`.specify/memory/constitution.md`](../.specify/memory/constitution.md).
+Every plan is gated against it. The production path is additionally gated by
+[`docs/13-production-readiness-review.md`](../docs/13-production-readiness-review.md) and
+[feature 009](009-production-readiness/spec.md).
 
-> **Writing code here?** Read [`AGENT-BRIEF.md`](AGENT-BRIEF.md) before touching a file — most of
-> this system is already built, and its §1 (environment) and §5 (shared-file ownership for parallel
-> agents) are what stop a session being wasted. Then [`REMAINING-WORK.md`](REMAINING-WORK.md) for
-> what is actually left, sliced into workstreams that can run concurrently.
+> **Writing code here?** Read [`AGENT-BRIEF.md`](AGENT-BRIEF.md), then
+> [`REMAINING-WORK.md`](REMAINING-WORK.md), then feature 009 before touching the real backend,
+> schema, security, flows or hosted release.
 
-## How this relates to `docs/`
-
-`docs/00-brief.md` … `docs/08-decisions.md` is the original handover package: one continuous design
-document covering the whole system. It remains the **reference** for stack rationale, the full
-Dataverse column list, flow step detail, and the decision log.
-
-`specs/` is the **executable** form of the same intent, sliced the way Spec Kit expects: numbered
-features, each with prioritized and independently deliverable user stories, testable requirements,
-and measurable success criteria. Where the two disagree, `specs/` wins and the discrepancy is logged
-in `docs/08-decisions.md`.
+## Source hierarchy
 
 | Source | Role |
 |---|---|
-| `IM30 - Asset Managment via M365.docx` | The original ask — objective, needed fields, design principles |
-| `Asset AMS - SharePoint.xlsx` | The evidence — 1,053 live asset rows, current sheet design, ID conventions, form drafts. **Authoritative** over the CSV exports |
-| `docs/` | Narrative design reference and decision log |
-| `docs/10-integration.md` | **Which Microsoft service satisfies which requirement** — the integration surface map, and its open gaps. `specs/` is technology-agnostic by design, so this is where SharePoint, Teams, Entra and the Dataverse seam are pinned down |
-| `.specify/memory/constitution.md` | Non-negotiable principles; gates every plan |
-| `specs/###-*/` | Per-feature spec → plan → tasks |
+| `IM30 - Asset Managment via M365.docx` | Original objective, fields and design principles |
+| `Asset AMS - SharePoint.xlsx` | Authoritative legacy evidence: 1,053 asset rows, calibration history, ID conventions and form drafts |
+| `.specify/memory/constitution.md` | Non-negotiable product and engineering principles |
+| `specs/001-*` through `specs/009-*` | Executable user stories, requirements and measurable outcomes |
+| `docs/00-brief.md` through `docs/13-production-readiness-review.md` | Narrative reference, design detail, integration, decisions, evidence and production gates |
+| `docs/08-decisions.md` | Approved decisions and recorded deviations |
+| `docs/09-build-report.md` | Evidence from the local/mock implementation |
+
+Where an approved feature spec and an older narrative document disagree, the approved feature spec
+wins and the discrepancy is recorded in `docs/08-decisions.md`. Built code does not silently become the
+source of truth; a useful implementation deviation must first be recorded and the governing spec
+updated.
+
+## Maturity vocabulary
+
+Do not use **Built** by itself. Use:
+
+1. **Spec Draft**
+2. **Spec Approved**
+3. **Mock Implemented**
+4. **Tenant Implemented**
+5. **Security Verified**
+6. **Device Verified**
+7. **Pilot Accepted**
+8. **Production Accepted**
+
+The existing test suite and browser walkthroughs prove Mock Implemented behavior. They do not, on their
+own, prove tenant atomicity, direct-API authorization, report security, hosted scanning, offline cold
+start or recovery.
 
 ## Features
 
-Delivery order was top to bottom. `001`–`006` are built and tested: `001`–`004` were verified live at
-390 px against the real migrated data, and `005`/`006` plus 003 US5 and 004 US4 followed in the
-multi-agent session recorded in `docs/09-build-report.md` § "Phase 0–2 — multi-agent extension".
-**281 tests passing across 12 files** at the last independent re-run (2026-09-02, spec review); WS-H
-reports 291 with its release-guard tests added. Feature 007's generator and feature 008 US1 were in
-progress in **concurrent sessions** when this table was last refreshed — check `git status` before
-trusting either row.
-
-| # | Feature | Delivers | Build status |
+| # | Feature | Delivers | Current status |
 |---|---|---|---|
-| [001](001-asset-registry/spec.md) | **Asset Registry** | A trustworthy, searchable catalogue: stable identity, N admin-managed offices, curated reference data, add/retire, scan-to-open | **Built** (P1–P2, most P3–P4). Camera scan stubbed |
-| [002](002-inventory-migration/spec.md) | **Inventory Migration** | The existing 1,053 rows loaded clean, deduplicated, with every judgement call visible and signed off | **Built.** 1,026 staged assets, 9 reports, idempotent. Needs Jay's sign-off before Prod |
-| [003](003-asset-transactions/spec.md) | **Asset Transactions** | Checkout / Return / Transfer, derived current state, complete immutable history, conflict refusal, offline queueing | **Built**, including US5 offline queue (WS-C, `api/queue/`). Open: Q8, Q9, inactive-project rule, Q18 |
-| [004](004-calibration-management/spec.md) | **Calibration Management** | Due lists, calibration records with certificates, reminders, lab round-trip | **Built**, including US4 admin assignment (WS-D). Notification delivery itself needs the tenant. Open: reminder cadence, Q18 |
-| [005](005-deployment-and-kits/spec.md) | **Deployment & Kits** | Deploy an instrument kit to a site with orientation, power and site detail; undeploy; historical kit composition | **Built** (WS-A). [plan](005-deployment-and-kits/plan.md) · [contracts](005-deployment-and-kits/contracts/ams-backend-deployment.md) · [tasks](005-deployment-and-kits/tasks.md) — tasks.md boxes were never ticked; the build report is the record. Two new tables requested, pending Jay |
-| [006](006-fleet-reporting/spec.md) | **Fleet Reporting** | The seven acceptance questions answered from a report, without an app licence | **Built** (WS-B): domain, in-app surface, PBIP text model. Power BI publish needs the tenant. FR-028 clarified 2026-09-02 and the built guard is now a recorded defect against it. [plan](006-fleet-reporting/plan.md) · [tasks](006-fleet-reporting/tasks.md) |
-| [007](007-synthetic-data/spec.md) | **Synthetic Fleet History** | A fictional fleet with 20 years of valid, deterministic history and 5 years of full operational detail; answer key for the seven questions; planted training scenarios; scale profiles. Never touches production | **In progress** (WS-G, concurrent session 2026-09-02): inputs in `data/synthetic/`, generator in `app/scripts/synthetic/`. **No plan.md yet** — required before it is called done. Spec amended 2026-09-02 (FR-019, 026, 039, 041, 049, 060, SC-005, US3). Open: Q14 (US5 only), Q18 |
-| [008](008-release-and-operations/spec.md) | **Release & Operations** | Publish, verify, roll back, promote, monitor — for the successor admin. Owns the release-safety guard that makes a data leak structurally impossible | **US1 built** (WS-H, concurrent session 2026-09-02): release guard, bundle scan, mode-conditional `publicDir`, `build:release`. T012 deferred (needs `App.tsx`), T032 blocked on WS-G `tsc` errors. US2–US5 are operator documentation, tenant-verified only. [plan](008-release-and-operations/plan.md) · [tasks](008-release-and-operations/tasks.md) |
+| [001](001-asset-registry/spec.md) | **Asset Registry** | Searchable catalogue, stable identity, N admin-managed offices, reference data, registration, retirement and scan-to-open | **Mock Implemented.** Camera integration, real identity, canonical temporary-tag handling and server-side ID allocation remain tenant/009 work. Q6 and Q10 remain open; model review awaits sign-off. |
+| [002](002-inventory-migration/spec.md) | **Inventory Migration** | Clean, deduplicated, traceable migration of the legacy inventory and calibration history | **Mock Implemented.** 1,026 assets staged with idempotent reports. Real directory resolution, Dataverse load, final delta/cutover and two production sign-offs remain. |
+| [003](003-asset-transactions/spec.md) | **Asset Transactions** | Checkout, return, transfer, immutable history, derived current state, conflict refusal and offline queue logic | **Mock Implemented.** The local backend works, but the production-authoritative atomic multi-asset command required by feature 009 is not implemented. Q8, Q9, inactive-project behavior and Q18 remain to confirm. |
+| [004](004-calibration-management/spec.md) | **Calibration Management** | Due lists, evidence records, lab movement and reminder behavior | **Mock Implemented.** Tenant flows, document upload, correction/recalculation semantics, failed-result handling and Q18 remain production work. |
+| [005](005-deployment-and-kits/spec.md) | **Deployment & Kits** | Deployment, recovery, site history, configuration changes and dated station composition | **Mock Implemented.** Proposed Installation tables, real schema, atomic server application and hosted offline behavior remain unapproved/unverified. |
+| [006](006-fleet-reporting/spec.md) | **Fleet Reporting** | The seven acceptance questions, calibration compliance, timeline and utilisation | **Mock Implemented** in the app with a PBIP source project. The manager report is not published, its security model is not tenant-verified, and the in-app report does not satisfy manager access without opening the Code App. |
+| [007](007-synthetic-data/spec.md) | **Synthetic Fleet History** | Fictional 20-year history, five-year operational detail, answer key, planted scenarios and scale profiles | **In progress.** No production dependency. Q14–Q16 and Q18 affect its tenant-load and component behavior. A dedicated synthetic environment is preferred for large loads. |
+| [008](008-release-and-operations/spec.md) | **Release & Operations** | Safe bundle creation, publish, verify, roll back, promote and monitor | **US1 Mock Implemented.** Release-data guard exists. Hosted publish, verification, solution recovery, data recovery and operating procedures remain tenant work. |
+| [009](009-production-readiness/spec.md) | **Production Readiness** | Atomic server-authoritative transactions, safe identity allocation, corrected state semantics, tenant security, hosted device proof, cutover and recovery | **Spec Draft.** This feature blocks Tenant Implemented, Security Verified, Device Verified, Pilot Accepted and Production Accepted status for 001–008. [Checklist](009-production-readiness/checklists/requirements.md). |
 
-Build detail, every assumption and the exact remaining steps: `docs/09-build-report.md` — read it
-fresh rather than trusting any summary, including this table.
+The detailed architecture findings and approval order are in
+[`docs/13-production-readiness-review.md`](../docs/13-production-readiness-review.md). The revised
+execution sequence is in [`docs/06-delivery-plan.md`](../docs/06-delivery-plan.md).
 
-## Data-quality finding, 2026-09-02
+## Data-quality finding — 2026-09-02
 
-The committed `data/source/calibration_history_2026-09-02.csv` is **defective** and blocks feature 002's
-calibration matching: its serial column is empty in all 253 rows, because that column carries no header
-in the source spreadsheet and a header-driven export skipped it. The same export also lost 47
-calibration dates and 47 next-due dates.
+The originally committed `data/source/calibration_history_2026-09-02.csv` is defective: its unlabelled
+serial column was omitted, and calibration/next-due dates were under-exported. The serial is the only
+attribute capable of linking those rows to assets.
 
-The serial is the only attribute linking a calibration record to an asset. A corrected export
-regenerated from the spreadsheet sits alongside it as
-`data/source/calibration_history_2026-09-02.corrected.csv` — 253 serials, 253 models, 213 calibration
-dates, 253 next-due dates, plus a `source_row` column for traceability.
+Use `data/source/calibration_history_2026-09-02.corrected.csv`: 253 serials, 253 model names, 213
+calibration dates, 253 next-due dates and a `source_row` traceability field. The registry export was
+checked separately and is faithful, with credential columns absent.
 
-The registry export was checked column by column and is faithful, with `Login` / `Password` correctly
-absent. Details in [002's spec](002-inventory-migration/spec.md) and
-[its checklist](002-inventory-migration/checklists/requirements.md) (CHK005–CHK008).
+Ambiguous calibration evidence must remain unmatched until a person confirms the target asset; a
+production migration must not default an uncertain compliance record merely to reduce the unmatched
+count.
 
-## The seven acceptance questions
-
-Every feature traces back to these. They are the definition of done for the programme, from
-`docs/00-brief.md`:
+## The seven programme acceptance questions
 
 1. What do we own?
 2. Where is asset X right now?
@@ -83,86 +87,69 @@ Every feature traces back to these. They are the definition of done for the prog
 6. What is assigned to project Z?
 7. Where was asset X on date D, and what was attached to it?
 
-| Question | Answered by |
-|---|---|
-| 1, 2, 3, 4 | 001 (display) + 003 (keeps it true) + 006 |
-| 5 | 004 + 006 |
-| 6 | 001 (filter) + 003 (assignment) + 006 |
-| 7 | 003 (history) + 005 (kit composition) + 006 |
-
-## Blocking clarifications
-
-Spec Kit marks unresolved product questions inline as `[NEEDS CLARIFICATION: …]`. A `plan.md` is not
-normally written while a **blocking** marker in its spec is open.
-
-That rule was **explicitly waived once**, on 2026-09-02, by the System Owner: the build proceeded on
-each open item's recorded recommendation, every one marked `// ASSUMPTION: Q<n>` in code and logged in
-`docs/08-decisions.md`. Plans for 005 and 006 exist on the same basis. The waiver does not extend to a
-production load — the sign-offs below are still hard gates.
-
-**[`clarifications.md`](clarifications.md)** states each question with its evidence, what is at stake,
-a recommendation, and what changes if the answer differs.
-
-Six of the thirteen (Q1, Q2, Q3, Q5, Q7, Q13) were resolved outright, and four more (Q6, Q8, the
-reminder cadence, the inactive-project rule) were proceeded on under their recorded recommendation —
-those need confirming or reversing, not deciding from scratch. **Q4 is no longer a blocker** — it was data work, and it
-was done: 35 of 64 catalogue rows corrected, reviewable in full at
-`migration/reports/03_models_review.md`. It is now a completed deliverable awaiting a read-through, not
-a pending decision.
-
-**Resolved 2026-09-02** (recorded in `docs/08-decisions.md`):
-
-| Q | Decision |
-|---|---|
-| Q1, Q2 | **N offices, admin-managed.** The hierarchy takes any number of offices at any level, added and re-parented in-app; no fixed office list anywhere. Migration maps source offices one for one with no inference, and SWO / Mississauga / Thunder Bay are re-parented on a screen afterwards. This dissolved the blocker rather than answering it — no asset gets a guessed home office |
-| Q3 | The 644 "Deployed or NOT Available" rows migrate as **CheckedOut with no custodian**, plus a one-week return sweep in the Ottawa pilot |
-| Q5 | SLM pre-amp and element get **their own Asset IDs**, attached as permanent Components. Fleet is roughly 1,150 assets, and acoustic calibration becomes fully trackable |
-| Q7 | A SIM is a **permanent Component** of its modem. It never appears in a checkout cart or on a deployment form |
-| Q13 | Retired assets and their history are retained **indefinitely** |
-
-**Still open** — these need Jay, not a guess:
-
-| Q | Question | Blocks |
+| Question | Functional source | Production proof |
 |---|---|---|
-| **Q4** | **Done, awaiting review.** 35 of 64 catalogue rows corrected and calibration intervals set; read `migration/reports/03_models_review.md`. Not blocking any further build | 001, 002, 004 |
-| Q6 | Are the 16 "Servers" trackable assets, or is `Azure` configuration that does not belong in an asset registry? | 001 |
-| Q8 | Is expected return required on checkout? *(Recommendation: optional, 14-day default)* | 003 |
-| Q9 | May admins backdate, and how far? *(Recommendation: admins only, 30 days, refuse if it lands before an existing transaction)* | 003 |
-| Q10 | Is there a project master to sync from, or do we seed the 79 IDs and let admins add? | 001 |
-| Q11 | Who needs report access, and are the licences held? | 006 |
-| — | Refuse a transaction naming an inactive project outright, or warn and permit? | 003 |
-| — | Calibration reminder cadence — daily until actioned, weekly, or once per threshold? | 004 |
-| — | Site coordinates — captured from the device, entered by hand, or both? | 005 |
-| Q12 | French labels — confirm Phase 1 ships English only | Phase 3 |
-| Q14 | May the synthetic dataset (007) be loaded into `Englobe-AMS-Dev` and bulk-removed afterwards? | 007 US5 |
-| Q15 | Fictional roster identities under the real e-mail domain, or a placeholder domain? *(Recommendation: real domain, per the existing demo identities)* | 007 |
-| Q16 | May the synthetic catalogue add one real modem model to give SIMs a parent, as `docs/08-decisions.md` assumes exists? *(Recommendation: yes, marked in the manifest)* | 007 |
-| **Q17** | Per-app or Premium licensing for code apps? Two Microsoft sources disagree, and the gap is roughly four times the programme's dominant cost. Sat as an OPEN row in `docs/08-decisions.md` with no owner until 2026-09-02 | Step 0 licensing |
-| **Q18** | How does a permanent component (SLM pre-amp, element; a SIM) reach the lab without its parent? Q5 says it is calibrated separately; 003 FR-032 says the parent's line is its history; nothing bridges the two. *(Recommendation: allow the SendToCalibration / ReturnFromCalibration pair on a component, and suspend parent-to-component mirroring while it is InCalibration)* | 003 FR-032b, 004 FR-021, 007 FR-019 |
+| 1, 2, 3, 4 | 001 display + 003 state + 006 reporting | 009 atomicity/security + tenant report reconciliation |
+| 5 | 004 calibration + 006 reporting | 009 calibration semantics, document/recovery and report security |
+| 6 | 001 project filter + 003 assignment + 006 reporting | 009 server validation and tenant reporting |
+| 7 | 003 immutable history + 005 dated composition + 006 timeline | 009 whole-event atomicity, correction model and recovery proof |
 
-**Two sign-offs are hard gates before any production load**, neither of them a question:
-`migration/reports/03_models_review.md` (35 corrected model rows) and
-`migration/reports/02_conflicts.md` (16 cross-office duplicate resolutions) — the second is required
-by feature 002's FR-026.
+Mock walkthroughs demonstrate that the user journeys can answer these questions. Production Accepted
+requires answering all seven from tenant data after Security Verified and Device Verified gates pass.
 
-## Working the flow
+## Product clarifications and sign-offs
 
-Without git branches in this workspace, select a feature by environment variable rather than by
-checkout:
+Resolved: Q1, Q2, Q3, Q5, Q7 and Q13. Q4 is completed data work awaiting review.
+
+Still requiring confirmation or decision:
+
+| Item | Effect |
+|---|---|
+| Q6 server/configuration treatment | Asset catalogue and migration |
+| Q8 expected return | Checkout and overdue reminders |
+| Q9 backdating | Immutable history and correction model |
+| Q10 project master | Project status and assignment authority |
+| Q11 report audience/licensing | Distribution and security model |
+| Q12 French timing | Phase scope only; strings already externalized |
+| Q14 synthetic Dev load/removal | Feature 007 US5 |
+| Q15 fictional identity domain | Synthetic notification/collision risk |
+| Q16 synthetic modem extension | Synthetic component pattern |
+| Q17 Code App entitlement | Dominant programme cost |
+| Q18 permanent-component calibration | Features 003, 004, 005, 007 and production state model |
+| inactive-project rule | Checkout, transfer and deployment validation |
+| reminder cadence | Notification state/history |
+| site-coordinate capture | Hosted-device workflow |
+| global vs office-scoped administrator | Data-layer security architecture |
+| permanent home-office transfer | Fleet allocation and reporting history |
+| failed calibration and physical receipt | Calibration state and lab workflow |
+
+Two sign-offs remain hard gates before any production load:
+
+- `migration/reports/03_models_review.md`
+- `migration/reports/02_conflicts.md`
+
+## Working the Spec Kit flow
+
+Select a feature explicitly:
 
 ```bash
-export SPECIFY_FEATURE=003-asset-transactions
+export SPECIFY_FEATURE=009-production-readiness
 ```
 
-Then the usual Spec Kit progression per feature:
+Then follow:
 
 ```text
-/speckit.constitution   → .specify/memory/constitution.md   (done, v1.0.0)
+/speckit.constitution   → .specify/memory/constitution.md
 /speckit.specify        → specs/###-*/spec.md
-/speckit.clarify        → resolves [NEEDS CLARIFICATION] markers
-/speckit.plan           → specs/###-*/plan.md + research.md + data-model.md + contracts/
-/speckit.tasks          → specs/###-*/tasks.md
-/speckit.checklist      → specs/###-*/checklists/*.md
-/speckit.analyze        → cross-artifact consistency check
-/speckit.implement      → executes tasks.md
+/speckit.clarify        → resolve blocking product questions
+/speckit.plan           → plan.md + research.md + data-model.md + contracts/
+/speckit.tasks          → tasks.md grouped by independently testable story
+/speckit.checklist      → checklists/*.md
+/speckit.analyze        → cross-artifact consistency review
+/speckit.implement      → execute approved tasks
 ```
+
+For feature 009, the first implementation proof is one authoritative five-asset checkout against a
+development tenant: server revalidation, concurrency arbitration, idempotency, immutable history,
+derived-state changes and full rollback on a deliberate mid-operation exception. Do not add more
+screens before that proof passes.
