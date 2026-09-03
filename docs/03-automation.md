@@ -1,6 +1,6 @@
 # 03 — Automation (Power Automate, solution-aware, runs as svc-ams)
 
-Five flows. Each lives in `solution/flows/<name>/` with `definition.json` + `README.md`.
+Seven flows. Each lives in `solution/flows/<name>/` with `definition.json` + `README.md`.
 All flows: retry policy exponential ×4; on terminal failure, post to Teams channel `AMS-Alerts` and leave
 `eng_processed = false` so `F5` can retry.
 
@@ -15,6 +15,10 @@ Steps:
 2. Look up transition matrix (Compose from `domain/stateMachine.json`). If `(asset.status, txn.type)` is not
    allowed → set line.eng_processed = true, line.eng_notes += "REJECTED: illegal transition", post to `AMS-Alerts`
    with asset id + submitter, **stop**. (App should have prevented this; if it happens, it is a bug or a race.)
+2b. **Reservation guard** *(added 2026-09-03)*. If `txn.type = Checkout` and a `eng_reservation` exists for
+   this asset with `status = Confirmed`, `requestedby ≠ txn.touser`, and `[starttime, endtime)` overlapping now →
+   reject exactly as step 2 does ("REJECTED: reserved by {name} until {endtime}"), **stop**. This is the server
+   half of CLAUDE.md rule 5 for bookings; the app refuses it first, and F1 is what makes the refusal true.
 3. Update `eng_asset`:
    - status = line.statusafter
    - Checkout / Deploy: custodian = txn.touser, currentproject = txn.toproject, currentlocation = txn.tolocation ?? (Deploy: site)
@@ -65,6 +69,38 @@ with a deep link to the Return screen. Weekly summary to office admin. Snooze vi
 **Trigger:** manual (button) + recurrence every 6 h.
 Lines where processed = false and createdon < now-15 min, ordered by createdon → call F1 logic (child flow).
 Report count to `AMS-Alerts`.
+
+## F6 — Reservation conflict guard *(added 2026-09-03)*
+
+**Trigger:** Dataverse — row added or `eng_status` changed, table `eng_reservation`, scope Organization.
+**Concurrency:** 1 (sequential) — this flow is the arbiter and cannot be allowed to race with itself.
+
+Dataverse has no exclusion constraint, so uniqueness of a time window is *this flow's* job, not the schema's:
+
+1. Only act when `status = Confirmed`. Requested / Cancelled / Fulfilled / Expired → stop.
+2. Query other `eng_reservation` rows: same `eng_asset`, `status = Confirmed`, different row id, and
+   `starttime < this.endtime AND endtime > this.starttime`.
+3. If any exist, the **earliest `createdon` wins**. Set this row `status = Cancelled`,
+   `cancelreason = "Conflicts with {RSV-nnnnnn}"`, and notify `requestedby` with the winning booking's holder.
+4. Validate `endtime > starttime` and `eng_asset`'s model `eng_isreservable = Yes`; cancel with a reason if not.
+
+**Failure mode:** if F6 is down, two overlapping Confirmed rows can coexist until it runs. That is why the app
+re-checks on submit *and* why the checkout guard (F1 step 2b) is written against the reservation rows rather
+than against a "reserved" flag — two conflicting bookings still cannot both produce a checkout.
+
+## F7 — Reservation fulfilment and expiry *(added 2026-09-03)*
+
+**Trigger:** two — (a) row added, `eng_transaction`, and (b) recurrence, daily 06:15 America/Toronto.
+
+- **(a) Fulfilment.** Checkout transaction → for each line's asset, find a Confirmed reservation held by
+  `txn.touser` overlapping now → set `status = Fulfilled`, `eng_fulfilledby = txn`. Kept out of F1 so the
+  state-derivation flow stays single-purpose.
+- **(b) Expiry.** Confirmed reservations whose `endtime` has passed with no `eng_fulfilledby` → `status = Expired`,
+  and report the count to `AMS-Alerts`. A pattern of expiries is a no-show problem worth seeing.
+- **(b) Reminder.** Confirmed reservations starting in the next 24 h → Teams DM to `requestedby`.
+
+Open: whether an expired no-show should notify anyone beyond the office admin, and who may override a
+booking — `docs/07-open-questions.md` Q20.
 
 ## Not a flow
 

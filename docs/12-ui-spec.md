@@ -18,7 +18,7 @@ everything else is a constraint to honour.
 
 | Convention | Rule |
 |---|---|
-| Artboard | 390 × 844 (iPhone-class). One artboard per screen state |
+| Artboard | Mobile 390 × 844 (iPhone-class); desktop 1440 × 900. One artboard per screen state, per surface it appears on (§ 1) |
 | Frame naming | `S03 Asset detail / default`, `S03 Asset detail / retired`, `S04 Checkout / refused`. IDs from § 5 |
 | Components | Name after the Fluent v9 component they map to (`Button/primary/large`, `Badge/filled/success`) so developers can map 1:1 |
 | Shared components | Build § 4 first as reusable components with variants, then compose screens from them |
@@ -34,8 +34,8 @@ These are decided in `CLAUDE.md` and `docs/02-app.md`. Do not re-litigate in the
 
 | Constraint | Value |
 |---|---|
-| Primary device | Phone, one-handed, often on a construction site or in a vehicle. Sometimes offline |
-| Design width | 390 px. Content column capped at **480 px** and centred on wider screens (no desktop layout exists yet — see G-01) |
+| Primary device | **Two surfaces, one app** *(decided 2026-09-03 — this row previously read "phone")*. **Desktop** is the full-function surface and needs designing. **Mobile** is a deliberate slice: find an asset, see where/who it is, check out, return, transfer, report a fault, deploy/recover, book a vehicle — one-handed, on a construction site or in a vehicle, sometimes offline. Which screens belong to which surface is fixed in `docs/02-app.md` § Surfaces; it is a decision, not a design choice |
+| Design width | Mobile **390 px**, content capped 480 px, centred. Desktop **≥ 768 px**, two-pane above 900 px. G-01 is resolved and inverted: the desktop layout is not optional polish on a canonical phone design, it is where most of the function lives |
 | Component library | Fluent UI v9 (`@fluentui/react-components`), web theme. Icons: Fluent UI System Icons, *Regular* weight |
 | Theme | `webLightTheme` / `webDarkTheme`. Dark follows the OS; there is no in-app toggle |
 | Language | English only (Phase 1). French is planned — leave ~30 % horizontal slack in labels and buttons |
@@ -1036,8 +1036,17 @@ Complete refusal copy catalogue (design the error MessageBar to fit the longest)
 
 ## 8. Responsive and platform notes
 
-- One column, 390 px, content max 480 px centred. Above 480 px the page shows the phone column on a
-  Background2 canvas. A tablet/desktop layout (e.g. list + detail side by side) does not exist (G-01).
+*Rewritten 2026-09-03 — the built app matches only the first bullet; the rest is the decided target.*
+
+- **Built today:** one column, 390 px, content max 480 px centred. Above 480 px the page shows the phone
+  column on a Background2 canvas, with all 20 screens inside it.
+- **Decided target:** two surfaces off one codebase and one URL. Below 768 px the phone slice
+  (`docs/02-app.md` § Surfaces) in the column above; at 768 px and up, the full screen set with
+  two-pane list + detail above 900 px and full-width tables for the four report screens. A route
+  reached on the surface it does not belong to renders "this screen is on the desktop app", not a 404 —
+  the URL stays valid on both.
+- The surface split is **per-route data in one manifest** (`app/src/routes.ts`), never two nav
+  components and never two codebases.
 - Bottom nav respects `env(safe-area-inset-bottom)`.
 - Native `<select>` and `<input type="date">` are used for pickers, so their look is OS-native on phones.
 - Runs inside Power Apps (mobile app or browser). The camera scanner (D01) is provided by the Power Apps SDK.
@@ -1065,29 +1074,38 @@ Complete refusal copy catalogue (design the error MessageBar to fit the longest)
 These are real, observed in the build. Each is a place where the design tool should propose something
 rather than copy what exists.
 
+**Eight of the 23 rows are closed** (2026-09-03): G-01 by Jay's mobile/desktop decision, and G-07,
+G-08, G-09, G-10, G-11, G-13 and G-15 in commits `f09f0ee` / `7b37683` — the subset where the spec was
+unambiguous and the string it asked for already existed in `en.json`. Closed rows are struck through and
+kept, not deleted, so a later session can see the gap was found and answered rather than missed.
+**G-12 (hide vs disable invalid actions) was deliberately left open** — that one is a design decision,
+not a deviation, and `asset.actions.notAllowed` is still unused.
+
 | # | Gap | Where | Suggested direction |
 |---|---|---|---|
-| G-01 | No layout above 480 px | shell | Optional two-pane (list + detail) at ≥ 900 px; phone layout stays canonical |
+| ~~G-01~~ | ~~No layout above 480 px~~ | shell | **RESOLVED 2026-09-03, and inverted.** Desktop is the full-function surface; the phone is a slice of it. Not optional. See § 1, § 8 and `docs/02-app.md` § Surfaces |
 | G-02 | No signed-in user / office shown; header right slot is dev-only | shell | Avatar or initials + home office in header, or on Admin/Search |
 | G-03 | Stock Fluent blue; no Englobe brand | tokens | Decide whether to re-map `colorBrand*` to an Englobe ramp. Keep status colours semantic |
 | G-04 | Checked out ≡ Deployed (grey) and Needs repair ≡ Missing (red) pills | C1 | Give Deployed its own hue or icon; differentiate Missing |
 | G-05 | Retire is `outline`, not visibly destructive | S03 | Red outline/danger styling |
 | G-06 | Field Users cannot reach Needs attention or Reports from the nav | IA | Surface a pending/rejected count on Search or in the header; consider a "More" nav item |
-| G-07 | Label reuse: Deploy primary picker button says "Add component"; Recover date says "Deployment date"; Compliance card title "Reports"; "Record calibration" badge means In calibration; "365" unlabeled; Back button on Checkout reads "Checkout — Back" | several | Add the missing keys |
-| G-08 | "Pending sync" badge not placed on assets | C10 | Badge beside StatusPill on AssetRow and S03 |
-| G-09 | Raw enum labels ("DataLogger", "SoundLevelMeter", "CheckedOut → Deployed") | S01, S03, S19 | Humanised display names with spaces |
-| G-10 | Shared-serial disambiguation shows plain results, not the explanatory line | S01 | Render `asset.disambiguate` above the picker |
-| G-11 | Attached items, Last calibrated, and admin-only SIM fields not on Asset detail | S03 | Add an "Attached items" list and a secured "SIM" section (Office Admin+) |
+| ~~G-07~~ | ~~Label reuse: Deploy primary picker button says "Add component"; Recover date says "Deployment date"; Compliance card title "Reports"; "Record calibration" badge means In calibration; "365" unlabeled; Back button on Checkout reads "Checkout — Back"~~ | several | **CLOSED 2026-09-03** (`7b37683`). Was: Add the missing keys |
+| ~~G-08~~ | ~~"Pending sync" badge not placed on assets~~ | C10 | **CLOSED 2026-09-03** (`7b37683`). Was: Badge beside StatusPill on AssetRow and S03 |
+| ~~G-09~~ | ~~Raw enum labels ("DataLogger", "SoundLevelMeter", "CheckedOut → Deployed")~~ | S01, S03, S19 | **CLOSED 2026-09-03** (`7b37683`). Was: Humanised display names with spaces |
+| ~~G-10~~ | ~~Shared-serial disambiguation shows plain results, not the explanatory line~~ | S01 | **CLOSED 2026-09-03** (`7b37683`). Was: Render `asset.disambiguate` above the picker |
+| ~~G-11~~ | ~~Attached items, Last calibrated, and admin-only SIM fields not on Asset detail~~ | S03 | **CLOSED 2026-09-03** (`f09f0ee + 7b37683`). Was: Add an "Attached items" list and a secured "SIM" section (Office Admin+) |
 | G-12 | Invalid actions hidden rather than disabled with a reason | S03 | Decide: hide (less clutter) vs disable + tooltip "Not available from {status}" (more learnable). Spec asked for disable |
-| G-13 | Mark found / Repair complete failures use a browser alert | S03 | Inline `error` MessageBar |
+| ~~G-13~~ | ~~Mark found / Repair complete failures use a browser alert~~ | S03 | **CLOSED 2026-09-03** (`7b37683`). Was: Inline `error` MessageBar |
 | G-14 | No certificate PDF upload on Record calibration | D04 | File picker → SharePoint `AMS Documents/{AssetID}/` |
-| G-15 | Retire has no second confirmation | D05 | Use `admin.retire.confirm` as a confirm step |
+| ~~G-15~~ | ~~Retire has no second confirmation~~ | D05 | **CLOSED 2026-09-03** (`7b37683`). Was: Use `admin.retire.confirm` as a confirm step |
 | G-16 | Checkout has no "Assigned to" and no per-line kit role | S04 | Add people picker (default me) and optional Role select per line |
 | G-17 | No Scan button on Checkout / Transfer / Deploy add rows | C11 | Camera icon button beside "Add" |
 | G-18 | Custodian and administrator are free-text UPNs | S06, S15 | Entra people picker |
 | G-19 | Admin home cards carry developer copy (FR numbers, "Q3") | S13 | Plain-language card text |
 | G-20 | Validation error is a banner only; field not highlighted | forms | Fluent `Field validationMessage` on the offending control as well |
 | G-21 | Most screens have no Back affordance; rely on nav / browser back | S03, S04… | Consistent Back in a page header |
+| G-22 | No desktop screens exist to design against — the four report screens, the reservation calendar and the admin screens are the ones that most need width | shell, S13–S20 | Design the desktop surface first now that it is canonical: two-pane shell, full-width tables, and a reservation calendar (`docs/02-app.md` § Reservations) *(added 2026-09-03)* |
+| G-23 | Vehicles have no visual identity — a pickup truck renders identically to a data logger (same row, same pills, plate hidden in the identifier field) | C1, C2, S01, S03 | Give the Vehicles asset group an icon and surface the plate on the row; decide whether a vehicle's Asset ID reads as a plate *(added 2026-09-03)* |
 
 ## 11. Open questions that change the UI
 

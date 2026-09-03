@@ -35,16 +35,25 @@ A single source of truth that answers, in under 10 seconds, from a phone or a br
 These seven questions are the acceptance tests. Each must be answerable from the app (1–6) or from a
 single Power BI page (1–7) using only data the system captured through transactions.
 
+**Which surface answers them** (decided 2026-09-03). The **desktop** browser is the full-function app and
+answers 1–6. The **phone** is a deliberate slice — it answers 2, 3 and 4, the three questions you ask while
+standing in front of the equipment, and carries the transactions that follow from them. Questions 1, 5, 6
+and 7 are desktop and Power BI. See `docs/02-app.md` § Surfaces.
+
 ## Users
 
 | Role | Count (est.) | Does |
 |---|---|---|
-| Field technician | 25–45 | search, checkout, return, transfer, deploy kit, view history — often on a phone, sometimes offline |
-| Office admin | 4–8 (1–2 per office) | everything above + add/retire assets, record calibrations, run audits, edit reference data |
+| Field technician | 25–45 | **on a phone, sometimes offline:** find an asset, see where/who it is, check out, return, transfer, report a fault, deploy and recover a station, reserve a vehicle. Everything else is at a desk |
+| Office admin | 4–8 (1–2 per office) | **on a desktop:** everything above at full width + add/retire assets, record calibrations, run audits, edit reference data, manage the reservation calendar, all reports |
 | System owner | 1–2 | everything + roles, flows, solution |
 | Manager / PM | many | reads Power BI only; no app licence |
 
 ## Scope
+
+The system tracks **instrumentation and vehicles alike**: a pickup truck is an ordinary asset row and signs
+out exactly like a data logger (decided 2026-09-03). Nothing in the transaction model knows what kind of
+thing it is moving.
 
 **In (Phase 1 — MVP):** reference tables, Asset, Transaction + Lines, Asset Relationship, Calibration Record;
 Code App with Search, Asset detail + history, Checkout, Return, Transfer, Calibration Due list;
@@ -53,8 +62,14 @@ flows that derive current state; migration of the existing inventory; Power BI p
 **In (Phase 2):** Deploy/Undeploy kit screen with site details, Calibration record screen + certificate
 upload to SharePoint, Audit screen (verify/complete untagged assets), Teams/email notifications.
 
+**In (added 2026-09-03):** the **desktop surface** — the full-function layout above 480 px, which is where
+reports, office admin and reference-data editing live; **vehicles** as assets; and **vehicle reservations**
+(`eng_reservation`, the ninth table) with double-booking prevention. Reservation *scope* is admin-managed,
+not hard-coded to vehicles.
+
 **Out (separate initiative — "Ontario Instrumentation Hub"):** vendors, POs, quotes, SOP library,
-PCS forms, vehicle booking, purchasing/budget, regional comms pages.
+PCS forms, purchasing/budget, regional comms pages. *(Vehicle booking was here until 2026-09-03 — it is
+now in scope. See `docs/08-decisions.md`.)*
 
 ## Constraints
 

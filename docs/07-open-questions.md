@@ -89,3 +89,53 @@ Added 2026-09-02 by the spec review:
     meter stays in Ottawa. Proposed: allow exactly the SendToCalibration / ReturnFromCalibration pair on a component,
     and suspend parent-to-component mirroring while it is InCalibration. Alternative: admin detach → despatch →
     re-attach, three steps per routine event. **OPEN** — marked in 003 FR-032b, 004 FR-021, 007 FR-019.
+
+Added 2026-09-03 by the mobile/desktop split and the vehicles decision (`docs/08-decisions.md`):
+
+19. **Do vehicles need attributes that equipment does not?** Trucks are now ordinary assets and deliberately added
+    **no columns** — VIN in `eng_serialnumber`, plate in `eng_identifiervalue`. Three candidates were left out
+    because they were not asked for, and each is cheap now and awkward later:
+    (a) **odometer reading at checkout and return** — a whole-number field on `eng_transactionline`, which is the
+    only place it can honestly live (it is a fact about a movement, not about the asset);
+    (b) **safety-inspection / registration due date** — structurally identical to `eng_nextcaldue`, so it could
+    reuse the calibration machinery (F2, F3 reminders, the compliance report) with a renamed label, or get its own
+    pair of columns;
+    (c) **insurance expiry**. Proposed: (a) yes if anyone will actually read the numbers, (b) reuse the calibration
+    machinery rather than duplicate it, (c) no — that is a fleet-administration fact, not an asset-tracking one.
+    **OPEN** — nothing built depends on it.
+20. **Reservation override and no-show policy.** Three sub-questions the design cannot invent:
+    (a) **Who may cancel or override someone else's booking?** Proposed: Office Admin and above, reason required
+    (`eng_cancelreason` already exists for it). A field user cancels only their own.
+    (b) **What happens to a no-show?** A Confirmed booking whose window passes with no checkout goes `Expired` and
+    the count is reported (F7). Should the asset be freed earlier than `endtime` — e.g. 2 h after `starttime` — so a
+    truck is not held all day by someone who never collected it? Proposed: yes, with an admin-set grace period,
+    following the N-offices precedent that the number is configuration rather than code.
+    (c) **Is a booking per asset, or per model pool?** Today it is per asset: you book *truck DL-… specifically*.
+    "Any pickup at Ottawa on Tuesday" is a different and more useful request, and a bigger build (allocation at
+    pickup time, not at booking time). Proposed: per asset for Phase 1, pooled bookings recorded as a known
+    follow-on. **OPEN** — (a) and (b) block F6/F7's README; (c) blocks nothing yet but changes the table if answered
+    late.
+
+Added 2026-09-03 by the UX audit (`docs/17-ux-audit.md` § I):
+
+21. **Category shape.** `eng_assetgroup` and `eng_equipmenttype` are global option sets, so adding a category
+    is a solution deployment, not an admin action — incompatible with "ability to add that category". They have
+    to become rows. Two shapes: **(a) one hierarchical `eng_category`** (self-referential parent, roots = today's
+    asset groups, children = today's equipment types), which is exactly the `eng_location` pattern already
+    approved and understood, allows a third level later, and needs one admin screen; or **(b) two flat tables**,
+    a smaller change to the reporting domain. Proposed: (a). Either way it **adds a table**, which CLAUDE.md
+    gates on your approval, and either way `getFleetCounts`'s flat `byAssetGroup`/`byEquipmentType` shape changes
+    — cheaper before Power BI is authored against it than after. **RESOLVED 2026-09-03** — (a), one
+    hierarchical `eng_category`. Recorded in `docs/08-decisions.md`; the table is in `docs/01-data-model.md`.
+22. **What does "add new employees" mean?** Identity is Entra: a `systemuser` row exists because an account was
+    licensed and given a role, and a Code App cannot mint one. So this resolves to one of three things, which are
+    not interchangeable: **(a)** manage app-relevant attributes of existing staff — home office (used by the
+    "Available here" filter and by calibration reminders) and which offices they administer; **(b)** an onboarding
+    checklist that shows what IT must do and reflects it once done; **(c)** custodians who are **not** system
+    users — a subcontractor who can hold equipment but never signs in. (c) needs a table CLAUDE.md currently
+    forbids ("do **not** create a staff table"), so it is your call rather than a design decision. Proposed:
+    (a) now, (b) if useful, (c) only if needed — **but Q17 may force (c)**: if not every technician gets a
+    licence, custody cannot be recorded for a person the system has no row for.
+    **RESOLVED 2026-09-03** — (a) only. No staff table, no onboarding checklist, no non-user custodians;
+    CLAUDE.md's "do not create a staff table" stands. **The Q17 coupling is still live**: if licensing lands
+    per-app and some technicians get no licence, (c) stops being optional and this answer must be revisited.

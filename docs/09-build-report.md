@@ -12,6 +12,14 @@ Reporting / Power BI) were not attempted — out of the requested scope, not a g
 session. See "Phase 0–2 — multi-agent extension" below for that work; it supersedes some of the
 "What is stubbed" list further down (marked inline where it does).
 
+> **Scope changed after this report was written — 2026-09-03.** Everything below describes an app
+> built **phone-first**, with all 20 screens inside a 480 px column. Jay has since decided that the
+> phone is a deliberate *slice* and the **desktop** browser is the full-function surface, and has
+> brought **vehicles and vehicle reservations** into scope. Nothing in this report is wrong as a record
+> of what was built; it is no longer a description of the target. Read `docs/08-decisions.md`
+> (2026-09-03 rows), `docs/02-app.md` § Surfaces, and `specs/REMAINING-WORK.md` WS-J / WS-K before
+> treating any screen inventory here as current.
+
 **Session constraints, respected throughout**: no `pac auth`, no Dataverse object created, no
 Power Platform environment touched. `data/source/` was not edited. Every one of the 8 open
 `specs/clarifications.md` items was proceeded on under its stated recommendation, each recorded in
@@ -568,7 +576,7 @@ Both are commented in `transactionService.ts` and in `server/README.md`:
 
 ```
 app/     tsc -b                     clean
-app/     vitest      308 passed (14 files)      — was 298; utilisation 14 → 24
+app/     vitest      317 passed (15 files)      — was 308; +9 i18n/humanise (G-09), commit 7b37683
 app/     vite build  clean (801.79 kB, + RoleSwitcher and ScanDialog chunks)
 server/  tsc --noEmit               clean
 server/  vitest       64 passed (5 files)       — was 0

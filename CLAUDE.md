@@ -31,8 +31,11 @@ into the app layer without a comment `// DATAVERSE-ONLY`.
 2. **Transaction Lines are append-only.** No update or delete privilege for any role except System Owner.
 3. **Asset ID is a tag, not a key.** Primary key is the Dataverse GUID. `eng_assetid` is unique, immutable,
    never encodes office/project/owner. Serial is an attribute; two assets may share one serial.
-4. **Reference data is picked, not typed.** Manufacturer, model, type, location, project are lookups.
-   No free-text columns for these anywhere.
+4. **Reference data is picked, not typed — and maintained in the app, not in a CSV.** Manufacturer,
+   model, type, location, project are lookups. No free-text columns for these anywhere. An administrator
+   creates, edits and **deactivates** (never deletes) reference rows on a screen; `data/reference/*.csv`
+   are seeds for the initial load, not the ongoing source. *(Second clause added 2026-09-03 — Jay:
+   "everything should not be static". See `docs/17-ux-audit.md` and `docs/08-decisions.md`.)*
 5. **Checkout of a non-Available asset must be refused in the app and in the flow.** Both layers.
 6. **No credentials in Dataverse.** SIM ICCID / phone / static IP are allowed (field-level secured).
    Logins/passwords are not stored anywhere in this system.

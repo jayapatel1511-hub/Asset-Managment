@@ -1,11 +1,20 @@
 # Remaining work — parallel workstream map
 
-**As of 2026-09-03.** WS-A to WS-D and WS-G are complete; WS-H's US1 is built with T012 and T016
+**As of 2026-09-03.** Two new workstreams — **WS-J** (the desktop surface; the phone becomes a
+deliberate slice) and **WS-K** (vehicles and reservations) — were added by Jay's 2026-09-03 scope
+decisions. See `docs/08-decisions.md`. WS-A to WS-D and WS-G are complete; WS-H's US1 is built with T012 and T016
 now closed; **WS-I (the local full-stack POC) is complete** — see the "Local API (`server/`)"
 addendum in `docs/09-build-report.md`. WS-E and WS-F remain open and both need the tenant.
 
-**Test baseline: 308 in `app/` (14 files) and 64 in `server/` (5 files).** Re-verified 2026-09-03
+**Test baseline: 317 in `app/` (15 files) and 64 in `server/` (5 files).** Re-verified 2026-09-03
 by running both suites, not quoted from a report. Fewer than that is a regression.
+
+**Also landed 2026-09-03 (`7b37683`): the UI-spec gap pass.** Seven of `docs/12-ui-spec.md`'s gaps are
+closed — G-07 (label reuse), G-08 (pending-sync badge), G-09 (humanised enum labels), G-10 (shared-serial
+line), G-11 (SIM fields, with `f09f0ee`), G-13 (browser `alert`) and G-15 (retire confirmation). They are
+struck through in that document rather than deleted. **G-12 (hide vs disable invalid actions) is still
+open by choice** — a design decision for Jay, not a deviation; `asset.actions.notAllowed` remains unused.
+Do not re-audit the closed seven.
 
 Read `specs/AGENT-BRIEF.md` first — especially §1 (environment) and §5 (why Phase 0 is serial).
 
@@ -32,7 +41,7 @@ edits are Phase 0-class work.)*
 4. Add every new route to `App.tsx`.
 5. Split `api/mock/index.ts` into the per-domain modules named in `AGENT-BRIEF.md` §5, then treat
    `index.ts` and `store.ts` as frozen.
-6. Verify `npx tsc -b` compiles and `npm run test` still passes (**308 as of 2026-09-03**).
+6. Verify `npx tsc -b` compiles and `npm run test` still passes (**317 as of 2026-09-03**).
 
 Then fan out. Phase 0 is roughly an hour of careful work and it is what makes the rest parallel.
 
@@ -136,7 +145,7 @@ working. Keep every file marked `// DATAVERSE-ONLY`.
 
 ### WS-F — Schema and solution artefacts
 
-Author the 9 tables, choice sets, alternate keys, relationships, indexes, the three security roles
+Author the 10 tables (9 + `eng_idsequence`; `eng_reservation` added 2026-09-03), choice sets, alternate keys, relationships, indexes, the three security roles
 and the `AMS Sensitive` field security profile per `docs/01-data-model.md` and `docs/05-security.md`
 — as files, for import later.
 
@@ -244,6 +253,117 @@ sequence increment already written for it start doing real work.
 
 ---
 
+### WS-J — The desktop surface and the route manifest *(NEW 2026-09-03, not started)*
+
+**Why:** Jay's 2026-09-03 decision — the phone is a slice, desktop is the full-function app
+(`docs/08-decisions.md`, `docs/02-app.md` § Surfaces, `docs/12-ui-spec.md` § 1 and § 8, gap G-01
+resolved and G-22 opened). All 20 built screens currently live inside a 480 px column, six of them in
+the phone's bottom nav including admin and the four reports.
+
+**Phase 0-class — do not fan out around it.** It replaces `App.tsx`'s route table, which
+`AGENT-BRIEF.md` § 5 names as one of the four shared files. Sequence:
+
+1. `app/src/routes.ts` — one manifest:
+   `{ path, element, roles, surfaces: ("field"|"desk"|"console")[] }`. **Three values, not two** —
+   Jay's later 2026-09-03 decision split desktop into a user app and an admin console
+   (`docs/17-ux-audit.md` § G). `App.tsx` renders from it; `BottomNav` filters by
+   `surfaces.includes("field")`.
+2. A surface hook (`useSurface()`, breakpoint 768 px) and an off-surface page — a route opened where it
+   does not belong renders "this screen is on the desktop app", **never a 404**: the same deep link has
+   to stay valid in an email opened on either device.
+3. Desk shell: side nav instead of bottom nav, two-pane list + detail above 900 px, full-width tables
+   for S17–S20. Console's own shell is WS-L, not this workstream — but the manifest must carry its
+   surface value from the start so WS-L is additive.
+4. Trim S03 on mobile — the full history tab moves to desktop, phone keeps the last few events.
+
+**Watch for:** the 317-test baseline. Tests that assert a nav item or route exists will need a surface
+argument rather than deletion — a route vanishing from mobile must not read as a route removed.
+
+**Verifiable locally.** No tenant needed; this is layout and routing over the existing backend.
+
+### WS-K — Vehicles and reservations *(NEW 2026-09-03, not started)*
+
+**Why:** Jay's 2026-09-03 decision — cars and trucks are tracked assets, *and* bookable
+(`docs/08-decisions.md`). "Vehicle booking" moved from out-of-scope to in-scope in `docs/00-brief.md`.
+
+Two halves of very different size:
+
+- **Vehicles (small).** Choice values only — `eng_assetgroup` + `Vehicles`, `eng_equipmenttype` +
+  `PickupTruck`/`Van`/`Car`/`Trailer`, `eng_identifiertype` + `Plate`. No new asset columns; VIN in
+  `eng_serialnumber`, plate in `eng_identifiervalue`. Checkout/Return/Transfer and the state machine are
+  untouched. Needs a few catalogue rows in `data/reference/equipment_models.csv` and the G-23 visual
+  identity (icon, plate on the row).
+- **Reservations (a feature).** New table `eng_reservation` (`docs/01-data-model.md`), new flows **F6**
+  (conflict arbiter) and **F7** (fulfilment, expiry, reminder) in `docs/03-automation.md`, the checkout
+  guard as F1 step 2b, plus screens: Reserve + My reservations on mobile, the calendar on desktop.
+
+**The load-bearing design point:** `Reserved` is **not** an `eng_assetstatus` value, and must not become
+one. A booking is a future claim; status answers "where is it now". The two are orthogonal and conflating
+them breaks both the state machine and CLAUDE.md rule 1. `docs/01-data-model.md` § "Why this is not a
+status" is the argument in full — read it before writing any of this.
+
+**Blocked on Jay:** Q20(a) and (b) — override rights and the no-show grace period — gate F6/F7's README.
+Q20(c) (per-asset vs pooled bookings) changes the table if answered late. Q19 (odometer,
+inspection-due) is genuinely optional and nothing depends on it.
+
+**Deserves its own spec directory** (`specs/009-vehicles-and-reservations/`) on the pattern of 001–008,
+because it adds a table, two flows and four screens — it is not a change to an existing feature.
+
+### WS-L — The admin console *(NEW 2026-09-03, not started, partly blocked)*
+
+**Why:** Jay's second 2026-09-03 decision — "admin should have full control… everything should not be
+static". `docs/17-ux-audit.md` is the audit behind it. **Read that document before planning this
+workstream**; the summary below is not a substitute for its 23 findings.
+
+The headline: **every reference table is read-only in the app.** `AmsBackend` has `listLocations`,
+`listEquipmentModels` and `listProjects` and no writer for any of them; the only reference-data write
+in the whole API is `setOfficeAdmins`. Two of the consequences are live defects, not missing features:
+
+- **An administrator cannot create an office** — yet the N-offices decision (2026-09-02) and
+  `docs/05-security.md`'s dropping of per-office Entra groups both rest on their being able to.
+- **Nothing can re-parent SWO, Mississauga or Thunder Bay**, which `migration/` deliberately left flat
+  under Ontario *for an admin to fix on a screen* that was never built.
+
+Scope, in dependency order:
+
+1. **API + backend** — create/update/deactivate for locations, equipment models, projects, categories.
+   Phase 0-class for `AmsBackend.ts` and `types.ts` (see the gate at the top of this file).
+2. **Console shell** — persistent entity nav, list-and-detail, table-first. Not the phone column.
+   G-22 in `docs/12-ui-spec.md`; no screens are specified yet.
+3. **Deactivate-not-delete, with a usage count** before any destructive reference edit (audit A4, E5).
+4. **Bulk operations** (audit E3) — the highest-value admin affordance and entirely absent today.
+5. **Reference-data change history** (audit E4) — auditing is currently on for `eng_asset`,
+   `eng_assetrelationship` and `eng_calibrationrecord` only.
+
+**No longer blocked — Q21 and Q22 were answered 2026-09-03.** The schema is settled and written into
+`docs/01-data-model.md`:
+
+- **`eng_category`** — one hierarchical table replacing the `eng_assetgroup` / `eng_equipmenttype` option
+  sets. `eng_equipmentmodel` takes one lookup to the leaf; the group is derived by walking up. Alternate
+  key becomes `manufacturer + model + eng_category`.
+- **`eng_carrier`** and **`eng_retirementreason`** — small reference tables, formerly option sets.
+- **`eng_transactionline.eng_kitroleindex`** (1..N) — removes the four-sensor cap. `eng_kitrole` keeps
+  fixed role *types*. This decomposition is `ASSUMED, pending Jay` in `docs/08-decisions.md`.
+- **Employees = attributes of existing staff only** (home office, offices administered). No staff table.
+  Home office is the piece that does not exist yet, and the "Available here" filter and calibration
+  reminders both use it.
+
+**Carry the reporting change.** `getFleetCounts`'s `byAssetGroup`/`byEquipmentType` are flat
+`Record<string, number>` today; against the hierarchy they become count-by-level-1-ancestor and
+count-by-leaf. Its tests change with it. Do not leave this to the screens — it is domain work.
+
+**Carry the migration change, and do not touch the cleaning stages.** `02_clean.py` and `03_models.py`
+keep emitting flat `assetgroup`/`equipmenttype` strings — the mock backend and all 1,459 synthetic
+assets read that shape, and changing it breaks the local build for no gain. What is needed is **one new
+step** that derives the category tree from the distinct staged values and resolves each model to its
+leaf, plus the loader writing a lookup rather than two choices. Idempotent, with a `*_report.md`, like
+every other step. See the note in `docs/04-migration.md`.
+
+**Also enforce `docs/01-data-model.md` § Reference-data rules**: deactivate never delete, usage count
+before a destructive edit, and auditing extended to all six reference tables.
+
+**Do not start step 2 before WS-J.** Console shares WS-J's route manifest and shell breakpoints.
+
 ## Sequencing
 
 ```
@@ -257,19 +377,30 @@ Phase 0  (orchestrator, serial)                  DONE 2026-09-02, commit cf94ab3
    ├── WS-F  schema + solution files              open
    ├── WS-G  007 synthetic fleet history          DONE
    ├── WS-H  008 release safety                   US1 DONE incl. T012/T016; US2–US5 need the tenant
-   └── WS-I  local full-stack POC (server/)       DONE 2026-09-03
+   ├── WS-I  local full-stack POC (server/)       DONE 2026-09-03
+   │
+   ├── WS-J  Field/Desk surfaces + route manifest NEW 2026-09-03 — Phase 0-class, serial, blocks WS-K + WS-L screens
+   ├── WS-K  vehicles + reservations              NEW 2026-09-03 — needs a spec dir; F6/F7 blocked on Q20
+   └── WS-L  admin console (Console surface)      NEW 2026-09-03 — reference-data CRUD; blocked on Q21/Q22, then WS-J
    │
 Integration (orchestrator, serial)
-   app:    tsc -b && vitest run && vite build      308 tests, 14 files
+   app:    tsc -b && vitest run && vite build      317 tests, 15 files
    server: tsc --noEmit && vitest run               64 tests, 5 files
    Drive the app at 390px against real data; verify acceptance questions 1–7
    docs/09-build-report.md now records WS-G, WS-H and WS-I
 ```
 
+**WS-J comes before WS-K's screens.** WS-J owns the route manifest, so a reservation screen added
+first would be added to a routing table that is about to be replaced — and would have to guess its own
+surface. WS-K's *data* half (choice values, table definition, flows as files) is independent and can go
+in parallel with WS-J.
+
 WS-A to WS-D, WS-G, WS-H US1 and WS-I are complete, and `docs/09-build-report.md` records all of
 them: § "Phase 0–2 — multi-agent extension" for the first four, the feature 007 addendum for WS-G,
-and the "Local API (`server/`)" addendum for WS-I (which also records WS-H's T012/T016). Only WS-E
-and WS-F are open, and neither can be verified without the tenant.
+and the "Local API (`server/`)" addendum for WS-I (which also records WS-H's T012/T016). WS-E and WS-F
+are open and neither can be verified without the tenant; **WS-J, WS-K and WS-L are open and all three
+are fully buildable locally**, which makes them the only work left that does not wait on Microsoft.
+WS-L's step 1 (the API) is buildable now; its screens wait on WS-J and on Jay's Q21/Q22.
 
 ## Not buildable in any session without the tenant
 
@@ -312,3 +443,7 @@ assumption and mark it; they do not resolve these:
 - **Sign-offs**: `migration/reports/03_models_review.md` (35 corrected model rows) and
   `02_conflicts.md` (16 cross-office duplicate resolutions) before any production load — FR-026
   makes the second one a hard gate.
+- **Q19** — do vehicles need odometer-at-checkout, safety-inspection due, insurance expiry? Nothing built
+  depends on it; deliberately left out rather than guessed *(added 2026-09-03)*.
+- **Q20** — reservation override rights, no-show grace period, and per-asset vs pooled bookings.
+  (a) and (b) gate F6/F7's README; (c) changes `eng_reservation` if answered late *(added 2026-09-03)*.

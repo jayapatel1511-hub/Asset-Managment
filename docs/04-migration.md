@@ -17,8 +17,19 @@ Column map (source → target):
 | Source | Target | Rule |
 |---|---|---|
 | Asset ID | eng_assetid | trim, upper. Blank or ends with `-` → `TMP-{seq}`; keep original in eng_migrationsource |
-| Asset Group | model.assetgroup | fix `Air Quailty Monitroing` → AirQuality |
-| Equipment Type | model.equipmenttype | fix `Geohpone` → Geophone; `Microphone, Sound Level Meter` → split by model (S50/C50 → SoundLevelMeter; SLM/Micromate mic → Microphone) |
+| Asset Group | model.assetgroup → **`eng_category` root** | fix `Air Quailty Monitroing` → AirQuality. *(See the note below — 2026-09-03)* |
+| Equipment Type | model.equipmenttype → **`eng_category` leaf** | fix `Geohpone` → Geophone; `Microphone, Sound Level Meter` → split by model (S50/C50 → SoundLevelMeter; SLM/Micromate mic → Microphone) |
+
+> **Categories became rows on 2026-09-03** (`docs/01-data-model.md` § eng_category). Asset group and
+> equipment type are no longer option sets, so `eng_equipmentmodel` carries **one lookup to the leaf
+> category** instead of two Choice columns.
+>
+> **The cleaning stages do not change.** `02_clean.py` and `03_models.py` keep emitting flat
+> `assetgroup` / `equipmenttype` strings into the staged CSVs — that shape is what the mock backend and
+> 1,459 synthetic assets already read, and breaking it would break the local build for no gain. What
+> changes is one **new step** that derives the two-level category tree from the distinct staged values
+> and resolves each model to its leaf, plus the loader writing the lookup instead of two choices.
+> Idempotent and reporting counts, like every other step. This is WS-L work, not done yet.
 | Manufacturer / Model | model lookup | via `data/reference/equipment_models.csv` `source_manufacturer`,`source_model` → canonical. Rows with manufacturer ∈ {Minimate Pro, Series IV, Settop M1, Instantel(as model)} are swapped columns — handled by the mapping file, not code |
 | Serial Number | eng_serialnumber | trim; strip embedded prefix letters into a check: `UM16984` → serial `UM16984` (keep as-is; ID minting strips) |
 | Current Office | eng_homeoffice AND eng_currentlocation | map via `data/reference/locations.csv`. `SWO` stays SWO (office) — see open Q1 |
