@@ -23,6 +23,11 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     port: 3000,
+    // Local POC: server/ (TypeScript API + in-process PostgreSQL) listens on 127.0.0.1:3001.
+    // Same-origin /api/* is proxied there so the http adapter needs no CORS and no absolute URL.
+    proxy: {
+      "/api": { target: "http://127.0.0.1:3001", changeOrigin: false },
+    },
   },
   test: {
     environment: "jsdom",
