@@ -14,7 +14,9 @@ Read in this order:
 6. `specs/009-production-readiness/spec.md`
 7. `specs/010-web-application-platform/spec.md`
 8. `specs/011-data-management/spec.md` when work touches reference data, corrections, imports, quality, duplicates, lineage, exports, retention or synchronization
-9. The owning business feature specification
+9. `zite/HANDOFF.md` when resuming the **Zite test environment** — a loaded, working test
+   database and Field-slice app built 2026-09-03. Start there, not in the middle
+10. The owning business feature specification
 
 `docs/01-data-model.md` through `docs/10-integration.md` remain useful historical and logical references, but their Dataverse, Power Apps, Power Automate, SharePoint-as-primary-document-store, and Power Platform licensing instructions are superseded by the web-application pivot.
 
