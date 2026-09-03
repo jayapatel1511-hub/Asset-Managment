@@ -491,3 +491,215 @@ because the first number reported was wrong and the corrected method matters.
 - The roster is a fixed 123 people at every scale, so the `large` profile runs 5,312 assets past 91
   technicians. Fine for performance testing, thin as a story — scale the roster with the fleet if
   `large` is ever used for a demo rather than a stopwatch.
+---
+
+# Build report addendum — Local API (`server/`), full-stack POC
+
+**Date**: 2026-09-03. **Scope requested**: make the app run end to end on this machine against a
+real database — the React app in `app/` talking over HTTP to a TypeScript API in `server/`
+(Fastify + PGlite, in-process PostgreSQL), every write implemented, tested, verified in the
+browser at 390 px against the real migrated data, documented and committed. No Microsoft tenant,
+no Dataverse, no `pac`, no `pa app` — none available in this session, none in scope.
+
+**Why it matters beyond "it runs"**: the mock backend answered every read from memory and applied
+every write in the same process as the screen that requested it. Nothing had ever crossed a
+network boundary, been validated a second time by a server that does not trust the client, or
+committed inside a database transaction. This addendum records what happened when all three
+became true. The short answer: the seam held — no screen changed — and three real defects
+surfaced that the mock could not have exposed.
+
+## Verified baseline before starting (re-run, not quoted)
+
+| Check | Result |
+|---|---|
+| `app/`: `tsc -b` | clean |
+| `app/`: vitest | 298 passing, 14 files |
+| `server/`: `tsc --noEmit` | clean |
+| `server/`: `--reseed --exit` | seeds 1,026 assets from `migration/staged/` |
+
+## What was built
+
+| Piece | Where |
+|---|---|
+| The write path — `applyTransaction` (this server's copy of flow F1) and `runCommand` (one PostgreSQL transaction per command, idempotent) | `server/src/services/transactionService.ts` |
+| Features 001/003/004 commands: checkout, return, transfer, fault, missing, found, repair, send-to-calibration, retire, record-calibration, register-asset, next-id | `server/src/services/commandService.ts` |
+| Feature 005 commands: deploy, recover, component swap, configuration change; plus office→admin assignment | `server/src/services/deploymentService.ts` |
+| Every write endpoint, zod-validated at the boundary | `server/src/routes/commands.ts` |
+| 64 tests over in-memory PGlite and the real migrated data | `server/tests/` |
+| How to run it, dataset selection, identity, the refusal contract, the invariants, the Dataverse flow mapping, what a move to networked PostgreSQL takes | `server/README.md` |
+
+Phase 1's read model, schema, seed loader and HTTP adapter were already written and are committed
+unchanged as `14d1d13`.
+
+### The rules that shaped it
+
+- **`deriveState`, `assetId` and `installation` are imported from `app/src/domain/`, never copied.**
+  Not one transition is reimplemented server-side. This is what makes flow F1 checkable against
+  the same function later.
+- **Asset current state is written in exactly one place** — `applyTransaction` — and every value
+  comes from `deriveState`'s result, none from the request (Principle I).
+- **Principle II is enforced by the database**, not by discipline: `BEFORE UPDATE OR DELETE`
+  triggers on both history tables raise. There is no UPDATE or DELETE against either anywhere in
+  `server/src/`, and two tests prove the triggers fire.
+- **One PostgreSQL transaction spans the whole command**, so the composite ones — a Return that
+  also reports a fault, a recovery that undeploys some components and marks others missing — are
+  genuinely all-or-nothing, which the mock could not guarantee. A refusal found after an earlier
+  write is thrown as a typed `Refusal` to force the rollback; returning `{ ok: false }` out of a
+  `db.transaction()` callback would have committed what came before it.
+- **Idempotency is per command**, against `command_idempotency`, and only *accepted* commands are
+  recorded — so a refused one is re-evaluated on retry, because a refusal is an answer about the
+  state at that moment, not a result to replay forever. This is why `deploymentService` needs none
+  of the three per-method replay guards `api/mock/deployment.ts` carries: `runCommand` answers the
+  replay before the "already deployed" rule can wrongly refuse it.
+
+### Two places the server is deliberately stricter than the mock
+
+Both are commented in `transactionService.ts` and in `server/README.md`:
+
+- Opening a kit relationship **closes the child's previous open one**, because the schema allows a
+  child exactly one open parent (`rel_one_open_parent`, a partial unique index). An asset moving
+  straight from one kit to another would otherwise have collided with the index; the mock, having
+  no index, would have left two open rows and reported the wrong parent.
+- `asset.parentasset` is **recomputed from the open relationship rows**, never assigned, so closing
+  a kit relationship cannot drop a permanent Component parent — which the mock's unconditional
+  `parentasset = null` would.
+
+## Test counts, actually run
+
+```
+app/     tsc -b                     clean
+app/     vitest      308 passed (14 files)      — was 298; utilisation 14 → 24
+app/     vite build  clean (801.79 kB, + RoleSwitcher and ScanDialog chunks)
+server/  tsc --noEmit               clean
+server/  vitest       64 passed (5 files)       — was 0
+```
+
+Server suite: `transactions` 20, `deployment` 16, `registration` 11, `fieldSecurity` 9,
+`acceptance` 8. Each file gets its own in-memory PGlite seeded from `migration/staged/` — 1,026
+real assets, not fixtures — in about 1.6 s, and drives routes through `app.inject()`, so every
+request passes the same hooks, zod validation and error handler that production traffic does.
+
+Fixtures are real Asset IDs chosen for what they are: `SLM-LD-PA-1712.0` is a permanent Component
+of the sound-level meter `DST-LD-01` (one of the six Q5 component links), `AT-001` is one of the
+648 CheckedOut assets, `DST013` carries a real ICCID, phone number and static IP.
+
+Covered, beyond one happy path per route: checkout of a CheckedOut asset refused with the
+offending asset named **and the rest of the cart untouched** (FR-003); a permanent Component child
+refused alone; the inactive-project refusal (against a Closed project inserted as a test fixture —
+all 25 migrated projects are Active, so the rule has no other way to be exercised); idempotent
+replay returning the original transaction and writing no second line; a *refused* command not
+recorded, so a corrected retry under the same key succeeds; deploy then partial recovery leaving
+the installation open, then full recovery closing it with an end date; a component swap that
+neither restarts nor interrupts the installation, checked from both sides of the effective date;
+`UM21999` + *Instantel Micromate (DataLogger)* minting `DL-UM-21999`; two non-serialised
+registrations getting `AT-0009` and `AT-0010` from one atomic sequence increment; and both history
+triggers refusing to be bypassed.
+
+**One test deliberately does not hard-code its expected number.** The 30-day calibration figure is
+asserted against a count computed from the same rows, plus `>= 107` as a lower bound, rather than
+`=== 107`: `nextcaldue` values are fixed while today advances, so a hard equality would have become
+a false failure within a month. The measured value on 2026-09-03 is exactly 107.
+
+## Verified in the browser, at 390×844, against the real migrated data
+
+`englobe-ams-api` (3001) then `englobe-ams-localapi-alt` (3210, `VITE_AMS_BACKEND=http`), against
+a freshly `--reseed`ed database. Screenshots attached to the session.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | What do we own? | Reports → Fleet: **1026**, by office / asset group / equipment type; 35 temporary tags, 2 third-party owned |
+| 2 | Where is asset X? | `DL-UM-16984`: `Location —` (honestly unknown while checked out), `Home office Sudbury` |
+| 3 | Who has asset X? | `Custodian James Ross` |
+| 4 | What is available at office Y? | **375** available fleet-wide, **Ottawa 49**; the fleet-counts report reconciles exactly with the same filtered list (SC-003) |
+| 5 | Calibration due in 30 days | **107 overdue**, grouped by office (Ottawa 36), each row showing exact days overdue |
+| 6 | What is assigned to project Z? | Reports → By project `01937805`: exactly `DL-UM-15387 / 15713 / 16842 / 16956 / 16984 / 21947` |
+| — | One serial, two assets (Principle III) | Searching `16984` returns `DL-UM-16984` (DataLogger, Checked out, Sudbury, James Ross) **and** `GEO-UM-16984` (Geophone, Available, Toronto) |
+| — | Checkout then Return, as the demo Field User | `DL-MP-12708` → *"Checkout TXN-000012 recorded"* → CheckedOut, custodian `tech@englobecorp.com`, project `01937805`, `Location —`; then *"Return TXN-000013 recorded"* → Available at Ottawa, custody and project cleared. History shows both new lines plus the migration line, newest first |
+| — | Refusal in both layers | Adding `AT-001` (CheckedOut) to the cart is refused on screen — *"AT-001 is CheckedOut, held by — — can't add it"*, Submit disabled. The same request `curl`ed straight to the API is refused independently: `200 {"ok":false,"reason":"Checkout is not a valid transition from CheckedOut for AT-001.","offendingAssetId":"AT-001"}` |
+| — | Deploy then recover, as the demo Office Admin | `DL-MP-12709` + `GEO-SE-12716` (Sensor1 · V) to a new site *412 Verification Ridge Road* → *"Deployment TXN-000015 recorded"*; the site page shows the open installation, both component rows, Solar, POR-412. Recovered → *"Recovery TXN-000016 recorded"*: installation closed with an end date and a closing transaction, both assets CheckedOut in the admin's custody with `Location` null (FR-013), **one clean `Undeploy` line**, kit relationship closed, the site out of "current" but still in history (FR-023) |
+| — | Writes survive a reload | `localStorage` cleared entirely, hard reload: both the Checkout and Return lines still there. `localStorage` holds only `ams-mock-current-user` — the http backend keeps no store delta, because the data is in PGlite on disk |
+| — | Role switch and field security | Same asset `DST013`, both roles. Office Admin: Carrier Rogers, ICCID 89302720513012024886, Phone 705-618-1098, Static IP 72.142.178.47. Field User: Carrier only. Confirmed against the API directly — `field` receives nulls, `admin` and `owner` receive values |
+
+Also verified: `TXN-000012` is the same sequence number the mock produced for the first
+post-migration transaction (11 migrated headers + 1), here from a PostgreSQL sequence; and two
+identical `Transfer` submissions under one `clientSubmissionId` produced one transaction and one
+line.
+
+## Three defects found and fixed, none of which the mock could have shown
+
+1. **Feature 006 FR-028's utilisation guard** (a defect `specs/REMAINING-WORK.md` had already
+   recorded) used each asset's own first transaction as the migration boundary. It conflated "our
+   records do not go back that far" (fleet-wide) with "this asset did not exist yet" (per asset) —
+   two facts that coincide only in the migrated data, where every asset's first line is dated the
+   migration day. Any asset acquired after go-live therefore dropped out of every utilisation
+   report. Fixed: the boundary is now an explicit argument (`recordsBeganAt`), and an asset
+   acquired inside the period is clipped to its acquisition date or excluded, never reported as
+   insufficient history. 006 SC-013 can now pass. Tests 14 → 24.
+2. **No screen rendered ICCID, phone number or static IP at all** (`docs/12-ui-spec.md` G-11), so
+   the Office Admin saw nothing either and FR-030 could not be demonstrated — found only because
+   the browser verification tried to show it. `AssetDetailPage` now has a SIM / connectivity card
+   with **no role check in it**: the data layer sends a Field User nulls, so the card has nothing
+   to show them and the UI cannot disagree with the security rule because it never re-states it.
+3. **`RoleSwitcher` left stale data on screen.** `useCurrentUser().reload` re-reads the current
+   user, but a screen already holding a fetched asset keeps the payload it was served as somebody
+   else — so switching from Office Admin to Field User left the ICCID visible and made field
+   security look broken in exactly the demo that control exists for. It now reloads the page, which
+   is the truthful analogue of a new Entra sign-in.
+
+## Also closed this session
+
+- **Feature 008 T012** — `RoleSwitcher` and `ScanDialog` are now *absent* from a release bundle,
+  not hidden in one, behind `app/src/devStandins.tsx`'s build-time gate. Proven both ways: the
+  ordinary build emits `RoleSwitcher-*.js` and `ScanDialog-*.js` as chunks and contains all four of
+  their identifying strings; `build:release` emits neither chunk and none of the strings, and
+  `scan-bundle.mjs` still reports clean against 1,026 asset IDs, 126 ICCIDs, 128 phone numbers and
+  225 static IPs. The Scan button is hidden with the dialog, because a release has no scanner behind
+  it yet. (`search.role` does still appear in a release bundle — it is a key in the single bundled
+  i18n object, not the component, and removing it would break dev mode.)
+- **Feature 008 T016** — the router basename follows `import.meta.env.BASE_URL`. Recorded as
+  *prepared, not resolved*: confirming the real `/play/e/{env}/a/{app}` prefix needs `pa app run`.
+- **Three real horizontal overflows at 390 px**, on `/calibration`, `/checkout` and `/deploy`
+  (measured at 413, 406 and 402 px in a 390 px viewport, clipped rather than scrollable, so the
+  control was simply unreachable). All 18 routes re-measured clean.
+- **23 generated files under `migration/synthetic/demo/` untracked** with `git rm --cached`, files
+  kept on disk. 23, not the 24 this report predicted: `demo/manifest.json` is deliberately kept by
+  `.gitignore`'s `!migration/synthetic/*/manifest.json` negation, since a dataset that cannot prove
+  it is synthetic is treated as real (FR-007).
+
+## New `// ASSUMPTION` markers
+
+One, and it is not new ground — it restates an existing decision in the new layer:
+
+| Marker | File | What it assumes |
+|---|---|---|
+| `ASSUMPTION` (inactive-project rule, unnumbered) | `server/src/services/commandService.ts` (`checkout`, `transfer`) | Refuse a non-Active project outright rather than warn and permit. Same assumption `api/mock/index.ts` already carries and the same `docs/08-decisions.md` row; the server now enforces it independently, which is the point of validating in both layers |
+
+Nothing else here rests on an unanswered clarification. The POC's own choices — the single-status
+schema, the HTTP-200 refusal contract, the router basename, the FR-028 fix — are recorded as
+decision rows in `docs/08-decisions.md` rather than as assumptions, because they are engineering
+calls this session made and can defend, not guesses about Jay's intent.
+
+## An instrument caution for the next session
+
+With the Browser pane hidden, `computer` screenshots sometimes return a **clipped or tiled** image
+and clicks time out **even when they land**. Several screens looked broken in screenshots and
+measured perfectly clean (`/`, `/asset/*`, `/site/*`); two screens looked broken and *were*. The
+previous session recorded the same tooling behaviour. The lesson that cost time here: measure
+before believing a screenshot — `getBoundingClientRect().right` against
+`document.documentElement.clientWidth` settles a layout question in one call, and DOM events
+dispatched through `javascript_tool` drive the app's real code paths when clicks will not land.
+
+## What this POC still is not
+
+- **Not the production architecture.** Production is Dataverse plus flows F1–F5. `server/README.md`
+  has the table mapping each piece of this server onto the flow that will replace it, including the
+  one thing `api/dataverse/` must *not* do (call `deriveState` to write `eng_asset` itself — that is
+  F1's job, and a second write path to derived fields would break Principle V).
+- **Not authenticated.** `x-ams-dev-user` is a header, not a credential, which is why the server
+  binds to loopback only. Replacing it with Entra changes one file.
+- **Not authorised beyond the mock's two rules** (FR-025's custodian check on Return, FR-007's
+  not-held check on Deploy). Admin-only screens are gated in the router only; in production the
+  three Dataverse security roles do this.
+- **Still no three-axis status model.** One `status` column, on purpose — see `docs/08-decisions.md`.
+- **WS-E and WS-F remain untouched**, and everything under "What needs the tenant" above still
+  needs it. This session moved nothing into that column and nothing out of it.

@@ -1,9 +1,11 @@
 # Remaining work — parallel workstream map
 
-**As of 2026-09-02**, after the build recorded in `docs/09-build-report.md`. **Refreshed the same
-evening after the spec review**: WS-A to WS-D are complete; WS-G and WS-H were in progress in
-concurrent sessions at the time of writing — check `git status` and `ListAgents` before starting
-either.
+**As of 2026-09-03.** WS-A to WS-D and WS-G are complete; WS-H's US1 is built with T012 and T016
+now closed; **WS-I (the local full-stack POC) is complete** — see the "Local API (`server/`)"
+addendum in `docs/09-build-report.md`. WS-E and WS-F remain open and both need the tenant.
+
+**Test baseline: 308 in `app/` (14 files) and 64 in `server/` (5 files).** Re-verified 2026-09-03
+by running both suites, not quoted from a report. Fewer than that is a regression.
 
 Read `specs/AGENT-BRIEF.md` first — especially §1 (environment) and §5 (why Phase 0 is serial).
 
@@ -30,7 +32,7 @@ edits are Phase 0-class work.)*
 4. Add every new route to `App.tsx`.
 5. Split `api/mock/index.ts` into the per-domain modules named in `AGENT-BRIEF.md` §5, then treat
    `index.ts` and `store.ts` as frozen.
-6. Verify `npx tsc -b` compiles and `npm run test` still passes (**281 as of 2026-09-02**).
+6. Verify `npx tsc -b` compiles and `npm run test` still passes (**308 as of 2026-09-03**).
 
 Then fan out. Phase 0 is roughly an hour of careful work and it is what makes the rest parallel.
 
@@ -59,10 +61,11 @@ device capture, marked `// ASSUMPTION`.
 
 ### WS-B — Feature 006, Fleet Reporting *(COMPLETE 2026-09-02, except the Power BI publish)*
 
-> Delivered — domain modules, in-app surface, PBIP text model. **One recorded defect** against the
-> spec as clarified 2026-09-02: the utilisation guard treats an asset's first transaction as the
-> migration boundary, so any asset acquired inside the period reads as insufficient history. See
-> 006 FR-028 and `docs/08-decisions.md`. Text below kept for reference.
+> Delivered — domain modules, in-app surface, PBIP text model. **The FR-028 defect is FIXED
+> (2026-09-03, WS-I)**: the boundary is now the fleet-wide one, passed in explicitly, and an asset
+> acquired inside the period is clipped to its acquisition date or excluded rather than reported as
+> insufficient history. 006 SC-013 can now pass. `domain/utilisation.ts` tests 14 → 24. Only the
+> Power BI publish still needs the tenant. Text below kept for reference.
 
 **Spec**: [`specs/006-fleet-reporting/spec.md`](006-fleet-reporting/spec.md) — 30 FRs, 4 stories.
 **Plan**: [`plan.md`](006-fleet-reporting/plan.md). **Tasks**:
@@ -187,9 +190,14 @@ transaction lines, calibrated with their parent) pending Jay's confirmation.
 **US1 is built**: `release-guard.mjs`, `scan-bundle.mjs`, a mode-conditional `publicDir` and a
 separate `build:release`, verified by its author against the staged data (13 files refused with the
 mock backend; the release bundle scanned clean against every staged Asset ID, ICCID, phone and IP).
-Two loose ends in its `tasks.md`: T012 (removing the `MOCK-ONLY` stand-ins from the bundle) is
-deferred because it needs `App.tsx`; T032 (final `tsc -b`) is blocked on two unused-local errors in
-WS-G's in-progress `sim.ts`. Before this existed, nothing prevented a `pa app push` from publishing
+
+**T012 and T016 are now DONE (2026-09-03, WS-I).** T012: `RoleSwitcher` and `ScanDialog` are
+reached only through `app/src/devStandins.tsx`, whose build-time gate keeps them out of a release
+bundle entirely — proven both ways (the ordinary build emits both as chunks and contains their
+strings; `build:release` emits neither). T016: the router basename follows
+`import.meta.env.BASE_URL`, so hosting under `/play/e/{env}/a/{app}` is a config change — recorded
+as *prepared, not resolved*, since confirming the real prefix needs `pa app run`. T032 (final
+`tsc -b`) passes: both suites and both builds are clean. Before this existed, nothing prevented a `pa app push` from publishing
 1,026 real assets — including SIM ICCIDs, phone numbers and static IPs — to a publicly accessible
 endpoint with no IP restriction and no recall (`docs/10-integration.md` § Hosting).
 
@@ -202,6 +210,37 @@ Owns `app/scripts/**` except `app/scripts/synthetic/**` (WS-G), `app/vite.config
 
 **Note the interaction with WS-G**: synthetic data must never reach a release bundle either. WS-H's
 bundle scanner should cover `data/synthetic/**` outputs as well as `migration/staged/`.
+
+### WS-I — Local full-stack POC: the TypeScript API over PGlite *(COMPLETE 2026-09-03)*
+
+> Delivered — `server/` (Fastify + in-process PostgreSQL), every read and **every write**, 64
+> tests, `server/README.md`, and the browser verification of acceptance questions 1–6 plus a real
+> checkout/return, a two-layer refusal, and a deploy/recover cycle against the migrated data. Read
+> the "Local API (`server/`)" addendum in `docs/09-build-report.md` for measured results.
+
+**Why it existed**: the mock backend answered every read from memory and applied every write in
+the same process as the screen that asked. Nothing had crossed a network boundary, been validated
+by a server that does not trust the client, or committed inside a database transaction. WS-I made
+all three true without a tenant, so the design could be tested rather than assumed.
+
+**What it proved**: the `AmsBackend` seam held — `VITE_AMS_BACKEND=http` swapped the entire data
+source with **no screen change**, which is the same property the constitution's SharePoint-Lists
+fallback depends on. It also surfaced three defects the mock could not have: 006's FR-028
+utilisation guard, UI-spec gap G-11 (no screen rendered ICCID/phone/static IP, so FR-030 could not
+be demonstrated), and `RoleSwitcher` serving data fetched as a different identity. All three fixed.
+
+Owns `server/**`, `app/src/api/http/**`, `app/.env.localapi`, and the `englobe-ams-api` /
+`englobe-ams-localapi*` launch configs.
+
+**Still open, and all of it needs the tenant**: nothing in WS-I. It is a proof of concept and
+production remains Dataverse plus flows F1–F5 — `server/README.md` has the table mapping each
+piece of the server onto the flow that replaces it, and names the one thing `api/dataverse/` must
+not do (call `deriveState` to write `eng_asset` itself; that is F1's job).
+
+**If the premium-licensing fallback is ever taken**, `server/README.md` § Swapping in networked
+PostgreSQL is the migration path: `schema.sql` runs unchanged on real PostgreSQL, `Queryable` is
+the whole surface a `pg` Pool has to satisfy, and the `FOR UPDATE` ordering and `ON CONFLICT`
+sequence increment already written for it start doing real work.
 
 ---
 
@@ -216,19 +255,21 @@ Phase 0  (orchestrator, serial)                  DONE 2026-09-02, commit cf94ab3
    ├── WS-D  004 US4 admin assignment             DONE — delivery needs the tenant
    ├── WS-E  api/dataverse (compile-only)         open — Jay's Developer environment now allows a real test (docs/08)
    ├── WS-F  schema + solution files              open
-   ├── WS-G  007 synthetic fleet history          IN PROGRESS — store.ts persistence change still pending; no plan.md
-   └── WS-H  008 release safety                   US1 DONE; T012/T016 need App.tsx; US2–US5 need the tenant
+   ├── WS-G  007 synthetic fleet history          DONE
+   ├── WS-H  008 release safety                   US1 DONE incl. T012/T016; US2–US5 need the tenant
+   └── WS-I  local full-stack POC (server/)       DONE 2026-09-03
    │
 Integration (orchestrator, serial)
-   npx tsc -b && npm run test && npm run build && npm run build:release
+   app:    tsc -b && vitest run && vite build      308 tests, 14 files
+   server: tsc --noEmit && vitest run               64 tests, 5 files
    Drive the app at 390px against real data; verify acceptance questions 1–7
-   Update docs/09-build-report.md — the WS-G and WS-H sections are not there yet
+   docs/09-build-report.md now records WS-G, WS-H and WS-I
 ```
 
-WS-A to WS-D are complete and WS-H US1 is built; `docs/09-build-report.md` § "Phase 0–2 —
-multi-agent extension" records the first four. It does **not** yet record WS-G or WS-H — the sessions
-doing that work must add their sections when they finish (`AGENT-BRIEF.md` §8), and the test
-baseline moves from 281 to whatever they add (WS-H reports 291).
+WS-A to WS-D, WS-G, WS-H US1 and WS-I are complete, and `docs/09-build-report.md` records all of
+them: § "Phase 0–2 — multi-agent extension" for the first four, the feature 007 addendum for WS-G,
+and the "Local API (`server/`)" addendum for WS-I (which also records WS-H's T012/T016). Only WS-E
+and WS-F are open, and neither can be verified without the tenant.
 
 ## Not buildable in any session without the tenant
 
