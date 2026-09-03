@@ -4,7 +4,7 @@
  * The browser names one of three demo identities in an `x-ams-dev-user` header (the http
  * adapter sends whatever the existing RoleSwitcher stored); the server resolves it to a
  * CurrentUser and never trusts anything else the client says about who it is or what role it
- * holds (docs/14 §3 trust boundary — the browser owns no authority; only the header-to-user
+ * holds (server/README.md § Identity — the browser owns no authority; only the header-to-user
  * mapping is a dev shortcut).
  *
  * Replacing this with Entra (OIDC + BFF session cookie) changes only this file: routes and

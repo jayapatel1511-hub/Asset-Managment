@@ -2,7 +2,7 @@
 --
 -- Mirrors app/src/api/types.ts one for one so the existing React screens run unchanged: one
 -- asset `status` (data/reference/state_machine.json), not the three-axis model proposed in
--- docs/15-postgres-data-model.md — that split is a product decision still marked PROPOSED in
+-- server/README.md § What this POC does not do — that split is a product decision still PROPOSED in
 -- docs/08-decisions.md and is deliberately out of scope for the POC.
 --
 -- Dates are ISO-8601 text, exactly the strings the app already exchanges. The database does no
@@ -152,7 +152,9 @@ CREATE TABLE IF NOT EXISTS asset_relationship (
 );
 CREATE INDEX IF NOT EXISTS rel_child_idx  ON asset_relationship (childasset);
 CREATE INDEX IF NOT EXISTS rel_parent_idx ON asset_relationship (parentasset);
--- one open parent per child (docs/15 §9 rule, enforced here as a partial unique index)
+-- one open parent per child, enforced as a partial unique index. transactionService.ts's
+-- relationship "open" op closes a previous membership rather than colliding with this
+-- (server/README.md § Two deliberate divergences from the mock).
 CREATE UNIQUE INDEX IF NOT EXISTS rel_one_open_parent ON asset_relationship (childasset) WHERE end_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS calibration_record (
@@ -218,8 +220,9 @@ CREATE TABLE IF NOT EXISTS office_admin_assignment (
   admin_upns jsonb NOT NULL
 );
 
--- One store for command idempotency (the review of PR #2 flagged the two-table variant in
--- docs/15 as drift-prone). Rows are never expired: an accepted command must return its original
+-- One store for command idempotency, rather than the drift-prone two-table variant an earlier
+-- draft proposed (server/README.md § Idempotency). Rows are never expired: an accepted command
+-- must return its original
 -- outcome for as long as a device might replay it (Principle VIII).
 CREATE TABLE IF NOT EXISTS command_idempotency (
   client_submission_id text PRIMARY KEY,

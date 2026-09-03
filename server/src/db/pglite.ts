@@ -5,7 +5,8 @@
  * whole callback. That is what gives the command path its serialisation for free in this POC —
  * two overlapping checkouts are applied one after the other, each inside its own transaction,
  * and the second sees the first's result. On a networked PostgreSQL the same SQL would rely on
- * `SELECT ... FOR UPDATE` in deterministic order instead (docs/14 §5.3); nothing in the SQL
+ * `SELECT ... FOR UPDATE` in deterministic order instead (server/README.md § Concurrency and
+ * § Swapping in networked PostgreSQL); nothing in the SQL
  * itself would change.
  */
 import { PGlite } from "@electric-sql/pglite";
