@@ -1,8 +1,15 @@
 /**
- * In-memory store for the mock backend. Hydrates from the migrated data (public/data/*.json,
- * copied from migration/staged/ by `npm run copy:staged-data`) on first load, then persists
- * every write to localStorage so a page reload doesn't lose what a technician just did — this
- * is the local stand-in for Dataverse's durability, not a replacement for it.
+ * In-memory store for the mock backend. Hydrates from the loaded dataset (public/data/*.json,
+ * copied from migration/staged/ — or from a synthetic dataset — by `npm run copy:staged-data`)
+ * on every load, then persists only the DELTA a user has created on top of it to localStorage,
+ * so a page reload doesn't lose what a technician just did — this is the local stand-in for
+ * Dataverse's durability, not a replacement for it.
+ *
+ * Feature 007 FR-060/SC-014 changed this from a whole-snapshot persist. The base dataset is
+ * served from static files and never written to localStorage: a synthetic 20-year history is
+ * tens of megabytes against a ~5 MB quota, and the old code caught the resulting QuotaExceeded
+ * error and carried on in memory, so the user's own transactions vanished on reload without a
+ * word. The delta is a few kilobytes and always fits.
  *
  * The write path (`applyTransaction`) is this app's copy of F1 (docs/03-automation.md): it
  * calls the same domain/deriveState.ts the app's own pre-submit check calls (Principle V — one
@@ -27,7 +34,21 @@ import type {
   TransactionLine,
 } from "../types";
 
-const LOCAL_STORAGE_KEY = "ams-mock-store-v1";
+const LOCAL_STORAGE_KEY = "ams-mock-store-v2"; // v1 held the whole snapshot; see the header
+
+/** Identity of the dataset in public/data/, from its manifest. Absent manifest = the real
+ * migrated data (feature 007 FR-007: no manifest means real, never the other way round). */
+export interface DatasetInfo {
+  synthetic: boolean;
+  seed?: string;
+  profile?: string;
+  asOf?: string;
+  generatedAt?: string;
+  verified?: boolean;
+  counts?: Record<string, number>;
+}
+
+const REAL_DATASET: DatasetInfo = { synthetic: false };
 
 interface StagedAsset {
   id: string;
@@ -54,6 +75,24 @@ interface StagedAsset {
 
 interface StagedIdSequenceEntry {
   nextvalue: number;
+}
+
+/** What a user did on top of the base dataset — the only thing localStorage holds. */
+export interface StoreDelta {
+  datasetKey: string;
+  /** Assets whose fields differ from the base dataset (derived state the user's own
+   * transactions produced), keyed by assetid. */
+  assets: Asset[];
+  transactions: TransactionHeader[];
+  transactionLines: TransactionLine[];
+  relationships: AssetRelationship[];
+  calibrationRecords: CalibrationRecord[];
+  locations: Location[];
+  idSequence: Record<string, StagedIdSequenceEntry>;
+  processedClientSubmissionIds: string[];
+  installations: Installation[];
+  installationComponents: InstallationComponent[];
+  officeAdminAssignments: OfficeAdminAssignment[];
 }
 
 export interface StoreSnapshot {
@@ -99,6 +138,18 @@ export class MockStore {
   officeAdminAssignments: OfficeAdminAssignment[] = [];
   private txnCounter = 0;
   ready: Promise<void>;
+  /** Provenance of the loaded dataset (feature 007 FR-007). */
+  dataset: DatasetInfo = REAL_DATASET;
+  /** Base-dataset fingerprints, captured after hydration; everything beyond them is the delta. */
+  private baseAssetJson = new Map<string, string>();
+  private baseCounts = { transactions: 0, transactionLines: 0, relationships: 0, calibrationRecords: 0, locations: 0, installations: 0, installationComponents: 0 };
+  private baseRelationshipJson = new Map<string, string>();
+  private baseInstallationJson = new Map<string, string>();
+  private baseInstallationComponentJson = new Map<string, string>();
+  /** Read indexes over the append-only history. Built on first use and maintained on write —
+   * never a second copy of the data, just a lookup into it. See `linesForAsset`. */
+  private txnById: Map<string, TransactionHeader> | null = null;
+  private linesByAsset: Map<string, TransactionLine[]> | null = null;
 
   constructor(options: { skipAutoLoad?: boolean } = {}) {
     this.ready = options.skipAutoLoad ? Promise.resolve() : this.load();
@@ -136,20 +187,76 @@ export class MockStore {
     store.installationComponents = data.installationComponents ?? [];
     store.officeAdminAssignments = data.officeAdminAssignments ?? [];
     store.txnCounter = store.transactions.length;
+    store.invalidateHistoryIndexes();
     return store;
   }
 
   private async load(): Promise<void> {
-    const persisted = readLocalStorage();
-    if (persisted) {
-      this.hydrateFromSnapshot(persisted);
-      return;
-    }
+    // The base dataset always comes from the static files — never from localStorage, which could
+    // not hold a synthetic history and, worse, would pin an old copy of the real one (FR-060).
     await this.hydrateFromStagedFiles();
-    this.persist();
+    this.captureBaseline();
+    const delta = readLocalStorage();
+    if (delta && delta.datasetKey === this.datasetKey()) this.applyDelta(delta);
+    else if (delta) window.localStorage.removeItem(LOCAL_STORAGE_KEY); // a different dataset is loaded
+  }
+
+  /** Stable identity of the loaded base data, so a delta recorded against one dataset is never
+   * replayed onto another (switching real <-> synthetic, or regenerating with a new seed). */
+  private datasetKey(): string {
+    return this.dataset.synthetic ? `synthetic:${this.dataset.seed}:${this.dataset.profile}:${this.dataset.generatedAt}` : "real";
+  }
+
+  private captureBaseline(): void {
+    this.baseAssetJson = new Map([...this.assets.values()].map((a) => [a.assetid, JSON.stringify(a)]));
+    this.baseRelationshipJson = new Map(this.relationships.map((r) => [r.id, JSON.stringify(r)]));
+    this.baseInstallationJson = new Map(this.installations.map((i) => [i.id, JSON.stringify(i)]));
+    this.baseInstallationComponentJson = new Map(this.installationComponents.map((c) => [c.id, JSON.stringify(c)]));
+    this.baseCounts = {
+      transactions: this.transactions.length,
+      transactionLines: this.transactionLines.length,
+      relationships: this.relationships.length,
+      calibrationRecords: this.calibrationRecords.length,
+      locations: this.locations.length,
+      installations: this.installations.length,
+      installationComponents: this.installationComponents.length,
+    };
+  }
+
+  private applyDelta(delta: StoreDelta): void {
+    for (const a of delta.assets) this.assets.set(a.assetid, a);
+    this.transactions.push(...delta.transactions);
+    this.transactionLines.push(...delta.transactionLines);
+    this.calibrationRecords.push(...delta.calibrationRecords);
+    this.locations.push(...delta.locations);
+    for (const r of delta.relationships) {
+      const i = this.relationships.findIndex((x) => x.id === r.id);
+      if (i >= 0) this.relationships[i] = r;
+      else this.relationships.push(r);
+    }
+    for (const inst of delta.installations) {
+      const i = this.installations.findIndex((x) => x.id === inst.id);
+      if (i >= 0) this.installations[i] = inst;
+      else this.installations.push(inst);
+    }
+    for (const c of delta.installationComponents) {
+      const i = this.installationComponents.findIndex((x) => x.id === c.id);
+      if (i >= 0) this.installationComponents[i] = c;
+      else this.installationComponents.push(c);
+    }
+    this.officeAdminAssignments = delta.officeAdminAssignments;
+    this.invalidateHistoryIndexes();
+    this.idSequence = { ...this.idSequence, ...delta.idSequence };
+    this.processedClientSubmissionIds = new Set(delta.processedClientSubmissionIds);
+    this.txnCounter = this.transactions.length;
   }
 
   private async hydrateFromStagedFiles(): Promise<void> {
+    // Feature 007: a synthetic dataset ships a manifest and two extra tables; the real migrated
+    // data ships neither, and its absence is what identifies it as real (FR-007).
+    this.dataset = (await fetchJsonOptional<DatasetInfo & { dataset?: string; seed?: string }>("/data/manifest.json").then((m) =>
+      m ? { synthetic: m.dataset === "synthetic", seed: m.seed, profile: m.profile, asOf: m.asOf, generatedAt: m.generatedAt, verified: m.verified, counts: m.counts } : REAL_DATASET
+    )) as DatasetInfo;
     const [assets, locations, models, projects, transactions, lines, relationships, calRecords, idSeq] =
       await Promise.all([
         fetchJson<StagedAsset[]>("/data/assets.json"),
@@ -196,9 +303,15 @@ export class MockStore {
     this.calibrationRecords = calRecords;
     this.idSequence = idSeq;
     this.txnCounter = transactions.length;
+    this.invalidateHistoryIndexes();
+    this.installations = (await fetchJsonOptional<Installation[]>("/data/installations.json")) ?? [];
+    this.installationComponents = (await fetchJsonOptional<InstallationComponent[]>("/data/installationcomponents.json")) ?? [];
+    this.officeAdminAssignments = (await fetchJsonOptional<OfficeAdminAssignment[]>("/data/officeadminassignments.json")) ?? [];
   }
 
-  private hydrateFromSnapshot(snap: StoreSnapshot): void {
+  /** Test/utility entry point: replace everything from a full snapshot. Not used by load(),
+   * which hydrates the base from static files and applies only the user delta (FR-060). */
+  hydrateFromSnapshot(snap: StoreSnapshot): void {
     this.assets = new Map(snap.assets.map((a) => [a.assetid, a]));
     this.locations = snap.locations;
     this.equipmentModels = snap.equipmentModels;
@@ -214,34 +327,55 @@ export class MockStore {
     this.installationComponents = snap.installationComponents ?? [];
     this.officeAdminAssignments = snap.officeAdminAssignments ?? [];
     this.processedClientSubmissionIds = new Set(snap.processedClientSubmissionIds);
+    this.invalidateHistoryIndexes();
     this.txnCounter = snap.transactions.length;
   }
 
-  persist(): void {
-    const snap: StoreSnapshot = {
-      assets: [...this.assets.values()],
-      locations: this.locations,
-      equipmentModels: this.equipmentModels,
-      projects: this.projects,
-      transactions: this.transactions,
-      transactionLines: this.transactionLines,
-      relationships: this.relationships,
-      calibrationRecords: this.calibrationRecords,
+  /** FR-060: writes only what the user added or changed. Never the base dataset. */
+  buildDelta(): StoreDelta {
+    const changedAssets: Asset[] = [];
+    for (const a of this.assets.values()) {
+      const base = this.baseAssetJson.get(a.assetid);
+      if (base === undefined || base !== JSON.stringify(a)) changedAssets.push(a);
+    }
+    const changedRelationships = this.relationships.filter((r) => {
+      const base = this.baseRelationshipJson.get(r.id);
+      return base === undefined || base !== JSON.stringify(r);
+    });
+    const changedInstallations = this.installations.filter((i) => {
+      const base = this.baseInstallationJson.get(i.id);
+      return base === undefined || base !== JSON.stringify(i);
+    });
+    const changedInstallationComponents = this.installationComponents.filter((c) => {
+      const base = this.baseInstallationComponentJson.get(c.id);
+      return base === undefined || base !== JSON.stringify(c);
+    });
+    return {
+      datasetKey: this.datasetKey(),
+      assets: changedAssets,
+      transactions: this.transactions.slice(this.baseCounts.transactions),
+      transactionLines: this.transactionLines.slice(this.baseCounts.transactionLines),
+      relationships: changedRelationships,
+      calibrationRecords: this.calibrationRecords.slice(this.baseCounts.calibrationRecords),
+      locations: this.locations.slice(this.baseCounts.locations),
       idSequence: this.idSequence,
       processedClientSubmissionIds: [...this.processedClientSubmissionIds],
-      installations: this.installations,
-      installationComponents: this.installationComponents,
+      installations: changedInstallations,
+      installationComponents: changedInstallationComponents,
       officeAdminAssignments: this.officeAdminAssignments,
     };
+  }
+
+  persist(): void {
     try {
-      window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snap));
+      window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(this.buildDelta()));
     } catch {
-      // localStorage can throw (private browsing, quota) — the in-memory store still works for
-      // this session; a reload would just re-hydrate from the migrated snapshot.
+      // localStorage can throw (private browsing, quota). The delta is small enough that this is
+      // now genuinely exceptional rather than the expected outcome it was for a whole snapshot.
     }
   }
 
-  /** Dev/demo affordance: wipe local writes and reload the original migrated snapshot. */
+  /** Dev/demo affordance: discard local writes and reload the loaded dataset as generated. */
   async resetToMigratedSnapshot(): Promise<void> {
     window.localStorage.removeItem(LOCAL_STORAGE_KEY);
     this.assets.clear();
@@ -253,8 +387,9 @@ export class MockStore {
     this.installationComponents = [];
     this.officeAdminAssignments = [];
     this.processedClientSubmissionIds.clear();
+    this.invalidateHistoryIndexes();
     await this.hydrateFromStagedFiles();
-    this.persist();
+    this.captureBaseline();
   }
 
   nextTransactionName(): string {
@@ -267,6 +402,42 @@ export class MockStore {
     const value = entry.nextvalue;
     this.idSequence[prefix] = { nextvalue: value + 1 };
     return value;
+  }
+
+  /**
+   * One asset's transaction lines, and one transaction by id.
+   *
+   * These exist because feature 007's synthetic history made an existing quadratic read path
+   * unmissable: `getAssetHistory` filtered the whole line table and rebuilt a Map of every
+   * transaction on EVERY call, and `features/reports/UtilisationPage.tsx` calls it once per
+   * asset. Against the real migrated data (1,026 lines, 11 transactions) that is invisible;
+   * against 91,616 lines and 62,969 transactions it is ~300 million operations and the page took
+   * over two minutes. Indexing makes it linear once, then a lookup per asset. No behaviour
+   * changes — same rows, same order.
+   */
+  linesForAsset(assetId: string): TransactionLine[] {
+    if (!this.linesByAsset) {
+      const index = new Map<string, TransactionLine[]>();
+      for (const line of this.transactionLines) {
+        const list = index.get(line.asset);
+        if (list) list.push(line);
+        else index.set(line.asset, [line]);
+      }
+      this.linesByAsset = index;
+    }
+    return this.linesByAsset.get(assetId) ?? [];
+  }
+
+  transactionById(id: string): TransactionHeader | undefined {
+    if (!this.txnById) this.txnById = new Map(this.transactions.map((t) => [t.id, t]));
+    return this.txnById.get(id);
+  }
+
+  /** Called wherever the history arrays are replaced wholesale (hydrate, delta, reset). Appends
+   * during a write keep the indexes up to date incrementally instead — see applyTransaction. */
+  private invalidateHistoryIndexes(): void {
+    this.txnById = null;
+    this.linesByAsset = null;
   }
 
   toSnapshot(asset: Asset): AssetSnapshot {
@@ -376,7 +547,7 @@ export class MockStore {
     // pass 1 having already returned on any failure.
     const transactionId = `mock-txn-${crypto.randomUUID()}`;
     const transactionName = this.nextTransactionName();
-    this.transactions.push({
+    const header: TransactionHeader = {
       id: transactionId,
       name: transactionName,
       transactiontype: params.transactiontype,
@@ -391,7 +562,9 @@ export class MockStore {
       primaryasset: params.primaryAssetId ?? null,
       notes: [params.notes, `[clientSubmissionId:${params.clientSubmissionId}]`].filter(Boolean).join(" "),
       expectedreturn: params.expectedreturn ?? null,
-    });
+    };
+    this.transactions.push(header);
+    if (this.txnById) this.txnById.set(header.id, header);
 
     for (const line of params.lines) {
       const plan = plans.find((p) => p.asset.assetid === line.assetId)!;
@@ -407,7 +580,7 @@ export class MockStore {
         retirementreason: (plan.result.fields.retirementReason as Asset["retirementreason"]) ?? plan.asset.retirementreason,
       };
       this.assets.set(plan.asset.assetid, updated);
-      this.transactionLines.push({
+      const newLine: TransactionLine = {
         id: `mock-line-${crypto.randomUUID()}`,
         transaction: transactionId,
         asset: plan.asset.assetid,
@@ -419,7 +592,13 @@ export class MockStore {
         condition: line.condition ?? null,
         processed: true,
         notes: null,
-      });
+      };
+      this.transactionLines.push(newLine);
+      if (this.linesByAsset) {
+        const list = this.linesByAsset.get(newLine.asset);
+        if (list) list.push(newLine);
+        else this.linesByAsset.set(newLine.asset, [newLine]);
+      }
       this.applyRelationshipOps(plan.result.relationshipOps, transactionId);
       this.mirrorComponentChildren(updated);
     }
@@ -483,6 +662,18 @@ export class MockStore {
   }
 }
 
+/** Returns null when the file is simply not part of this dataset (the real migrated data has no
+ * manifest and no installation tables) — distinct from a genuine load failure of a required file. */
+async function fetchJsonOptional<T>(url: string): Promise<T | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) {
@@ -493,10 +684,10 @@ async function fetchJson<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-function readLocalStorage(): StoreSnapshot | null {
+function readLocalStorage(): StoreDelta | null {
   try {
     const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as StoreSnapshot) : null;
+    return raw ? (JSON.parse(raw) as StoreDelta) : null;
   } catch {
     return null;
   }

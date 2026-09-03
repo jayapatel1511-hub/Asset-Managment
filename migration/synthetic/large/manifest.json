@@ -2,31 +2,31 @@
   "dataset": "synthetic",
   "generatorVersion": "0.1.0",
   "seed": "englobe-ams-007",
-  "profile": "demo",
+  "profile": "large",
   "params": {
     "seed": "englobe-ams-007",
     "asOf": "2026-09-02",
     "historyYears": 20,
     "detailYears": 5,
     "deepRate": 0.4,
-    "scale": 0.25,
-    "profile": "demo"
+    "scale": 4.5,
+    "profile": "large"
   },
   "asOf": "2026-09-02",
-  "generatedAt": "2026-09-03T03:11:28.132Z",
+  "generatedAt": "2026-09-03T03:31:02.518Z",
   "inputsHash": "4676d3426fcd4cb9",
   "verified": true,
   "counts": {
-    "assets": 371,
-    "activeAssets": 285,
-    "transactions": 16836,
-    "transactionLines": 23022,
-    "relationships": 1152,
-    "installations": 2022,
-    "installationComponents": 3138,
-    "calibrationRecords": 1877,
-    "projects": 260,
-    "sites": 686,
+    "assets": 6626,
+    "activeAssets": 5312,
+    "transactions": 295355,
+    "transactionLines": 438619,
+    "relationships": 26372,
+    "installations": 39838,
+    "installationComponents": 65550,
+    "calibrationRecords": 34914,
+    "projects": 2501,
+    "sites": 12069,
     "roster": 123
   },
   "catalogueExtensions": [
@@ -61,7 +61,7 @@
       "key": "third-party-owned",
       "description": "Asset whose notes record third-party ownership (feature 006 FR-012)",
       "identifiers": {
-        "assetId": "DL-BE-30025"
+        "assetId": "DL-BE-30027"
       }
     },
     {
@@ -69,14 +69,16 @@
       "description": "An overdue calibration at every active office (feature 004 US1)",
       "identifiers": {
         "assetIds": [
-          "DL-UM-40010",
-          "GEO-UM-40000",
-          "GEO-BG-30029",
-          "DL-D10-350004",
-          "DL-BE-30051",
-          "DL-UM-40023",
-          "DL-UM-40007",
-          "GEO-UM-40019"
+          "SLM-S50-500075",
+          "GEO-BG-30288",
+          "DL-UM-40404",
+          "DL-UM-40420",
+          "DL-UM-40043",
+          "DL-UM-40312",
+          "DL-D10-300064",
+          "DL-UM-40433",
+          "DL-UM-40463",
+          "GEO-UM-40549"
         ]
       }
     },
@@ -84,10 +86,17 @@
       "key": "leaver-holding-assets",
       "description": "A person who left the company while still holding equipment (feature 006 edge case)",
       "identifiers": {
-        "upn": "rohan.marchetti@englobecorp.com",
-        "leftOn": "2026-01-15",
+        "upn": "elodie.mensah@englobecorp.com",
+        "leftOn": "2025-11-20",
         "assetIds": [
-          "SB-600000"
+          "DL-BE-30922",
+          "VWR-70001",
+          "SLM-S50-500015",
+          "SB-600002",
+          "SLM-S50-500031",
+          "AT-5012",
+          "SLM-LD-5000018",
+          "AQDS-900007"
         ]
       }
     },
@@ -95,15 +104,15 @@
       "key": "failed-calibration-then-repair",
       "description": "A Failed calibration (next-due not advanced, feature 004 FR-016) followed by repair and a passing re-calibration",
       "identifiers": {
-        "assetId": "GEO-V12-400001"
+        "assetId": "LS-100002"
       }
     },
     {
       "key": "expected-return-overdue",
       "description": "A checkout whose expected return is more than 90 days past (flow F4's case)",
       "identifiers": {
-        "assetId": "AC-5001",
-        "custodian": "emeka.eriksen@englobecorp.com",
+        "assetId": "AC-5017",
+        "custodian": "mathilde.pellerin@englobecorp.com",
         "expectedReturn": "2026-03-16"
       }
     },
@@ -111,60 +120,60 @@
       "key": "deployed-and-overdue",
       "description": "A deployed asset that is overdue for calibration (feature 004 FR-030)",
       "identifiers": {
-        "loggerId": "DL-UM-40003",
-        "site": "2307 Stonebridge Court"
+        "loggerId": "DL-D10-350040",
+        "site": "4115 Fanshawe Ridge"
       }
     },
     {
       "key": "component-swap",
       "description": "Installation with a component swapped mid-life, still on site (feature 005 US4)",
       "identifiers": {
-        "installationId": "900f852b-f648-558c-b575-64da7c67b492",
-        "outgoing": "GEO-V12-400003",
-        "incoming": "GEO-C22-450003",
-        "site": "2287 Lakeshore Viaduct Road"
+        "installationId": "5c1bac54-d73d-5976-a1f2-b167277ff7e9",
+        "outgoing": "GEO-UM-40415",
+        "incoming": "GEO-UM-40142",
+        "site": "157 Kelly Lake Line"
       }
     },
     {
       "key": "partial-recovery",
       "description": "An installation partially recovered — sensors back, logger still on site (feature 005 FR-015)",
       "identifiers": {
-        "loggerId": "DL-UM-40040",
-        "site": "1086 Kettle Creek Road"
+        "loggerId": "DL-BE-30720",
+        "site": "4295 Erie Shore Drive"
       }
     },
     {
       "key": "retired-after-15-years",
       "description": "An asset retired after at least fifteen years, with its full history (feature 006 FR-022/FR-029)",
       "identifiers": {
-        "assetId": "DST-5003",
-        "acquired": "2008-09-10"
+        "assetId": "DST-5009",
+        "acquired": "2007-04-24"
       }
     },
     {
       "key": "missing",
       "description": "An asset currently Missing (feature 003 US6)",
       "identifiers": {
-        "assetId": "AC-5002"
+        "assetId": "CAM-7000020"
       }
     },
     {
       "key": "closed-project-with-station",
       "description": "A project closed while a station remained deployed on it (feature 006 edge case)",
       "identifiers": {
-        "project": "09000010",
-        "installationId": "2697ae8b-aa6b-5fbc-aec7-4ee43d5e0e5e",
-        "site": "4025 Humberline Court"
+        "project": "09000019",
+        "installationId": "19e5105b-2e2f-581b-93c4-cbf713d21621",
+        "site": "4100 Danforth Ridge Road"
       }
     },
     {
       "key": "site-on-two-projects",
       "description": "A site with installations on two different projects (feature 005 FR-019)",
       "identifiers": {
-        "site": "1007 Greyrock Mine Road",
+        "site": "100 Kelly Lake Line",
         "projects": [
-          "09000212",
-          "09000257"
+          "09000108",
+          "09002466"
         ]
       }
     },
@@ -172,9 +181,18 @@
       "key": "at-foreign-office",
       "description": "An asset currently at an office other than its home office (feature 006 edge case)",
       "identifiers": {
-        "assetId": "MEMS-DP6000",
-        "homeOffice": "Toronto",
+        "assetId": "AC-5016",
+        "homeOffice": "Kitchener",
         "currentLocation": "Ottawa"
+      }
+    },
+    {
+      "key": "shared-serial-pair-apart",
+      "description": "A logger and its same-serial geophone currently at different locations (Principle III)",
+      "identifiers": {
+        "loggerId": "DL-UM-40122",
+        "geophoneId": "GEO-UM-40122",
+        "site": "4448 Pinery Road"
       }
     },
     {

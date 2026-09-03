@@ -197,7 +197,9 @@ to the operator without anyone reporting them.
   2026-09-02: "production backend" wrongly implied a build for the development environment was
   refused too.)*
 - **FR-002**: The release build MUST exclude all staged fleet data from its output, and MUST NOT
-  rely on an operator remembering to remove it.
+  rely on an operator remembering to remove it. The same exclusion, and the FR-003 scan, MUST cover
+  synthetic dataset outputs (feature 007 FR-010a) once their paths are fixed. *(Extended
+  2026-09-02.)*
 - **FR-003**: A release bundle MUST contain no asset record, secondary identifier, phone number or
   network address.
 - **FR-004**: A release bundle MUST NOT contain development-only stand-ins for tenant capabilities.

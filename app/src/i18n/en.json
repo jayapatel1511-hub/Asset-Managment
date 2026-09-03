@@ -245,5 +245,9 @@
   "admin.officeAdmins.addAdmin": "Add administrator",
   "admin.officeAdmins.gap": "No administrator assigned",
   "admin.officeAdmins.noGaps": "Every office has an administrator.",
-  "admin.officeAdmins.saved": "Saved."
+  "admin.officeAdmins.saved": "Saved.",
+
+  "dataset.synthetic": "SYNTHETIC DATA — not real assets",
+  "dataset.syntheticDetail": "seed {seed} · {profile} profile · as of {asOf}",
+  "dataset.unverified": "This dataset failed its own verification — do not rely on it."
 }

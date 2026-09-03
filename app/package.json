@@ -11,12 +11,18 @@
     "prebuild:release": "node scripts/release-guard.mjs && node scripts/generate-state-machine.mjs",
     "build:release": "tsc -b && vite build --mode release && node scripts/scan-bundle.mjs",
     "scan:bundle": "node scripts/scan-bundle.mjs",
+    "prebuild:demo": "node scripts/generate-state-machine.mjs && node scripts/copy-staged-data.mjs --dataset synthetic/demo",
+    "build:demo": "vite build && node scripts/scan-bundle.mjs",
     "preview": "vite preview",
     "pretest": "node scripts/generate-state-machine.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "generate:state-machine": "node scripts/generate-state-machine.mjs",
-    "copy:staged-data": "node scripts/copy-staged-data.mjs"
+    "copy:staged-data": "node scripts/copy-staged-data.mjs",
+    "synthetic": "vite-node scripts/synthetic/generate.ts",
+    "synthetic:roster": "vite-node scripts/synthetic/authoring/make-roster.ts",
+    "data:real": "node scripts/copy-staged-data.mjs",
+    "data:synthetic": "node scripts/copy-staged-data.mjs --dataset synthetic/standard"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.74.7",
@@ -27,6 +33,7 @@
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
+    "@microsoft/power-apps-cli": "1.0.1",
     "@types/node": "^26.4.1",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",

@@ -45,6 +45,12 @@ function unimplemented(): never {
 
 // DATAVERSE-ONLY
 export class DataverseAmsBackend implements AmsBackend {
+  // DATAVERSE-ONLY. Answerable without a tenant, and deliberately not `unimplemented`: the app
+  // shell asks this on every load (components/DatasetBanner.tsx) and a throw there would break
+  // every screen. A Dataverse environment holds the real data unless feature 007's US5 load has
+  // put synthetic rows in it — which needs Q14 answered first, and would be detected here by
+  // querying the synthetic marker (FR-005), not by a manifest file.
+  getDatasetInfo = async () => ({ synthetic: false });
   getCurrentUser = unimplemented;
   searchAssets = unimplemented;
   listAssets = unimplemented;

@@ -146,6 +146,18 @@ export interface CalibrationRecord {
   correctedAt?: string | null;
 }
 
+/** Feature 007 FR-007. `synthetic: false` is the safe default: the real migrated data ships no
+ * manifest, so anything that cannot prove it is synthetic is treated as real. */
+export interface DatasetInfo {
+  synthetic: boolean;
+  seed?: string;
+  profile?: string;
+  asOf?: string;
+  generatedAt?: string;
+  verified?: boolean;
+  counts?: Record<string, number>;
+}
+
 export interface CurrentUser {
   upn: string;
   displayName: string;

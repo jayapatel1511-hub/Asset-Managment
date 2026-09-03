@@ -17,6 +17,7 @@ import type {
   CalibrationRecord,
   Condition,
   CurrentUser,
+  DatasetInfo,
   EquipmentModel,
   FleetCounts,
   HistoryEntry,
@@ -201,6 +202,10 @@ export type SubmissionOutcome = SubmissionResult | SubmissionError;
 
 export interface AmsBackend {
   getCurrentUser(): Promise<CurrentUser>;
+
+  /** Feature 007 FR-007: what dataset is loaded — the real migrated data, or a synthetic one,
+   * with the seed and as-of date the app must display on every screen. */
+  getDatasetInfo(): Promise<DatasetInfo>;
 
   // ---- read model (feature 001) ----
   searchAssets(query: string): Promise<Asset[]>;

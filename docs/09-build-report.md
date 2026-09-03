@@ -374,3 +374,120 @@ assumption, a completed deliverable awaiting Jay's read-through.
 7. Ottawa pilot per `docs/06-delivery-plan.md` Step 7, including the Q3 return sweep
    (`migration/reports/02_sweep_checklist.md` is the working list, 592 items).
 8. Production load, other offices, in order.
+
+---
+
+# Build report addendum — feature 007, Synthetic Fleet History (WS-G)
+
+**Date**: 2026-09-02. **Scope requested**: "generate data" against
+`specs/007-synthetic-data/spec.md`. **Delivered**: the generator, its committed inputs, three
+verified datasets, the app plumbing to load one, and the two integration fixes the volume exposed.
+US1–US4 are delivered; US5 (loading into a Dataverse environment) remains blocked on Q14.
+
+Everything generated is fictional. No value in any dataset is copied from the real registry, the
+calibration history or the migrated data — verified per run (FR-002/FR-003/FR-042: zero collisions
+on Asset ID, serial, project number, project name, staff name or site name).
+
+## What was built
+
+| Piece | Where |
+|---|---|
+| Hand-authored fiction: roster, project and site pools, model windows, office activation | `data/synthetic/` (its README explains each file) |
+| Generator: day-loop simulation, ledger, answer key, verifier, writers | `app/scripts/synthetic/` (its README explains each module) |
+| Datasets, one directory per profile, plus Power BI CSVs and a manifest | `migration/synthetic/{demo,standard,large}/` |
+| Verification report per profile | `migration/reports/07_synthetic_<profile>_report.md` |
+| Dataset selection, synthetic banner, delta persistence | `app/scripts/copy-staged-data.mjs`, `app/src/components/DatasetBanner.tsx`, `app/src/api/mock/store.ts` |
+
+```bash
+npm run synthetic                          # standard profile
+npm run synthetic -- --profile large       # or demo; --check-determinism to prove FR-052
+node scripts/copy-staged-data.mjs --dataset synthetic/standard   # load it into the app
+node scripts/copy-staged-data.mjs                                # back to the real data (the default)
+```
+
+## Measured output, all three profiles verified
+
+| | `demo` (0.25) | `standard` (1.0) | `large` (4.5) |
+|---|---|---|---|
+| Assets ever owned / Active at as-of | 371 / 285 | 1,459 / 1,138 | 6,626 / 5,312 |
+| Transaction headers / lines | 16,836 / 23,022 | 62,969 / 91,616 | 295,355 / 438,619 |
+| Installations / components | 2,022 / 3,138 | 8,062 / 13,246 | 39,838 / 65,550 |
+| Calibration records | 1,877 | 7,567 | 34,914 |
+| Projects / sites | 260 / 686 | 625 / 2,542 | 2,501 / 12,069 |
+| On disk / generation time | 17 MB / 3 s | 65 MB / 37 s | 418 MB / 20 min |
+| Checks | all pass | all pass | all pass |
+
+Earliest transaction 2006-08-25, latest as-of 2026-09-02: 20 years, every quarter populated.
+
+**Not asserted — measured, per profile, by `lib/verify.ts`**: 0 disallowed transitions and all 33
+allowed matrix cells exercised; 0 replay mismatches across every asset (SC-004, through the app's
+own `domain/pointInTime.ts`); 0 timestamp collisions; 100% of assets acquired before the detail
+window have lines in every year of it; distribution by type, group and home office within 10
+percentage points of the real fleet; 16 of 16 planted scenarios present; the answer key reconciles
+with `api/mock/reporting.ts` and `domain/installation.ts` with 0 discrepancies. `--check-determinism`
+regenerates and compares every file: byte-identical.
+
+## Verified live in a browser, at 390 px, against the standard profile
+
+- The synthetic banner is on every screen: `SYNTHETIC DATA — not real assets · seed
+  englobe-ams-007 · standard profile · as of 2026-09-02`. Removing the manifest removes the banner;
+  a dataset that cannot prove it is synthetic is treated as real.
+- `DL-BE-30000` — an Instantel Minimate Plus with **44 installations from 2006 to 2026**, currently
+  deployed at 233 Queensway Ridge on project 09000061, next calibration 2026-12-26. This is what no
+  screen could show before: the real migrated data gives every asset exactly one line.
+- **Utilisation** (feature 006 US4) computes for the first time — proportions by equipment type and
+  by office, lowest-availability pairs, 490 idle assets — instead of refusing for want of history.
+- Planted scenarios opened at their documented identifiers: site *100 Danforth Ridge Road* carrying
+  installations on two projects (09000615 now, 09000179 in 2013–14); `GEO-UM-40030` Available at
+  Sudbury while `DL-UM-40030`, which shares its serial, is deployed at 1051 Frood Extension Road —
+  Principle III's own worked example, reproduced in fiction.
+
+## Two integration fixes the volume exposed
+
+Both are recorded in `docs/08-decisions.md`; both are invisible against 1,026 real lines, which is
+why only this dataset could surface them.
+
+1. **`api/mock/store.ts` persisted the whole snapshot to localStorage on every write** and caught
+   the resulting quota error silently, so with any dataset over ~5 MB a technician's own
+   transactions were lost on reload without a word. It now re-hydrates the base from the static
+   files and persists only the delta, keyed by dataset so a delta is never replayed onto different
+   data. Six new tests cover it (`tests/api/dataset.test.ts`).
+2. **`getAssetHistory` rebuilt a Map of every transaction on every call** and scanned the whole line
+   table. `UtilisationPage` calls it once per asset: 34 ms per asset, about 49 seconds for the
+   fleet, and the page never rendered. Indexed in the store, it is 221 ms for all 1,459 assets and
+   the page renders in **1.5 s** — measured in the browser, inside feature 006's SC-010 budget.
+
+An earlier ">120 s" reading for that page was **my measurement instrument**, not the app: a
+`MutationObserver` whose callback called `innerText`, forcing a full reflow per mutation. Recorded
+because the first number reported was wrong and the corrected method matters.
+
+## Assumptions and open questions
+
+- **Q14** (may synthetic data be loaded into `Englobe-AMS-Dev`, and bulk-removed afterwards?) blocks
+  US5 only. Nothing in this work touched a tenant. Every row carries a marker naming its seed so a
+  future load can be removed by query (FR-005).
+- **Q15** (fictional identities on the real e-mail domain) and **Q16** (one added modem model, so the
+  decided SIM-is-a-component pattern can exist) proceeded on their recorded recommendations.
+- **Q18** (may a permanent component go to the lab alone?) is implemented on the no-lines reading —
+  components carry no transaction lines and are calibrated with their parent. If Jay answers the
+  other way, the generator changes, not the data model.
+- **SC-003's line and calibration-record minimums were lowered** to match measurement (85,000 and
+  7,000 at scale 1.0). The original figures came from this spec's own pre-build estimate, which
+  assumed 3.5 deployments per logger per year; the realistic figure is about 1.5, because
+  deployments last months and 61% of the fleet is deployed at any moment — the real registry's own
+  proportion. This is a success criterion changed to fit measurement, so it is flagged rather than
+  buried. Feature 006's SC-010 threshold (100,000 lines) now sits on the `large` profile, which
+  measures 438,619.
+
+## Left for someone else
+
+- **Feature 008's FR-010a says synthetic outputs must not reach a release bundle, but
+  `app/scripts/scan-bundle.mjs` reports synthetic data as "safe to publish".** One of the two is
+  wrong. The generator writes only to `migration/`, outside anything Vite bundles; the exposure is a
+  release build made while `public/data/` holds a synthetic dataset. Feature 008 owns both files.
+- **24 generated files under `migration/synthetic/demo/` are tracked in git** (picked up by commit
+  `1f99222`). They are reproducible byte-for-byte from the seed; `.gitignore` now excludes future
+  ones, but those 24 need `git rm --cached` when someone is ready to commit.
+- The roster is a fixed 123 people at every scale, so the `large` profile runs 5,312 assets past 91
+  technicians. Fine for performance testing, thin as a story — scale the roster with the fleet if
+  `large` is ever used for a demo rather than a stopwatch.

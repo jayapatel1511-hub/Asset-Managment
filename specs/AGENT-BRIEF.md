@@ -164,8 +164,8 @@ E and F be exercised for real. It is individual-use only and does not replace `E
 
 ### Concurrent sessions are real
 
-Three interactive `claude` sessions were writing to this repo at once on 2026-09-02 — WS-G, WS-H
-and a spec review — not subagents under one orchestrator, but separate windows. The ownership map
+Four interactive `claude` sessions were writing to this repo at once on 2026-09-02 — WS-G, WS-H, a
+UI spec and a spec review — not subagents under one orchestrator, but separate windows. The ownership map
 still applies, and three habits make it hold: run `ListAgents` and tell peers with `SendMessage`
 which files you are about to edit; re-read any shared file immediately before editing it; and
 **append** to `docs/08-decisions.md` rather than rewriting it, because it is the one file every

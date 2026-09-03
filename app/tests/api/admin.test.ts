@@ -128,7 +128,9 @@ describe("createAdminMethods — setOfficeAdmins", () => {
     const admin = createAdminMethods(store, getCurrentUser);
     await admin.setOfficeAdmins("Toronto", ["admin@englobecorp.com"], "sub-1");
 
-    const raw = window.localStorage.getItem("ams-mock-store-v1");
+    // v2 since feature 007 FR-060: localStorage now holds only the delta on top of the base
+    // dataset, not the whole snapshot. Office admin assignments are part of that delta.
+    const raw = window.localStorage.getItem("ams-mock-store-v2");
     expect(raw).toBeTruthy();
     const parsed = JSON.parse(raw!) as { officeAdminAssignments: Array<{ office: string; adminUpns: string[] }> };
     expect(parsed.officeAdminAssignments).toContainEqual({ office: "Toronto", adminUpns: ["admin@englobecorp.com"] });

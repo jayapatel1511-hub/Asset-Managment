@@ -4,8 +4,23 @@
     {
       "name": "englobe-ams-dev",
       "runtimeExecutable": "C:\\Files\\Asset Managment\\.tools\\node-v22.14.0-win-x64\\node.exe",
-      "runtimeArgs": ["C:\\Files\\Asset Managment\\app\\node_modules\\vite\\bin\\vite.js", "C:\\Files\\Asset Managment\\app"],
+      "runtimeArgs": [
+        "C:\\Files\\Asset Managment\\app\\node_modules\\vite\\bin\\vite.js",
+        "C:\\Files\\Asset Managment\\app"
+      ],
       "port": 3000
+    },
+    {
+      "name": "englobe-ams-synthetic",
+      "runtimeExecutable": "C:\\Files\\Asset Managment\\.tools\\node-v22.14.0-win-x64\\node.exe",
+      "runtimeArgs": [
+        "C:\\Files\\Asset Managment\\app\\node_modules\\vite\\bin\\vite.js",
+        "C:\\Files\\Asset Managment\\app",
+        "--port",
+        "3100",
+        "--strictPort"
+      ],
+      "port": 3100
     }
   ]
 }

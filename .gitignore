@@ -18,3 +18,9 @@ Thumbs.db
 
 # Claude Code runtime state (per-machine, per-session — not part of the deliverable)
 .claude/scheduled_tasks.lock
+
+# Feature 007: generated synthetic datasets. Reproducible byte-for-byte from data/synthetic/ plus
+# the seed (FR-052), so the tens of megabytes do not belong in git — the manifest that identifies
+# a dataset does, and so does its verification report under migration/reports/.
+migration/synthetic/*/*
+!migration/synthetic/*/manifest.json

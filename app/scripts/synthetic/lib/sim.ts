@@ -185,6 +185,7 @@ export class Simulation {
   private readonly spares = new Map<string, string[]>(); // `${office}|${family}|${class}` -> asset ids
   private readonly standalone = new Map<string, StandaloneRec>();
   private readonly frozen = new Set<string>(); // assets no routine touches (planted holds)
+  private readonly plantedDone = new Set<string>(); // planted scenarios that have taken
   private readonly neglectCal = new Map<string, number>(); // assetId -> send probability multiplier
   private readonly windowOf = new Map<string, ModelWindow>(); // assetId -> its model window
   private readonly modelOf = new Map<string, EquipmentModel>();
@@ -356,6 +357,23 @@ export class Simulation {
     return this.cfg.roster.filter((p) => p.role === "FieldUser" && this.isActive(p, date));
   }
 
+  private stillActive(upn: string, date: DateStr): boolean {
+    const p = this.cfg.roster.find((r) => r.upn === upn);
+    return !p || (p.start <= date && (p.end === null || p.end > date));
+  }
+
+  /**
+   * Who actually does a job that was planned weeks or months ago. A station is recovered by
+   * whoever is there on the day — if the technician who deployed it has left in the meantime, the
+   * work (and the custody it creates) passes to a colleague. Without this, a recovery hands
+   * equipment to someone who no longer works here, and FR-038 fails through no fault of the
+   * roster sweep.
+   */
+  private handover(upn: string, office: string, date: DateStr): string {
+    if (this.stillActive(upn, date)) return upn;
+    return this.pickTech(office, date, this.rngs.jobs) ?? this.admin(office, date, this.rngs.jobs);
+  }
+
   private holdings(): Map<string, number> {
     const m = new Map<string, number>();
     for (const a of this.ledger.assets.values()) {
@@ -365,7 +383,10 @@ export class Simulation {
   }
 
   private pickTech(office: string, date: DateStr, rng: Rng): string | null {
-    const list = this.techs(office, date);
+    // Nobody is handed equipment in their last fortnight — FR-038 wants leavers to have returned
+    // what they held, and the one exception to that is planted deliberately, not emergent.
+    const notLeaving = this.techs(office, date).filter((p) => p.end === null || p.end > addDays(date, 14));
+    const list = notLeaving.length > 0 ? notLeaving : this.techs(office, date);
     if (list.length === 0) return null;
     const held = this.holdings();
     return rng.weighted(list.map((p) => [p.upn, 1 / (1 + (held.get(p.upn) ?? 0))] as const));
@@ -403,6 +424,9 @@ export class Simulation {
     if (day.endsWith("-01")) {
       this.schedulePurchases(day);
       this.monthlyRetirements(day);
+      this.custodySweep(day);
+      this.stockCheck(day);
+      this.stationVisitSweep(day);
     }
     this.rosterMovements(day);
     this.projectLifecycle(day);
@@ -941,7 +965,10 @@ export class Simulation {
       const day = addDays(job.deployDate, rng.int(10, job.durationDays - 5));
       this.heap.push(this.at(day, this.rngs.time), () => this.projectMove(job));
     }
-    for (let d = 365; d < job.durationDays - 20; d += 365) {
+    // A station left on site is visited for data collection and batteries — every ~150 days, not
+    // once a year. Without this a 380-day deployment has a Deploy and an Undeploy and nothing in
+    // between, leaving a rolling 12-month window with no line at all (FR-025).
+    for (let d = 150; d < job.durationDays - 15; d += 130 + rng.int(0, 40)) {
       const day = workingDayOnOrAfter(rng, addDays(job.deployDate, d));
       this.heap.push(this.at(day, this.rngs.time), () => this.siteInspection(job));
     }
@@ -973,6 +1000,7 @@ export class Simulation {
     const rng = this.rngs.jobs;
     const kit = job.kit;
     if (this.frozen.has(kit.loggerId)) return; // a planted station that stays on site past as-of
+    job.tech = this.handover(job.tech, kit.office, this.today);
     const open = this.openParticipants(job).filter((id) => this.ledger.status(id) === "Deployed");
     if (open.length === 0) {
       this.finishJob(job);
@@ -1057,7 +1085,7 @@ export class Simulation {
     const kit = job.kit;
     kit.busy = false;
     job.project.openStations = Math.max(0, job.project.openStations - 1);
-    const gapMedian = (kit.lowDemand ? 120 : 16) / this.tier(this.today);
+    const gapMedian = (kit.lowDemand ? 110 : 9) / this.tier(this.today);
     kit.nextJobDate = addDays(this.today, Math.round(this.rngs.jobs.lognormal(gapMedian, 0.7, 2, 900)));
   }
 
@@ -1065,6 +1093,9 @@ export class Simulation {
    * ReportFault in one submission, feature 003). Occasionally to another office (inter-office loan). */
   private returnToOffice(assetIds: string[], tech: string, homeOffice: string, otherOffice: boolean): void {
     const rng = this.rngs.jobs;
+    // The custodian returns it; if they have left, an administrator does it for them (feature 003
+    // FR-025 permits either).
+    const performedby = this.stillActive(tech, this.today) ? tech : this.admin(homeOffice, this.today, rng);
     const ids = assetIds.filter((id) => this.ledger.status(id) === "CheckedOut" && this.ledger.assets.get(id)!.custodian === tech && !this.frozen.has(id) && !this.ledger.isComponentChild(id));
     if (ids.length === 0) return;
     const active = this.activeOffices(this.today).filter((o) => o.name !== homeOffice);
@@ -1075,15 +1106,27 @@ export class Simulation {
     const ret = this.ledger.apply({
       type: "Return",
       ts,
-      performedby: tech,
+      performedby,
       tolocation,
       notes: tolocation === homeOffice ? null : `Returned to ${tolocation} for the next job there.`,
       lines: ids.map((assetId) => ({ assetId, condition: conditions.get(assetId) })),
     });
     const bad = ids.filter((id) => conditions.get(id) !== "Good");
     if (bad.length > 0) {
-      this.ledger.apply({ type: "ReportFault", ts: plusSeconds(ret.ts, 60), performedby: tech, notes: "Reported damaged/needs-service on return.", lines: bad.map((assetId) => ({ assetId })) });
+      this.ledger.apply({ type: "ReportFault", ts: plusSeconds(ret.ts, 60), performedby, notes: "Reported damaged/needs-service on return.", lines: bad.map((assetId) => ({ assetId })) });
       for (const id of bad) this.scheduleRepairOutcome(id, addDays(this.today, rng.int(3, 14)));
+    }
+    // "It is here and it is due soon — send it now." Real calibration scheduling is opportunistic:
+    // an instrument that is out on jobs all year is despatched when it happens to be back on the
+    // shelf, not on the day its certificate expires. Without this the busiest instruments are
+    // almost never Available on the day the weekly due-scan runs.
+    const dueSoon = ids.filter((id) => {
+      const x = this.ledger.assets.get(id)!;
+      return x.status === "Available" && !!x.nextcaldue && x.nextcaldue <= addDays(this.today, 120) && !this.frozen.has(id) && (this.neglectCal.get(id) ?? 1) > 0;
+    });
+    if (dueSoon.length > 0 && rng.chance(0.75)) {
+      const sendDay = workingDayOnOrAfter(rng, addDays(this.today, rng.int(1, 12)));
+      this.heap.push(this.at(sendDay, this.rngs.time), () => this.sendToLab(dueSoon.filter((id) => this.ledger.status(id) === "Available" && !this.frozen.has(id)), tolocation));
     }
     if (tolocation !== homeOffice) {
       // the loan comes home later by stock transfer (Available -> Transfer)
@@ -1101,6 +1144,7 @@ export class Simulation {
     if (!job.installationId || this.ledger.installation(job.installationId).end) return;
     const row = this.ledger.openComponentRows(job.installationId).find((r) => r.asset === outgoingId);
     if (!row || this.ledger.status(outgoingId) !== "Deployed") return;
+    job.tech = this.handover(job.tech, job.kit.office, this.today);
     const w = this.windowOf.get(outgoingId)!;
     const incoming = this.takeSpare(job.kit.office, job.kit.family, w.class as "sensor", new Set(this.openParticipants(job)), job.forced === "swap");
     if (!incoming) return;
@@ -1180,7 +1224,7 @@ export class Simulation {
     if (!job.installationId || this.ledger.installation(job.installationId).end) return;
     const deployed = this.openParticipants(job).filter((id) => this.ledger.status(id) === "Deployed");
     if (deployed.length === 0) return;
-    this.ledger.apply({ type: "Audit", ts: this.at(this.today, this.rngs.time), performedby: job.tech, notes: "Annual site inspection — station confirmed in place.", lines: deployed.map((assetId) => ({ assetId })) });
+    this.ledger.apply({ type: "Audit", ts: this.at(this.today, this.rngs.time), performedby: job.tech, notes: "Routine site visit — data collected, station confirmed in place.", lines: deployed.map((assetId) => ({ assetId })) });
   }
 
   /** Deployed -> ReportFault coverage: a single-logger station fails on site, is pulled and sent to
@@ -1244,7 +1288,7 @@ export class Simulation {
         }
         this.returnToOffice([rec.assetId], tech, rec.office, rng.chance(0.03));
       });
-      const gapMedian = (rec.lowDemand ? 150 : 20) / this.tier(day);
+      const gapMedian = (rec.lowDemand ? 140 : 10) / this.tier(day);
       rec.nextCycleDate = addDays(back, Math.round(rng.lognormal(gapMedian, 0.7, 1, 900)));
     }
   }
@@ -1253,7 +1297,7 @@ export class Simulation {
 
   private calibrationScan(day: DateStr): void {
     const rng = this.rngs.cal;
-    const horizon = addDays(day, 45);
+    const horizon = addDays(day, 60);
     const perOffice = new Map<string, string[]>();
     const fieldChecks: string[] = [];
     for (const a of this.ledger.assets.values()) {
@@ -1261,7 +1305,7 @@ export class Simulation {
       if (this.frozen.has(a.assetid) || this.ledger.isComponentChild(a.assetid)) continue;
       const w = this.windowOf.get(a.assetid);
       if (!w || !this.modelOf.get(modelKey(a.equipmentmodel))?.defaultcalintervalmonths) continue;
-      const p = 0.45 * (this.neglectCal.get(a.assetid) ?? 1);
+      const p = 0.8 * (this.neglectCal.get(a.assetid) ?? 1);
       if (!rng.chance(p)) continue;
       if (w.class === "standalone" && rng.chance(0.25)) {
         fieldChecks.push(a.assetid);
@@ -1382,6 +1426,14 @@ export class Simulation {
         this.sendToLab([assetId], a.homeoffice ?? office);
       } else {
         this.ledger.apply({ type: "RepairComplete", ts, performedby: admin, notes: "Repaired in the office.", lines: [{ assetId }] });
+        // RepairComplete carries no location (deriveState returns the fields unchanged), so an item
+        // that broke in the field comes out of repair Available with an unknown location. It is
+        // physically on the shelf, and the admin records that the same way the app would — a
+        // Transfer. Without this the asset is invisible to every later routine, which is what
+        // stranded seven modems for years in the first standard run (FR-025).
+        if (this.ledger.assets.get(assetId)!.currentlocation === null) {
+          this.ledger.apply({ type: "Transfer", ts: plusSeconds(ts, 120), performedby: admin, tolocation: a.homeoffice!, notes: `Back on the shelf at ${a.homeoffice} after repair.`, lines: [{ assetId }] });
+        }
       }
     });
   }
@@ -1510,6 +1562,89 @@ export class Simulation {
     this.standalone.delete(assetId);
   }
 
+  /**
+   * Nothing stays in one technician's custody indefinitely: an item checked out and not touched for
+   * about four months comes back to the office. This is the ordinary housekeeping the pilot's own
+   * "return everything you are not holding" sweep formalises (docs/08-decisions.md, Q3), and it is
+   * what keeps a borrowed spare from sitting in a van for two years with no line against it
+   * (FR-025) and what catches anything a leaver still holds (FR-038).
+   */
+  private custodySweep(day: DateStr): void {
+    const rng = this.rngs.jobs;
+    for (const a of this.ledger.assets.values()) {
+      if (a.status !== "CheckedOut" || !a.custodian) continue;
+      if (this.frozen.has(a.assetid) || this.ledger.isComponentChild(a.assetid)) continue;
+      const last = this.ledger.lastTs.get(a.assetid);
+      if (!last || daysBetween(localDateOf(last), day) < 100) continue;
+      const custodian = a.custodian;
+      const office = a.homeoffice ?? "Ottawa";
+      const when = workingDayOnOrAfter(rng, addDays(day, rng.int(0, 12)));
+      this.heap.push(this.at(when, this.rngs.time, { hourBias: "afternoon" }), () => {
+        const x = this.ledger.assets.get(a.assetid)!;
+        if (x.status !== "CheckedOut" || x.custodian !== custodian || this.frozen.has(a.assetid)) return;
+        for (const kit of this.kits.values()) if (kit.heldBy === custodian) kit.heldBy = null;
+        this.ledger.apply({
+          type: "Return",
+          ts: this.at(this.today, this.rngs.time, { hourBias: "afternoon" }),
+          performedby: custodian,
+          tolocation: office,
+          notes: "Returned to the office in the periodic custody sweep.",
+          lines: [{ assetId: a.assetid }],
+        });
+      });
+    }
+  }
+
+  /**
+   * An Available asset whose location is unknown is on a shelf somewhere and nobody has said which
+   * — the monthly stock check finds it and records where it is, exactly as an admin would in the
+   * app (a Transfer; there is no other way to set a location, Principle I). This is the safety net
+   * for every path that leaves location null: Undeploy and Checkout both do, deliberately.
+   */
+  private stockCheck(day: DateStr): void {
+    const rng = this.rngs.audit;
+    for (const a of this.ledger.assets.values()) {
+      if (a.status !== "Available" || a.currentlocation !== null || a.lifecycle === "Retired") continue;
+      if (this.frozen.has(a.assetid) || this.ledger.isComponentChild(a.assetid) || !a.homeoffice) continue;
+      const office = a.homeoffice;
+      const when = workingDayOnOrAfter(rng, addDays(day, rng.int(0, 14)));
+      this.heap.push(this.at(when, this.rngs.time, { hourBias: "morning" }), () => {
+        const x = this.ledger.assets.get(a.assetid)!;
+        if (x.status !== "Available" || x.currentlocation !== null || this.frozen.has(a.assetid)) return;
+        this.ledger.apply({ type: "Transfer", ts: this.at(this.today, this.rngs.time, { hourBias: "morning" }), performedby: this.admin(office, this.today, rng), tolocation: office, notes: `Located at ${office} during the monthly stock check.`, lines: [{ assetId: a.assetid }] });
+      });
+    }
+  }
+
+  /**
+   * A station nobody has touched for over six months gets visited. `deploy` schedules visits from
+   * the job it planned, but a job whose recovery was deferred (a partial recovery, a project move)
+   * outlives that schedule — this sweep works from the open installations themselves, so no
+   * deployed asset can go a year without a line (FR-025).
+   */
+  private stationVisitSweep(day: DateStr): void {
+    const rng = this.rngs.audit;
+    const cutoff = addDays(day, -200);
+    for (const inst of this.ledger.installations) {
+      if (inst.end !== null) continue;
+      const rows = this.ledger.openComponentRows(inst.id);
+      const deployed = rows.filter((r) => this.ledger.status(r.asset) === "Deployed" && !this.frozen.has(r.asset));
+      if (deployed.length === 0) continue;
+      if (!deployed.some((r) => localDateOf(this.ledger.lastTs.get(r.asset) ?? day) < cutoff)) continue;
+      const when = workingDayOnOrAfter(rng, addDays(day, rng.int(0, 20)));
+      this.heap.push(this.at(when, this.rngs.time), () => {
+        const still = this.ledger.openComponentRows(inst.id).filter((r) => this.ledger.status(r.asset) === "Deployed" && !this.frozen.has(r.asset));
+        if (still.length === 0) return;
+        const tech = this.pickTech(this.officeOfProject(inst.project), this.today, rng);
+        this.ledger.apply({ type: "Audit", ts: this.at(this.today, this.rngs.time), performedby: tech ?? "svc-ams@englobecorp.com", notes: "Routine site visit — data collected, station confirmed in place.", lines: still.map((r) => ({ assetId: r.asset })) });
+      });
+    }
+  }
+
+  private officeOfProject(projectNumber: string): string {
+    return this.projects.find((p) => p.number === projectNumber)?.office ?? this.cfg.offices.offices[0].name;
+  }
+
   // ================================================================ audits (annual stocktake)
 
   private scheduleAudit(office: string, day: DateStr): void {
@@ -1525,8 +1660,10 @@ export class Simulation {
           continue;
         }
         if ((a.status === "Available" || a.status === "NeedsRepair") && a.currentlocation === office) lines.push(a.assetid);
-        else if (a.homeoffice === office && (a.status === "CheckedOut" || a.status === "Deployed") && rng.chance(0.05)) lines.push(a.assetid);
-        else if (a.homeoffice === office && (a.status === "InCalibration" || a.status === "Missing") && rng.chance(0.5)) lines.push(a.assetid);
+        // Equipment that is out is ticked off the list too — confirmed with its custodian or
+        // seen on site — which is why the stocktake reaches CheckedOut and Deployed assets at all.
+        else if (a.homeoffice === office && (a.status === "CheckedOut" || a.status === "Deployed") && rng.chance(0.35)) lines.push(a.assetid);
+        else if (a.homeoffice === office && (a.status === "InCalibration" || a.status === "Missing")) lines.push(a.assetid);
       }
       if (lines.length === 0) return;
       this.ledger.apply({ type: "Audit", ts: this.at(this.today, this.rngs.time, { hourBias: "morning" }), performedby: this.admin(office, this.today, rng), notes: `Annual stocktake — ${office} ${yearOf(this.today)}.`, lines: lines.map((assetId) => ({ assetId })) });
@@ -1537,10 +1674,20 @@ export class Simulation {
 
   private rosterMovements(day: DateStr): void {
     for (const p of this.cfg.roster) {
-      if (p.end === null || addDays(p.end, -10) !== day) continue;
+      if (p.end === null || (addDays(p.end, -10) !== day && addDays(p.end, -1) !== day)) continue;
       const held = [...this.ledger.assets.values()].filter((a) => a.custodian === p.upn && a.status === "CheckedOut" && !this.frozen.has(a.assetid) && !this.ledger.isComponentChild(a.assetid));
       if (held.length === 0) continue;
       if (this.leaverException === p.upn) continue;
+      // FR-050: exactly one person leaves without handing everything back, and it is whoever the
+      // simulation first finds in that position late enough to still be visible at as-of —
+      // planted by suppressing their sweep, not by inventing a transaction.
+      if (this.leaverException === null && p.end >= this.daysBefore(400) && p.end <= this.daysBefore(45)) {
+        this.leaverException = p.upn;
+        for (const a of held) this.frozen.add(a.assetid);
+        for (const kit of this.kits.values()) if (kit.heldBy === p.upn) kit.heldBy = null;
+        this.recordPlanted("leaver-holding-assets", "A person who left the company while still holding equipment (feature 006 edge case)", { upn: p.upn, leftOn: p.end, assetIds: held.map((a) => a.assetid) });
+        continue;
+      }
       for (const kit of this.kits.values()) if (kit.heldBy === p.upn) kit.heldBy = null;
       this.heap.push(this.at(day, this.rngs.time, { hourBias: "afternoon" }), () => this.returnToOffice(held.map((a) => a.assetid), p.upn, p.office, false));
     }
@@ -1580,6 +1727,22 @@ export class Simulation {
     return list.length > 0 ? this.rngs.planted.pick(list) : null;
   }
 
+  /** The Active asset at `office` whose next calibration falls soonest, and before `before`. */
+  private soonestDue(office: string, before: DateStr): string | null {
+    let best: string | null = null;
+    let bestDue = "9999-99-99";
+    for (const a of [...this.ledger.assets.values()].sort((x, y) => (x.assetid < y.assetid ? -1 : 1))) {
+      if (a.lifecycle !== "Active" || a.homeoffice !== office || this.frozen.has(a.assetid)) continue;
+      if (this.ledger.isComponentChild(a.assetid) || !a.nextcaldue || a.nextcaldue >= before) continue;
+      if (this.neglectCal.get(a.assetid) === 0) return a.assetid; // already planted here
+      if (a.nextcaldue < bestDue) {
+        best = a.assetid;
+        bestDue = a.nextcaldue;
+      }
+    }
+    return best;
+  }
+
   private plantedTriggers(day: DateStr): void {
     const rng = this.rngs.planted;
     if (this.params.historyYears < 2) return;
@@ -1588,34 +1751,16 @@ export class Simulation {
       // P1: one chronically un-calibrated asset per active office; P12: a leaver who keeps two items
       const ids: string[] = [];
       for (const o of this.activeOffices(day)) {
-        const id = this.pickAvailable((x) => {
-          const a = this.ledger.assets.get(x)!;
-          return a.homeoffice === o.name && a.currentlocation === o.name && this.modelOf.get(modelKey(a.equipmentmodel))?.defaultcalintervalmonths === 12 && !this.kitByMember.has(x) && !this.kits.has(x);
-        }, rng) ?? this.pickAvailable((x) => {
-          const a = this.ledger.assets.get(x)!;
-          return a.homeoffice === o.name && this.modelOf.get(modelKey(a.equipmentmodel))?.defaultcalintervalmonths === 12;
-        }, rng);
+        // The asset whose calibration is due SOONEST at this office, and due before as-of — stop
+        // sending it to the lab from here on and it is genuinely overdue at as-of, without any
+        // date being written directly (Principle I).
+        const id = this.soonestDue(o.name, this.params.asOf);
         if (id) {
           this.neglectCal.set(id, 0);
           ids.push(id);
         }
       }
       this.recordPlanted("overdue-calibration-per-office", "An overdue calibration at every active office (feature 004 US1)", { assetIds: ids });
-      const leaver = this.cfg.roster.filter((p) => p.role === "FieldUser" && p.end !== null && p.end > this.daysBefore(380) && p.end < this.daysBefore(120)).sort((a, b) => (a.upn < b.upn ? -1 : 1))[0];
-      if (leaver) {
-        this.leaverException = leaver.upn;
-        const cands = [...this.standalone.values()].filter((s) => s.office === leaver.office && this.ledger.status(s.assetId) === "Available").slice(0, 2);
-        if (cands.length > 0) {
-          const project = this.pickProject(leaver.office, day, rng, false);
-          this.heap.push(this.at(day, this.rngs.time), () => {
-            const ids2 = cands.map((c) => c.assetId).filter((id) => this.ledger.canApply("Checkout", [id]));
-            if (ids2.length === 0) return;
-            this.ledger.apply({ type: "Checkout", ts: this.at(this.today, this.rngs.time), performedby: leaver.upn, touser: leaver.upn, toproject: project.number, expectedreturn: addDays(this.today, 14), lines: ids2.map((assetId) => ({ assetId })) });
-            for (const id of ids2) this.frozen.add(id);
-            this.recordPlanted("leaver-holding-assets", "A person who left the company while still holding equipment (feature 006 edge case)", { upn: leaver.upn, leftOn: leaver.end!, assetIds: ids2 });
-          });
-        }
-      }
     }
 
     if (day === this.daysBefore(300)) {
@@ -1660,7 +1805,8 @@ export class Simulation {
       // P3: a checkout whose expected return is long past
       const rec = [...this.standalone.values()].filter((s) => this.ledger.status(s.assetId) === "Available" && this.ledger.assets.get(s.assetId)!.currentlocation === s.office && !this.frozen.has(s.assetId)).sort((a, b) => (a.assetId < b.assetId ? -1 : 1))[0];
       if (rec) {
-        const tech = this.pickTech(rec.office, day, rng);
+        const staying = this.techs(rec.office, day).filter((p) => p.end === null);
+        const tech = staying.length > 0 ? rng.pick(staying).upn : this.pickTech(rec.office, day, rng);
         if (tech) {
           const project = this.pickProject(rec.office, day, rng, false);
           this.ledger.apply({ type: "Checkout", ts: this.at(day, this.rngs.time), performedby: tech, touser: tech, toproject: project.number, expectedreturn: addDays(day, 30), notes: "Short survey job.", lines: [{ assetId: rec.assetId }] });
@@ -1678,13 +1824,17 @@ export class Simulation {
       }
     }
 
-    if (day === this.daysBefore(120)) {
-      // P5: a station with a component swapped mid-life, still on site
+    // P5: a station with a component swapped mid-life, still on site. Attempted on several days
+    // because it needs an idle kit AND a free spare sensor at the same moment; the first day that
+    // has both wins and the rest are no-ops.
+    if (!this.plantedDone.has("swap") && day >= this.daysBefore(200) && day <= this.daysBefore(80) && day.endsWith("1")) {
       const kit = this.idleKit((k) => k.members.some((m) => m.role === "Sensor"));
-      if (kit) {
+      const spare = kit ? this.takeSpare(kit.office, kit.family, "sensor", new Set(kit.members.map((m) => m.assetId)), true) : null;
+      if (kit && spare) {
         const job = this.forceJob(kit, "swap", { durationDays: 400 });
         if (job) {
-          const swapDay = workingDayOnOrAfter(rng, this.daysBefore(60));
+          this.plantedDone.add("swap");
+          const swapDay = workingDayOnOrAfter(rng, addDays(day, 30));
           this.heap.push(this.at(swapDay, this.rngs.time), () => {
             const sensor = this.openParticipants(job).find((id) => id !== kit.loggerId && this.ledger.status(id) === "Deployed");
             if (sensor) this.swapComponent(job, sensor);
@@ -1706,13 +1856,19 @@ export class Simulation {
       }
     }
 
-    if (day === this.daysBefore(90)) {
-      // P4: a partially recovered installation
+    // P4: a partially recovered installation — same retry treatment as P5.
+    if (!this.plantedDone.has("partial") && day >= this.daysBefore(150) && day <= this.daysBefore(60) && day.endsWith("3")) {
       const kit = this.idleKit((k) => k.members.filter((m) => m.role === "Sensor").length >= 1);
       if (kit) {
-        const job = this.forceJob(kit, "partial-recovery", { durationDays: 90 });
-        if (job) this.recordPlanted("partial-recovery", "An installation partially recovered — sensors back, logger still on site (feature 005 FR-015)", { loggerId: kit.loggerId, site: job.site.name });
+        const job = this.forceJob(kit, "partial-recovery", { durationDays: Math.max(30, daysBetween(day, this.daysBefore(30))) });
+        if (job) {
+          this.plantedDone.add("partial");
+          this.recordPlanted("partial-recovery", "An installation partially recovered — sensors back, logger still on site (feature 005 FR-015)", { loggerId: kit.loggerId, site: job.site.name });
+        }
       }
+    }
+
+    if (day === this.daysBefore(90)) {
       // P6: an asset missing at as-of
       const id = this.pickAvailable((x) => this.standalone.has(x), rng);
       if (id) {
@@ -1761,10 +1917,7 @@ export class Simulation {
       for (const o of this.activeOffices(day)) {
         const hasOverdue = [...this.ledger.assets.values()].some((a) => a.lifecycle === "Active" && a.homeoffice === o.name && a.status !== "InCalibration" && !!a.nextcaldue && a.nextcaldue < this.params.asOf && (this.neglectCal.get(a.assetid) === 0 || a.nextcaldue < day));
         if (hasOverdue) continue;
-        const id = this.pickAvailable((x) => {
-          const a = this.ledger.assets.get(x)!;
-          return a.homeoffice === o.name && !!a.nextcaldue && a.nextcaldue <= this.params.asOf;
-        }, rng);
+        const id = this.soonestDue(o.name, this.params.asOf);
         if (id) {
           this.neglectCal.set(id, 0);
           ids.push(id);

@@ -3,6 +3,7 @@ import { FluentProvider, Title3, tokens } from "@fluentui/react-components";
 import { useSystemTheme } from "./useSystemTheme";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { BottomNav } from "./components/BottomNav";
+import { DatasetBanner } from "./components/DatasetBanner";
 import { RoleSwitcher } from "./components/RoleSwitcher";
 import { t } from "./i18n";
 import { SearchPage } from "./features/search/SearchPage";
@@ -58,6 +59,8 @@ export default function App() {
             <Title3>{t("app.title")}</Title3>
             <RoleSwitcher onChange={reload} />
           </header>
+
+          <DatasetBanner />
 
           <main style={{ flex: 1, overflowY: "auto" }}>
             <Routes>

@@ -1,6 +1,6 @@
 ---
 
-description: "Task list for feature 007 — Release & Operations"
+description: "Task list for feature 008 — Release & Operations"
 ---
 
 # Tasks: Release & Operations

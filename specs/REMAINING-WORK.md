@@ -167,11 +167,16 @@ that is fixed, SC-013 cannot pass. Q18 (component calibration despatch) decides 
 generate for pre-amps, elements and SIMs. FR-041, FR-049 and FR-060 were corrected. Re-read the spec
 before relying on an earlier copy, and write `plan.md` before calling the generator done.
 
-**One shared-file dependency, orchestrator work**: the spec's FR-060 needs the mock store to serve
-the base dataset from static files and persist only the user's own writes. `api/mock/store.ts` today
-writes the whole snapshot to `localStorage` (about 5 MB ceiling) on every write and silently
-continues in memory when that throws; a `standard`-profile dataset is roughly 60 MB. That file is
-frozen for workstreams, so this lands as a Phase 0-style change before WS-G fans out.
+**Done.** Generator at `app/scripts/synthetic/`, inputs at `data/synthetic/`, datasets at
+`migration/synthetic/{demo,standard,large}/`, reports at
+`migration/reports/07_synthetic_<profile>_report.md`. All three profiles pass every check including
+byte-identical regeneration. Read `docs/09-build-report.md`'s feature 007 addendum for measured
+counts and the two integration fixes the volume exposed (`store.ts` delta persistence, and an
+indexed `getAssetHistory` that took the utilisation report from never rendering to 1.5 s).
+
+**Still open**: US5 (loading into `Englobe-AMS-Dev`) needs Q14 answered — nothing else in the
+feature touches a tenant. Q18 is implemented on the no-lines reading (components carry no
+transaction lines, calibrated with their parent) pending Jay's confirmation.
 
 ### WS-H — Feature 008, Release & Operations *(US1 BUILT 2026-09-02 in a concurrent session; US2–US5 tenant-bound)*
 

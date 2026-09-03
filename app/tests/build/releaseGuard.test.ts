@@ -130,8 +130,20 @@ describe("scan-bundle (T007)", () => {
     expect(out.toLowerCase()).toMatch(/iccid|identifier/);
   });
 
-  it("fails on a staged data file present by name, even if its contents changed", () => {
+  it("does NOT fail on a staged filename whose contents hold none of the staged values", () => {
+    // The demo dataset and feature 007's synthetic fleet both reuse these filenames on purpose.
+    // Failing on the name alone would make every safe substitution look like a leak, and a
+    // scanner that cries wolf gets switched off. Found by running it, not by reading it.
     const dir = makeFixture({ "data/calibrationrecords.json": "[]" });
+    const r = run(SCAN, ["--dist", dir, "--staged", STAGED]);
+    expect(r.status).toBe(0);
+    expect(`${r.stdout}${r.stderr}`).toMatch(/substitut/i);
+  });
+
+  it("still fails when a staged filename carries real staged values", () => {
+    const dir = makeFixture({
+      "data/assets.json": '[{"identifiervalue":"89302720513012024886"}]',
+    });
     const r = run(SCAN, ["--dist", dir, "--staged", STAGED]);
     expect(r.status).not.toBe(0);
   });

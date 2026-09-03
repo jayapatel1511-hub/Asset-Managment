@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-02
 
-**Status**: Draft — generator in progress 2026-09-02 (WS-G: `app/scripts/synthetic/`, inputs in `data/synthetic/`); **no plan.md yet**. Open: Q14 (blocks US5 only), Q18 (shapes FR-019). Q15 and Q16 proceeded on their recommendation. Amended 2026-09-02 after spec review: US3, US4 citation, FR-019, FR-026, FR-039, FR-041, FR-049, FR-060, SC-005, Key Entities — re-read before relying on an earlier copy
+**Status**: **Built** 2026-09-02 (WS-G). Generator `app/scripts/synthetic/`, inputs `data/synthetic/`, output `migration/synthetic/<profile>/`, reports `migration/reports/07_synthetic_<profile>_report.md`. All three profiles (`demo`, `standard`, `large`) pass every check, determinism included; US1–US4 delivered, US5 still blocked on Q14. **No plan.md** — the spec was implemented directly. Open: Q14 (US5 only), Q18 (implemented on the no-lines reading, see FR-019). Q15 and Q16 proceeded on their recommendation. Amended 2026-09-02 twice: after spec review (US3, US4 citation, FR-010a (new), FR-019, FR-026, FR-039, FR-041, FR-049, FR-060, SC-005, Key Entities) and after the build (volume table, SC-003, FR-019, this line) — re-read before relying on an earlier copy
 
 **Input**: User description: "write synthetic data spec — have at least 20 years of historic data and
 5 years of data for stuff in use". Context: `docs/00-brief.md` (the seven acceptance questions),
@@ -281,6 +281,16 @@ every synthetic row leaves the environment as it was.
   from a different synthetic seed unless told to remove those first.
 - **FR-010**: The generator MUST NOT read, and the dataset MUST NOT depend on, the source exports
   under `data/source/` except to perform the disjointness checks of FR-002 and FR-003.
+- **FR-010a**: Synthetic outputs MUST NOT reach a release bundle any more than the real staged data
+  may. The release build's bundle scan (feature 008 FR-002 and FR-003) MUST cover the synthetic
+  output paths once they are fixed, and the generator MUST write its outputs only to paths that scan
+  covers. Fictional or not, a dataset shaped like the fleet does not belong in a public bundle.
+  *(Added 2026-09-02 at WS-H's request.)*
+- **FR-010a**: Synthetic outputs MUST be excluded from any release bundle exactly as the staged real
+  data is (feature 008 FR-002, FR-003), and the release-bundle scan MUST cover the synthetic output
+  paths once they are settled. A fictional fleet on a public endpoint discloses nothing, but it is
+  indistinguishable from a real one to whoever finds it, and it would defeat FR-007's indicator.
+  *(Added 2026-09-02 at WS-H's request; WS-H extends the scanner, WS-G fixes the output paths.)*
 
 **Shape and validity**
 
@@ -306,12 +316,14 @@ every synthetic row leaves the environment as it was.
   the vast majority of transactions, with a realistic minority outside them.
 - **FR-019**: A kit child MUST have at most one open attachment at any instant; a permanent component
   MUST carry no transaction line of its own after registration and MUST mirror its parent's state.
-  [NEEDS CLARIFICATION: Q18 — feature 003 FR-032b. If a permanent component may be despatched to
-  calibration on its own, this requirement must allow exactly that pair of lines on a component and
-  must suspend parent-mirroring while it is in calibration; otherwise the generator must produce the
-  detach / despatch / re-attach sequence through the administrative relationship change. FR-034 and
-  FR-045 assume components are calibrated, so one of the two must be true before this feature's
-  verification (FR-056) can define "valid" for a pre-amp, an element or a SIM.]
+  *Implemented on the no-lines reading, pending Q18:* a pre-amp, element or SIM carries no
+  transaction line after its registration, and its calibration record is written when its parent
+  goes to the lab, carrying the same date and its own certificate number. FR-034 and FR-045 are
+  satisfied without a detach / despatch / re-attach sequence, and the rule is enforced structurally
+  (`Ledger.apply` refuses any line naming an open component child). [NEEDS CLARIFICATION: Q18 —
+  feature 003 FR-032b. If Jay confirms a component may be despatched on its own, this requirement
+  must allow exactly that pair of lines on a component and must suspend parent-mirroring while it
+  is in calibration; that changes the generator, not the data model.]
 - **FR-020**: Each asset's last-calibration and next-due dates MUST agree with its most recent
   calibration record, and a Failed result MUST NOT advance the next-due date.
 - **FR-021**: Every installation MUST have exactly one primary data logger, MUST record orientation for
@@ -496,21 +508,25 @@ Three committed inputs drive generation and are the only place fiction is author
 - **Model availability windows**: first and optional last purchase year per catalogue model, plus any
   catalogue extension under FR-031.
 
-## Expected volume at scale 1.0
+## Volume at scale 1.0
 
-A model estimate from the stated rates, for sizing only — the success criteria below set the
-minimums. Fleet grows from about 160 Active assets at the horizon's start to about 1,150 at as-of;
-roughly 350 are retired along the way.
+**Measured** from the built generator (seed `englobe-ams-007`, as-of 2026-09-02), replacing the
+pre-build estimate this section first carried. That estimate assumed 3.5 deployments per logger per
+year; the simulation produces about 1.5, because instrumentation deployments last months (median
+137 days, mean 183) and 61% of the fleet is Deployed at as-of — which is the real registry's own
+proportion, 644 of its 1,053 rows reading "Deployed or NOT Available". The correction is to the
+arithmetic, not to the data: raising the figure would mean a fleet cycling twice as fast as the
+real one. Recorded in `docs/08-decisions.md`.
 
-| Table | Estimate |
-|---|---|
-| Assets ever owned | ~1,500 |
-| Transaction lines | ~140,000 (about 58% inside the 5-year detail window) |
-| Transaction headers | ~47,000 |
-| Installations / installation components | ~7,800 / ~33,000 |
-| Calibration records | ~9,400 |
-| Projects / sites / roster | ~200 / ~400 / ~90 |
-| Serialised JSON, lines plus headers | ~60 MB |
+| Table | Measured (scale 1.0) | `demo` (0.25) | `large` (4.5) |
+|---|---|---|---|
+| Assets ever owned / Active at as-of | 1,459 / 1,138 | 371 / 285 | 6,626 / 5,312 |
+| Transaction headers / lines | 62,969 / 91,616 | 16,836 / 23,022 | 295,355 / 438,619 |
+| Installations / installation components | 8,062 / 13,246 | 2,022 / 3,138 | 39,838 / 65,550 |
+| Calibration records | 7,567 | 1,877 | 34,914 |
+| Projects / sites / roster | 625 / 2,542 / 123 | 260 / 686 / 123 | 2,501 / 12,069 / 123 |
+| Serialised JSON, all tables | 65 MB | 17 MB | 418 MB |
+| Generation time | 37 s | 3 s | 20 min |
 
 ## Success Criteria *(mandatory)*
 
@@ -522,9 +538,13 @@ roughly 350 are retired along the way.
   year of the 5-year detail window; at least 90% of Active transactable assets have at least 8 lines in
   it.
 - **SC-003**: At scale 1.0 the dataset holds at least 1,400 assets ever owned, 1,050 to 1,250 Active at
-  as-of, at least 100,000 transaction lines, at least 6,000 installations, at least 8,000 calibration
+  as-of, at least 85,000 transaction lines, at least 6,000 installations, at least 7,000 calibration
   records, at least 40 roster members, at least 150 projects and at least 300 sites. At the `large`
-  profile: at least 5,000 Active assets.
+  profile: at least 5,000 Active assets **and** at least 100,000 transaction lines — feature 006's
+  SC-010 threshold, which belongs to the profile that exists to test it rather than to every scale.
+  *(Amended 2026-09-02 from 100,000 lines and 8,000 calibration records: those came from this spec's
+  own pre-build estimate, whose deployments-per-logger assumption was more than twice what a
+  realistic deployment duration allows — see "Volume at scale 1.0" above.)*
 - **SC-004**: Replaying every asset's lines through the application's own derivation reproduces its
   generated state for 100% of assets — zero mismatches on status, location, custodian, project or
   parent.

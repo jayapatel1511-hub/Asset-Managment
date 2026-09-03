@@ -121,15 +121,11 @@ function main() {
   const secrets = loadSecrets();
   const files = walk(DIST);
   const findings = [];
+  const substitutions = [];
 
   for (const file of files) {
     const rel = path.relative(DIST, file);
     const base = path.basename(file);
-
-    if (STAGED_FILENAMES.has(base)) {
-      findings.push({ rel, kinds: ["staged-data-file"] });
-      continue;
-    }
 
     let text;
     try {
@@ -139,7 +135,20 @@ function main() {
     }
     const found = scanText(text, secrets);
     const kinds = Object.keys(found);
-    if (kinds.length) findings.push({ rel, kinds });
+
+    if (kinds.length) {
+      findings.push({ rel, kinds });
+      continue;
+    }
+
+    // A file carrying a staged filename but none of the staged values is a deliberate
+    // substitute — the demo dataset, or feature 007's synthetic fleet, both of which reuse these
+    // filenames on purpose. Report it so the operator can see what shipped, but do not fail:
+    // failing on the name alone would make every safe substitution look like a leak, and a
+    // scanner that cries wolf gets switched off.
+    if (STAGED_FILENAMES.has(base)) {
+      substitutions.push(rel);
+    }
   }
 
   console.log("");
@@ -151,6 +160,12 @@ function main() {
 
   if (findings.length === 0) {
     console.log("  clean — no fleet data found in the bundle");
+    if (substitutions.length) {
+      console.log("");
+      console.log(`  ${substitutions.length} substituted data file(s) present (staged filenames,`);
+      console.log("  none of the staged values) — demo or synthetic data, safe to publish:");
+      for (const s of substitutions) console.log(`    ${s}`);
+    }
     console.log("");
     return;
   }

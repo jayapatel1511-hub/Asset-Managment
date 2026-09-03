@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "appId": null,
+  "appDisplayName": "Englobe AMS",
+  "region": "prod",
+  "appType": "CodeApp",
+  "environmentId": "3abb9fa7-bad7-e9ef-8587-18cd7888eff1",
+  "description": "Instrumentation asset tracking - Englobe Ontario (demo data)",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "Default",
+  "connectionReferences": {},
+  "databaseReferences": {}
+}

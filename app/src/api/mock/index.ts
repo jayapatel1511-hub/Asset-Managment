@@ -24,7 +24,7 @@ import type {
   SubmissionOutcome,
   TransferInput,
 } from "../AmsBackend";
-import type { Asset, AssetRelationship, CalibrationRecord, CurrentUser, EquipmentModel, HistoryEntry, Location, Project } from "../types";
+import type { Asset, AssetRelationship, CalibrationRecord, CurrentUser, DatasetInfo, EquipmentModel, HistoryEntry, Location, Project } from "../types";
 import { createAdminMethods } from "./admin";
 import { createDeploymentMethods } from "./deployment";
 import { createOfflineMethods } from "./offline";
@@ -98,6 +98,12 @@ export class MockAmsBackend implements AmsBackend {
     return DEMO_USERS[getMockCurrentUserKey()];
   }
 
+  /** Feature 007 FR-007 — read straight off the loaded dataset's manifest (store.ts). */
+  async getDatasetInfo(): Promise<DatasetInfo> {
+    const store = await this.ready();
+    return store.dataset;
+  }
+
   async searchAssets(query: string): Promise<Asset[]> {
     const store = await this.ready();
     const user = await this.getCurrentUser();
@@ -143,10 +149,11 @@ export class MockAmsBackend implements AmsBackend {
 
   async getAssetHistory(assetId: string): Promise<HistoryEntry[]> {
     const store = await this.ready();
-    const lines = store.transactionLines.filter((l) => l.asset === assetId);
-    const byTxn = new Map(store.transactions.map((t) => [t.id, t]));
+    // Indexed lookups rather than a full scan and a rebuilt Map per call — see
+    // MockStore.linesForAsset for why (feature 007 made an existing quadratic path visible).
+    const lines = store.linesForAsset(assetId);
     const entries: HistoryEntry[] = lines.map((line) => {
-      const txn = byTxn.get(line.transaction);
+      const txn = store.transactionById(line.transaction);
       return {
         ...line,
         transactiondate: txn?.transactiondate ?? "",
