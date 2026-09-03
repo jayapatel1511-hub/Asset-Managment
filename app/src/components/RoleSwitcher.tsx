@@ -20,6 +20,13 @@ export function RoleSwitcher({ onChange }: { onChange: () => void }) {
         onOptionSelect={(_, data) => {
           setMockCurrentUserKey(data.optionValue as keyof typeof MOCK_DEMO_USERS);
           onChange();
+          // Then reload the whole page. `onChange` re-reads the current USER, but every screen
+          // already holding a fetched asset keeps the payload it was served — so switching from
+          // Office Admin to Field User on a SIM asset left the ICCID on screen and made FR-030
+          // look broken in exactly the demo this control exists for. A role change in reality is
+          // a new Entra sign-in, so a full reload is the truthful analogue and leaves no screen
+          // holding data fetched as somebody else.
+          window.location.reload();
         }}
       >
         {Object.entries(MOCK_DEMO_USERS).map(([key, user]) => (

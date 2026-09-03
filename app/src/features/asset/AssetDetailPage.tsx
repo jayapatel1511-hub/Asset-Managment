@@ -126,6 +126,33 @@ export function AssetDetailPage() {
 
       {isOverdue(asset) && <Badge color="danger">{t("asset.overdue")}</Badge>}
 
+      {/* docs/12-ui-spec.md G-11: the SIM fields, specified for Office Admin and above and not
+          rendered until now. There is deliberately NO role check here — FR-030 is enforced in the
+          data layer (server/src/services/readModel.ts, api/mock/index.ts), which sends a Field
+          User nulls for all three. So the card simply has nothing to show them, and the UI cannot
+          disagree with the security rule because it never re-states it. `carrier` is not a
+          secured field and shows for everyone. */}
+      {(asset.carrier || asset.identifiervalue || asset.phonenumber || asset.staticip) && (
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 8,
+            background: tokens.colorNeutralBackground1,
+            padding: 12,
+            borderRadius: 8,
+          }}
+        >
+          <Text weight="semibold" size={200} style={{ gridColumn: "1 / -1" }}>
+            {t("asset.sim.title")}
+          </Text>
+          {asset.carrier && <Field label={t("asset.sim.carrier")} value={asset.carrier} />}
+          {asset.identifiervalue && <Field label={t("asset.sim.iccid")} value={asset.identifiervalue} />}
+          {asset.phonenumber && <Field label={t("asset.sim.phone")} value={asset.phonenumber} />}
+          {asset.staticip && <Field label={t("asset.sim.staticIp")} value={asset.staticip} />}
+        </section>
+      )}
+
       {deployments.length > 0 && (
         <section>
           <Text weight="semibold" size={200} style={{ display: "block", marginBottom: 4 }}>
