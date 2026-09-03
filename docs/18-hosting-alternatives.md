@@ -51,7 +51,34 @@ This is the genuine argument in favour, and it is stronger than it looks.
 - **The entity design was written to be re-targetable.** `CLAUDE.md`: *"do not build anything
   Dataverse-only into the app layer without a comment `// DATAVERSE-ONLY`."*
 
-So the honest technical read: **the data layer is a modest project. The platform layer is the work.**
+So the honest technical read *was*: the data layer is a modest project, the platform layer is the
+work. **§ 2a corrects that** — it was written from Zite's marketing and help pages, before the MCP
+tools were connected and the real interface could be inspected.
+
+## 2a. Correction — Zite's database is not a PostgreSQL you own *(2026-09-03, after inspecting the API)*
+
+Zite runs on PostgreSQL (Neon provisions it), but **the interface it exposes is a typed-field record
+API, Airtable-shaped — not a SQL schema under our control.** Verified against the connected MCP tool
+surface:
+
+| What we need | What Zite exposes |
+|---|---|
+| Apply `server/src/db/schema.sql` | **Not possible.** `execute_sql` is documented as "a single SELECT statement", read-only. There is no DDL path. Tables and columns are created through `create_table` / `create_field` with a fixed set of field types |
+| Transactions — constitution rule 2, *"one business event is one atomic database commit"* | **No transaction primitive** in the record API. `bulk_create_records` writes many rows in one call but says nothing about atomicity, and a five-asset checkout also writes a transaction header, N lines, N asset state changes and relationship rows across tables |
+| `FOR UPDATE` row-lock ordering (`server/README.md` swap step 3) | Not expressible |
+| `ON CONFLICT` sequence increment for Asset ID minting | Not expressible. Minting would race, and Asset ID uniqueness is rule 6 |
+| CHECK constraints, enums, unique indexes | `single_select` approximates an enum. No unique constraint is exposed, so `(manufacturer, model, category)` and Asset ID uniqueness become application conventions |
+| Append-only transaction lines — rule 5 | Convention only. `update_record` and `delete_record` are available on every table; there is no per-table privilege model to withhold them |
+
+Two things soften this. Records carry a `deleted_at` and deletion is soft by default, which actually
+suits the deactivate-never-delete rule. And `run_one_off_script` runs TypeScript against the live
+database importing `zitejs/db` — **if that exposes a real transaction API, most of the table above
+changes.** That is the single highest-value thing to verify, and it needs a sandbox (see § 9).
+
+**Revised conclusion.** Zite is credible as a **test and demo environment**, and as a **read model**
+for reporting. On this evidence it is *not* credible as the authoritative store for a system whose
+first architectural rule is atomic multi-row commits — unless `zitejs/db` provides transactions.
+That is a narrower and more useful question than "can we host on Zite".
 
 ---
 
@@ -191,6 +218,40 @@ pattern of `specs/001`–`008`, and it must cover:
 
 ---
 
+## 7a. The test environment, as designed *(prepared 2026-09-03, not yet created)*
+
+Jay approved the Zite route "for testing". The database below was designed and the creation call was
+**blocked by this session's permission policy** — creating a resource on a third-party service needs
+Jay's explicit allowance, which is the correct gate. It is recorded here so it can be reviewed before
+it exists rather than after.
+
+**Name:** `Englobe AMS — Zite test`. **Data:** the `demo` synthetic profile only —
+371 fictional assets, 699 locations, 52 models, 260 projects, seed `englobe-ams-007`. **Never
+`migration/staged/`**, which is the 1,026 real rows.
+
+| Table | Fields |
+|---|---|
+| **Categories** | Name · Active · Sort Order · *Parent Category* → Categories |
+| **Locations** | Name · Location Type (Region/Office/Site/Vehicle/CalLab/Client/Storage) · Active · Note · *Parent Location* → Locations |
+| **Projects** | Project Number · Project Name · Status (Active/Closed/OnHold) · *Office* → Locations |
+| **Equipment Models** | Name · Manufacturer · Model · ID Prefix · Serialised · Identifier Type (Serial/ICCID/IMEI/**Plate**/None) · Default Cal Interval Months · **Reservable** · *Category* → Categories |
+| **Assets** | Asset ID · Serial Number · Lifecycle · Status · Custodian · Last Cal Date · Next Cal Due · Carrier (Bell/Rogers/**Telus**) · Retirement Reason (+**Stolen**) · Notes · Data Origin · *Equipment Model*, *Home Office*, *Current Location*, *Current Project*, *Parent Asset* |
+
+It carries today's decisions forward: **Categories is the hierarchical table** (roots = the 8 asset
+groups in the demo data, children = its 18 equipment types), `Reservable` is on the model, and the
+new choice values — `Plate`, `Telus`, `Stolen` — are present.
+
+**Three fields are deliberately absent: ICCID (`identifiervalue`), phone number and static IP.**
+74 of the 371 synthetic rows carry them. They are fictional and therefore safe, but omitting the
+columns makes the environment *structurally incapable* of holding that shape, which is the honest
+mirror of the `AMS Sensitive` posture and costs nothing in a test environment.
+
+**Not included in the first pass:** transactions and transaction lines. The demo profile has 16,836
+and 23,022 of them — roughly 80 `bulk_create_records` calls, and the point of a first environment is
+whether Zite can hold the *model*, not to import 20 years of history. Current state is already in the
+asset rows. History is a deliberate second pass, and it is also where the atomicity question in § 2a
+actually bites.
+
 ## 8. Needs Jay, or Englobe IT
 
 1. **Is this driven by Q17 cost?** If so, § 5's two reseller questions are cheaper than a platform
@@ -201,7 +262,19 @@ pattern of `specs/001`–`008`, and it must cover:
 4. **B3 — override the "Microsoft 365 tenant only" constraint?** Answer recorded either way.
 5. **Would Zite be the store, or the builder?** Using its hosted PostgreSQL behind our own React app
    is a much smaller step than adopting its app builder — and this repo already has the React app and
-   the API. Worth separating, because they carry very different amounts of lock-in.
+   the API. Worth separating, because they carry very different amounts of lock-in. **§ 2a sharpens
+   this**: the record API is not a PostgreSQL we can point `server/` at, so "Zite as the store behind
+   our own API" is a much weaker option than it looked.
+
+## 9. To create the test environment, two permissions are needed
+
+Both are Jay's to give, and neither should be worked around:
+
+1. **Allow this session to create Zite resources.** The `create_database` call was blocked by policy.
+2. **A sandbox, if the `zitejs/db` transaction question is to be answered** — `run_one_off_script`
+   requires a `sandboxId`, and the first `create_sandbox` call **starts a free 14-day trial on the
+   organisation** (no card, per Zite's own connection notes). Worth it only to answer the § 2a
+   question, which is the one that decides whether Zite can be more than a test environment.
 
 ---
 
