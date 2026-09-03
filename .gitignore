@@ -32,3 +32,4 @@ migration/synthetic/*/*
 # re-run can reproduce.
 zite/load/out/*
 !zite/load/out/idmap.json
+!zite/load/out/_loc_ids.json
