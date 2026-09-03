@@ -1,0 +1,17 @@
+{
+  "_comment": "Offices are the real ones from data/reference/locations.csv. activeFrom dates are INVENTED (FR-036 — parameters, not claims about the company). share = the real 2026-09-02 home-office distribution (FR-030), renormalised over active offices at any instant. lat/lon are city centroids used only to scatter fictional sites. areaCodes are used with the 555-01xx fictional exchange (FR-004).",
+  "calLab": "Montreal Calibration",
+  "noAdminOffice": "Thunder Bay",
+  "offices": [
+    { "name": "Ottawa",       "activeFrom": "2006-01-01", "share": 0.251, "lat": 45.42, "lon": -75.70, "areaCodes": ["613", "343"], "region": "Ottawa" },
+    { "name": "Toronto",      "activeFrom": "2006-01-01", "share": 0.250, "lat": 43.65, "lon": -79.38, "areaCodes": ["416", "647"], "region": "Toronto" },
+    { "name": "Sudbury",      "activeFrom": "2008-04-01", "share": 0.212, "lat": 46.49, "lon": -80.99, "areaCodes": ["705", "249"], "region": "Sudbury" },
+    { "name": "SWO",          "activeFrom": "2011-06-01", "share": 0.108, "lat": 43.10, "lon": -80.90, "areaCodes": ["519", "226"], "region": "SWO" },
+    { "name": "London",       "activeFrom": "2013-01-01", "share": 0.053, "lat": 42.98, "lon": -81.25, "areaCodes": ["519", "226"], "region": "SWO" },
+    { "name": "Kitchener",    "activeFrom": "2014-01-01", "share": 0.048, "lat": 43.45, "lon": -80.49, "areaCodes": ["519", "226"], "region": "SWO" },
+    { "name": "Stoney Creek", "activeFrom": "2015-01-01", "share": 0.033, "lat": 43.22, "lon": -79.76, "areaCodes": ["905", "289"], "region": "Toronto" },
+    { "name": "Mississauga",  "activeFrom": "2018-01-01", "share": 0.022, "lat": 43.59, "lon": -79.64, "areaCodes": ["905", "289"], "region": "Toronto" },
+    { "name": "Waterloo",     "activeFrom": "2017-01-01", "share": 0.013, "lat": 43.46, "lon": -80.52, "areaCodes": ["519", "226"], "region": "SWO" },
+    { "name": "Thunder Bay",  "activeFrom": "2022-01-01", "share": 0.004, "lat": 48.38, "lon": -89.25, "areaCodes": ["807"], "region": "Thunder Bay" }
+  ]
+}

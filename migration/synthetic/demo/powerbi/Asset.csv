@@ -1,0 +1,372 @@
+AssetId,EquipmentModelKey,SerialNumber,IdentifierValue,HomeOffice,Lifecycle,Status,CurrentLocation,Custodian,CurrentProject,ParentAsset,LastCalDate,NextCalDue,RetirementReason,Notes,PhoneNumber,StaticIp,MigrationSource
+GEO-BG-30000,Instantel|Series III|Geophone,BG30000,,Ottawa,Active,Deployed,2234 Millrace Avenue,,09000168,DL-BE-30001,2026-04-11,2025-10-07,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30000,Instantel|Minimate Plus|DataLogger,BE30000,,Toronto,Active,Deployed,1572 Danforth Ridge Road,,09000150,,2025-11-12,2026-11-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30001,Instantel|Minimate Plus|DataLogger,BE30001,,Ottawa,Active,Deployed,2234 Millrace Avenue,,09000168,,2026-04-07,2027-04-07,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30002,Instantel|Minimate Plus|DataLogger,BE30002,,Ottawa,Active,Deployed,199 Old Quarry Road,,09000221,,2026-08-20,2027-08-20,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30003,Instantel|Minimate Plus|DataLogger,BE30003,,Toronto,Active,Deployed,3317 Harbourview Lane,,09000199,,2025-11-06,2026-11-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30001,Instantel|Series III|Geophone,BG30001,,Toronto,Active,Deployed,1572 Danforth Ridge Road,,09000150,DL-BE-30000,2025-11-17,2026-11-17,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+TMP-5001,Instantel|Minimate Plus|DataLogger,BE30004,,Toronto,Active,Deployed,1231 Lakeshore Viaduct Road,,09000102,,2023-07-17,2024-07-17,,"Tag illegible on receipt — temporary tag issued, needs completion.",,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30005,Instantel|Minimate|DataLogger,BE30005,,Toronto,Active,Deployed,1654 Harbourview Lane,,09000199,,2025-04-21,2026-04-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30006,Instantel|Minimate Plus|DataLogger,BE30006,,Ottawa,Active,CheckedOut,,greta.larsson@englobecorp.com,,,2026-04-06,2027-04-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30002,Instantel|Series III|Geophone,BG30002,,Toronto,Retired,Retired,,,,,2025-10-29,2026-10-29,Sold,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30007,Instantel|Minimate Plus|DataLogger,BE30007,,Ottawa,Active,Deployed,903 Stonebridge Court,,09000088,,2025-06-02,2026-06-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5001,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999905607490551630,Ottawa,Active,Available,Ottawa,,,,,,,,343-555-0189,203.0.113.188,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30008,Instantel|Minimate Plus|DataLogger,BE30008,,Toronto,Active,Deployed,367 Lakeshore Viaduct Road,,09000199,,2025-01-27,2026-01-27,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30009,Instantel|Minimate Plus|DataLogger,BE30009,,Ottawa,Active,Deployed,3711 Millrace Avenue,,09000109,,2025-03-31,2026-03-31,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30003,Instantel|Series III|Geophone,BG30003,,Ottawa,Active,NeedsRepair,Montreal Calibration,,,,2023-04-28,2024-04-28,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30004,Instantel|Series III|Geophone,BG30004,,Ottawa,Active,CheckedOut,,greta.larsson@englobecorp.com,,,2026-04-24,2027-04-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5002,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999954371645046653,Toronto,Active,Available,Toronto,,,,,,,,416-555-0124,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30005,Instantel|Series III|Geophone,BG30005,,Ottawa,Retired,Retired,,,,,2009-11-02,2009-11-24,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+TLT-850000,Slope Indicator|VWP|VWReadout,850000,,Ottawa,Retired,Retired,,,,,2010-01-07,2012-01-07,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30006,Instantel|Series III|Geophone,BG30006,,Toronto,Active,Deployed,1231 Lakeshore Viaduct Road,,09000102,TMP-5001,2023-07-24,2024-07-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30010,Instantel|Minimate Plus|DataLogger,BE30010,,Toronto,Active,Deployed,801 Humberline Court,,09000199,,2026-03-16,2027-03-16,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30011,Instantel|Minimate Plus|DataLogger,BE30011,,Toronto,Active,Deployed,1591 Willowdale Crescent,,09000160,,2025-06-02,2026-06-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30007,Instantel|Series III|Geophone,BG30007,,Toronto,Retired,Retired,,,,,2023-06-02,2024-06-02,Lost,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30012,Instantel|Minimate Plus|DataLogger,BE30012,,Toronto,Retired,Retired,,,,,2020-03-30,2021-03-30,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30013,Instantel|Minimate|DataLogger,BE30013,,Sudbury,Active,Deployed,2116 Shaft Road,,09000247,,2022-07-18,2023-07-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5003,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999974263228351830,Ottawa,Active,Available,Ottawa,,,,,,,,343-555-0194,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30008,Instantel|Series III|Geophone,BG30008,,Toronto,Active,Deployed,1654 Harbourview Lane,,09000199,DL-BE-30005,2022-12-19,2023-12-19,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30014,Instantel|Minimate Plus|DataLogger,BE30014,,Sudbury,Active,Deployed,3818 Kelly Lake Line,,09000201,,2025-12-10,2026-12-10,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30015,Instantel|Minimate Plus|DataLogger,BE30015,,Sudbury,Active,Deployed,3864 Boreal Pit Road,,09000093,,2025-08-25,2026-08-25,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30016,Instantel|Minimate Plus|DataLogger,BE30016,,Toronto,Active,Deployed,644 Queensway Ridge,,09000245,,2025-02-16,2026-02-16,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30017,Instantel|Minimate Plus|DataLogger,BE30017,,Sudbury,Active,Deployed,4095 Frood Extension Road,,09000206,,2025-08-11,2026-08-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30018,Instantel|Minimate Plus|DataLogger,BE30018,,Ottawa,Active,Deployed,3952 Copperhead Road,,09000230,,2025-07-18,2026-07-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30009,Instantel|Series III|Geophone,BG30009,,Toronto,Retired,Retired,,,,,2009-03-10,2010-03-10,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30019,Instantel|Minimate Plus|DataLogger,BE30019,,Toronto,Active,Deployed,3672 Lakeshore Viaduct Road,,09000054,,2025-07-29,2026-07-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30020,Instantel|Minimate Plus|DataLogger,BE30020,,Sudbury,Retired,Retired,,,,,2010-12-17,2011-12-17,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30021,Instantel|Minimate|DataLogger,BE30021,,Ottawa,Retired,Retired,,,,,2019-03-07,2020-03-07,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30022,Instantel|Minimate Plus|DataLogger,BE30022,,Ottawa,Active,Deployed,3862 Copperhead Road,,09000146,,2025-09-11,2026-09-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30010,Instantel|Series III|Geophone,BG30010,,Toronto,Retired,Retired,,,,,2014-02-07,2015-02-07,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30023,Instantel|Minimate Plus|DataLogger,BE30023,,Sudbury,Retired,Retired,,,,,2011-10-03,2010-10-05,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5004,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999996357825944411,Sudbury,Active,Available,Sudbury,,,,,,,,249-555-0177,192.0.2.149,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30024,Instantel|Minimate Plus|DataLogger,BE30024,,Toronto,Active,Available,Toronto,,,,2026-04-21,2027-04-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30011,Instantel|Series III|Geophone,BG30011,,Sudbury,Active,Deployed,2116 Shaft Road,,09000247,DL-BE-30013,2025-12-04,2026-12-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30012,Instantel|Series III|Geophone,BG30012,,Ottawa,Active,Deployed,903 Stonebridge Court,,09000088,DL-BE-30007,2025-03-03,2026-03-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30025,Instantel|Minimate Plus|DataLogger,BE30025,,Toronto,Active,Deployed,1845 Willowdale Crescent,,09000054,,2025-01-19,2026-01-19,,Owned by Harrowgate Developments; on loan to Englobe for the duration of their project.,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30026,Instantel|Minimate Plus|DataLogger,BE30026,,Ottawa,Active,Deployed,192 Ironwood Crescent,,09000246,,2025-07-28,2026-07-28,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30027,Instantel|Minimate Plus|DataLogger,BE30027,,Toronto,Active,Deployed,2333 Birchmount Terrace,,09000233,,2026-02-13,2027-02-13,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30028,Instantel|Minimate Plus|DataLogger,BE30028,,Ottawa,Retired,Retired,,,,,2020-12-16,2021-12-16,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30029,Instantel|Minimate Plus|DataLogger,BE30029,,Ottawa,Active,Deployed,4160 Ironwood Crescent,,09000226,,2026-02-15,2027-02-15,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30013,Instantel|Series III|Geophone,BG30013,,Sudbury,Retired,Retired,,,,,2021-07-12,2022-07-12,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30014,Instantel|Series III|Geophone,BG30014,,Sudbury,Active,Available,Sudbury,,,,2026-08-23,2027-08-23,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30030,Instantel|Minimate Plus|DataLogger,BE30030,,Toronto,Active,Deployed,2024 Queensway Ridge,,09000240,,2025-10-13,2026-10-13,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30015,Instantel|Series III|Geophone,BG30015,,Toronto,Retired,Retired,,,,,2022-05-09,2023-05-09,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5005,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999957419586909319,Ottawa,Retired,Retired,,,,,,,Damaged,,343-555-0146,192.0.2.229,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30031,Instantel|Minimate Plus|DataLogger,BE30031,,Ottawa,Active,Deployed,4036 Bellamy Ridge Road,,09000016,,2024-11-13,2025-11-13,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30016,Instantel|Series III|Geophone,BG30016,,Sudbury,Active,Deployed,4095 Frood Extension Road,,09000206,DL-BE-30017,2025-08-21,2026-08-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-SE-30000,Instantel|Series IV|Geophone,SE30000,,Ottawa,Retired,Retired,,,,,2026-01-12,2027-01-12,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5006,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999922320013111986,Toronto,Active,Available,Toronto,,,,,,,,647-555-0157,203.0.113.5,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30032,Instantel|Minimate Plus|DataLogger,BE30032,,Ottawa,Active,Deployed,3240 Millrace Avenue,,09000039,,2025-11-12,2026-11-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30017,Instantel|Series III|Geophone,BG30017,,Ottawa,Retired,Retired,,,,,2015-03-29,2016-03-29,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30018,Instantel|Series III|Geophone,BG30018,,Sudbury,Active,Available,Sudbury,,,,2025-06-20,2026-06-20,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30019,Instantel|Series III|Geophone,BG30019,,Toronto,Active,Available,Toronto,,,,2026-04-02,2027-04-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30033,Instantel|Minimate Plus|DataLogger,BE30033,,Toronto,Retired,Retired,,,,,2019-08-28,2020-08-28,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30020,Instantel|Series III|Geophone,BG30020,,Ottawa,Retired,Retired,,,,,2021-08-23,2022-08-23,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30034,Instantel|Minimate Plus|DataLogger,BE30034,,SWO,Retired,Retired,,,,,2024-11-27,2025-11-27,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30035,Instantel|Minimate Plus|DataLogger,BE30035,,Ottawa,Retired,Retired,,,,,2011-10-22,2012-10-22,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30036,Instantel|Minimate Plus|DataLogger,BE30036,,SWO,Active,Deployed,3890 Wellington Bypass,,09000177,,2025-05-12,2026-05-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30021,Instantel|Series III|Geophone,BG30021,,Ottawa,Active,Deployed,3711 Millrace Avenue,,09000109,DL-BE-30009,2025-04-14,2026-04-14,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30022,Instantel|Series III|Geophone,BG30022,,Sudbury,Active,CheckedOut,,priya.halvorsen@englobecorp.com,,,2025-02-27,2026-02-27,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30037,Instantel|Minimate Plus|DataLogger,BE30037,,Toronto,Retired,Retired,,,,,2023-08-05,2024-08-05,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30038,Instantel|Minimate Plus|DataLogger,BE30038,,Ottawa,Active,Deployed,2234 Millrace Avenue,,09000168,,2025-10-06,2026-10-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30039,Instantel|Minimate Plus|DataLogger,BE30039,,Toronto,Active,Deployed,100 Danforth Ridge Road,,09000243,,2026-08-25,2027-08-25,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30040,Instantel|Minimate Plus|DataLogger,BE30040,,SWO,Retired,Retired,,,,,2022-11-21,2023-11-21,Sold,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30023,Instantel|Series III|Geophone,BG30023,,Sudbury,Retired,Retired,,,,,2020-12-28,2021-12-28,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5007,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999961083749466650,Sudbury,Retired,Retired,,,,,,,Damaged,,705-555-0105,198.51.100.157,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30041,Instantel|Minimate Plus|DataLogger,BE30041,,Sudbury,Active,CheckedOut,,priya.halvorsen@englobecorp.com,,,2025-02-10,2026-02-10,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30042,Instantel|Minimate Plus|DataLogger,BE30042,,Ottawa,Active,Deployed,3684 Harrow Gate Drive,,09000088,,2023-09-08,2024-09-08,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30043,Instantel|Minimate Plus|DataLogger,BE30043,,SWO,Retired,Retired,,,,,2020-02-27,2021-02-27,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5008,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999935964119797407,Toronto,Retired,Retired,,,,,,,Obsolete,,416-555-0134,203.0.113.124,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30044,Instantel|Minimate Plus|DataLogger,BE30044,,Ottawa,Retired,Retired,,,,,2020-02-13,2021-02-13,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30045,Instantel|Minimate Plus|DataLogger,BE30045,,Ottawa,Active,Deployed,4176 Silverbirch Parkway,,09000244,,2024-12-19,2025-12-19,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30024,Instantel|Series III|Geophone,BG30024,,SWO,Active,InCalibration,Montreal Calibration,,,,2025-05-29,2026-05-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30046,Instantel|Minimate Plus|DataLogger,BE30046,,Toronto,Active,Available,Toronto,,,,2026-08-03,2027-08-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5009,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999989008904836676,SWO,Active,Available,SWO,,,,,,,,519-555-0141,198.51.100.238,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30047,Instantel|Minimate Plus|DataLogger,BE30047,,Sudbury,Active,Deployed,2137 Greyrock Mine Road,,09000205,,2024-09-30,2025-09-30,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30025,Instantel|Series III|Geophone,BG30025,,Toronto,Active,Deployed,1591 Willowdale Crescent,,09000160,DL-BE-30011,2025-05-12,2026-05-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40000,Instantel|Micromate|DataLogger,UM40000,,Toronto,Active,Available,Toronto,,,,2025-11-05,2026-11-05,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40000,Instantel|Micromate|Geophone,UM40000,,Toronto,Active,Available,Toronto,,,,2025-12-01,2026-12-01,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30048,Instantel|Minimate Plus|DataLogger,BE30048,,Toronto,Retired,Retired,,,,,2018-07-16,2019-07-16,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5010,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999958167170996072,Sudbury,Retired,Retired,,,,,,,Damaged,,249-555-0102,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30049,Instantel|Minimate Plus|DataLogger,BE30049,,Sudbury,Active,Available,Sudbury,,,,2025-06-24,2026-06-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30026,Instantel|Series III|Geophone,BG30026,,SWO,Active,Available,SWO,,,,2026-03-18,2027-03-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30050,Instantel|Minimate Plus|DataLogger,BE30050,,Toronto,Retired,Retired,,,,,2020-06-10,2021-06-10,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30051,Instantel|Minimate Plus|DataLogger,BE30051,,London,Active,Deployed,4841 Fanshawe Ridge,,09000239,,2025-04-18,2026-04-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30052,Instantel|Minimate Plus|DataLogger,BE30052,,SWO,Active,Deployed,3204 Erie Shore Drive,,09000078,,2026-05-29,2027-05-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30053,Instantel|Minimate Plus|DataLogger,BE30053,,Sudbury,Active,Deployed,958 Long Lake Ridge,,09000228,,2020-06-03,2021-06-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30027,Instantel|Series III|Geophone,BG30027,,Sudbury,Active,Deployed,958 Long Lake Ridge,,09000228,DL-BE-30053,2023-01-02,2024-01-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30054,Instantel|Minimate Plus|DataLogger,BE30054,,Ottawa,Active,CheckedOut,,fergus.ivarsson@englobecorp.com,,,2023-12-11,2024-12-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30028,Instantel|Series III|Geophone,BG30028,,Ottawa,Retired,Retired,,,,,2023-01-18,2024-01-18,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30029,Instantel|Series III|Geophone,BG30029,,Sudbury,Active,Deployed,3818 Kelly Lake Line,,09000201,DL-BE-30014,2025-11-27,2026-11-27,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30055,Instantel|Minimate Plus|DataLogger,BE30055,,Sudbury,Retired,Retired,,,,,2021-09-03,2022-09-03,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30030,Instantel|Series III|Geophone,BG30030,,SWO,Active,Deployed,3204 Erie Shore Drive,,09000078,DL-BE-30052,2026-06-01,2027-06-01,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30056,Instantel|Minimate Plus|DataLogger,BE30056,,Sudbury,Active,Deployed,4255 Shaft Road,,09000235,,2024-11-01,2025-11-01,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30031,Instantel|Series III|Geophone,BG30031,,Sudbury,Active,Deployed,4255 Shaft Road,,09000235,DL-BE-30056,2025-05-15,2026-05-15,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30057,Instantel|Minimate Plus|DataLogger,BE30057,,London,Active,Deployed,3404 Erie Shore Drive,,09000170,,2023-07-03,2024-07-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30058,Instantel|Minimate Plus|DataLogger,BE30058,,Sudbury,Active,Deployed,2189 Long Lake Ridge,,09000228,,2022-05-03,2023-05-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30059,Instantel|Minimate Plus|DataLogger,BE30059,,Ottawa,Active,Deployed,3862 Copperhead Road,,09000109,,2024-12-30,2025-12-30,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30032,Instantel|Series III|Geophone,BG30032,,London,Active,Available,London,,09000170,,2026-07-24,2027-07-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30060,Instantel|Minimate Plus|DataLogger,BE30060,,Sudbury,Active,Deployed,3676 Frood Extension Road,,09000156,,2024-10-21,2025-10-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-BE-30061,Instantel|Minimate Plus|DataLogger,BE30061,,Toronto,Active,Deployed,1125 Harbourview Lane,,09000083,,2021-08-31,2022-08-31,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5011,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999916806917482331,Toronto,Retired,Retired,,,,,,,Obsolete,,647-555-0167,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-LD-5000000,Larson Davis|831C|SoundLevelMeter,5000000,,Toronto,Retired,Retired,,,,,2021-11-05,2022-11-05,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-LD-PA-5000,Larson Davis|831C Pre-Amp|Microphone,5000,,Toronto,Active,Retired,,,,SLM-LD-5000000,2021-11-05,2022-11-05,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-LD-EL-700000,Larson Davis|831C Element|Microphone,700000,,Toronto,Active,Retired,,,,SLM-LD-5000000,2021-11-05,2022-11-05,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-BG-30033,Instantel|Series III|Geophone,BG30033,,SWO,Active,Deployed,3204 Erie Shore Drive,,09000078,DL-BE-30052,2026-03-02,2027-03-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5012,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999917827674547644,Sudbury,Retired,Retired,,,,,,,Damaged,,249-555-0146,192.0.2.206,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-SE-30001,Instantel|Series IV|Geophone,SE30001,,Toronto,Active,Available,Toronto,,,,2024-12-06,2025-12-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-UA-40000,Instantel|Micromate|Microphone,UA40000,,SWO,Retired,Retired,,,,,2017-04-21,2018-04-21,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40001,Instantel|Micromate|DataLogger,UM40001,,Sudbury,Retired,Retired,,,,,2018-05-05,2019-05-05,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40001,Instantel|Micromate|Geophone,UM40001,,Sudbury,Retired,Retired,,,,,2016-01-11,2017-01-11,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40002,Instantel|Micromate|DataLogger,UM40002,,Ottawa,Active,Deployed,485 Millrace Avenue,,09000138,,2026-02-20,2027-02-20,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40002,Instantel|Micromate|Geophone,UM40002,,Ottawa,Active,Deployed,485 Millrace Avenue,,09000138,DL-UM-40002,2025-06-17,2026-06-17,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5013,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999967705332251701,Sudbury,Retired,Retired,,,,,,,Damaged,,705-555-0167,203.0.113.66,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-SE-30002,Instantel|Series IV|Geophone,SE30002,,Toronto,Active,Available,Toronto,,,,2025-11-10,2026-11-10,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5014,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999944694624312199,Ottawa,Retired,Retired,,,,,,,Obsolete,,343-555-0143,203.0.113.102,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5015,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999962817377656226,Ottawa,Retired,Retired,,,,,,,Obsolete,,343-555-0103,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5016,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999931525573022600,Toronto,Active,Available,Toronto,,,,,,,,647-555-0115,203.0.113.222,SYNTHETIC seed=englobe-ams-007 profile=demo
+VWR-E-2000000,Encardio Rite|EDI-54V|VWReadout,E-2000000,,Toronto,Active,Available,Toronto,,,,2025-12-29,2027-12-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5017,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999973829728465766,Kitchener,Active,Available,Kitchener,,,,,,,,519-555-0172,,SYNTHETIC seed=englobe-ams-007 profile=demo
+ACC-DP7000,RST|Reel|Other,DP7000,,SWO,Active,Available,SWO,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40003,Instantel|Micromate|DataLogger,UM40003,,Ottawa,Retired,Retired,,,,,2016-03-21,2017-03-21,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40003,Instantel|Micromate|Geophone,UM40003,,Ottawa,Active,Deployed,485 Millrace Avenue,,09000138,DL-UM-40014,2022-04-11,2023-04-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+VWR-70000,RST|Model 23600|VWReadout,70000,,Ottawa,Active,Available,Ottawa,,,,2026-01-19,2028-01-19,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5018,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999991054875447115,Ottawa,Active,Available,Ottawa,,,,,,,,613-555-0117,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40004,Instantel|Micromate|DataLogger,UM40004,,Toronto,Active,Deployed,1871 Lawrence Heights Road,,09000054,,2025-04-07,2026-04-07,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40004,Instantel|Micromate|Geophone,UM40004,,Toronto,Active,Deployed,1871 Lawrence Heights Road,,09000054,DL-UM-40004,2025-03-31,2026-03-31,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40005,Instantel|Micromate|DataLogger,UM40005,,SWO,Active,CheckedOut,,solveig.adeyemi@englobecorp.com,,,2024-07-11,2025-07-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40005,Instantel|Micromate|Geophone,UM40005,,SWO,Active,CheckedOut,,solveig.adeyemi@englobecorp.com,,,2025-11-25,2026-11-25,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5019,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999963894991866241,Toronto,Active,Available,Toronto,,,,,,,,647-555-0105,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500000,Sigicom|S50|SoundLevelMeter,500000,,Sudbury,Active,Available,Sudbury,,,,2024-11-08,2025-11-08,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400000,Sigicom|V12|Geophone,400000,,Toronto,Active,Deployed,3183 Danforth Ridge Road,,09000102,DL-D10-300003,2018-09-07,2019-09-07,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-300000,Sigicom|D10|DataLogger,300000,,London,Active,Deployed,1359 Grand River Line,,09000239,,2023-11-20,2024-11-20,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5020,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999921311284613165,London,Active,Deployed,1359 Grand River Line,,09000239,DL-D10-300000,,,,,226-555-0189,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500001,Sigicom|S50|SoundLevelMeter,500001,,Sudbury,Active,Available,Sudbury,finlay.achterberg@englobecorp.com,09000205,,2026-01-12,2027-01-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400001,Sigicom|V12|Geophone,400001,,Sudbury,Active,Available,Sudbury,,,,2025-11-12,2026-11-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500002,Sigicom|S50|SoundLevelMeter,500002,,SWO,Retired,Retired,,,,,2019-01-17,2020-01-17,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5021,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999922665905164026,Ottawa,Retired,Retired,,,,,,,Obsolete,,343-555-0133,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40006,Instantel|Micromate|DataLogger,UM40006,,Sudbury,Active,Deployed,4863 Kelly Lake Line,,09000093,,2026-06-22,2027-06-22,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40006,Instantel|Micromate|Geophone,UM40006,,Sudbury,Active,Available,Sudbury,,,,2026-07-02,2027-07-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+CAM-7200000,Sony|HDR-PJ340|HDCamera,7200000,,Sudbury,Active,Available,Sudbury,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500003,Sigicom|S50|SoundLevelMeter,500003,,Sudbury,Retired,Retired,,,,,2020-07-15,2021-07-15,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40007,Instantel|Micromate|DataLogger,UM40007,,Stoney Creek,Active,Deployed,2970 Queensway Ridge,,09000242,,2026-07-02,2027-07-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40007,Instantel|Micromate|Geophone,UM40007,,Stoney Creek,Retired,Retired,,,,,2021-08-06,2022-08-06,Sold,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450000,Sigicom|C22|Geophone,450000,,Ottawa,Active,CheckedOut,,zofia.jorgensen@englobecorp.com,,,2025-12-26,2026-12-26,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500004,Sigicom|S50|SoundLevelMeter,500004,,Toronto,Active,CheckedOut,,callum.reyes@englobecorp.com,,,2021-12-27,2022-12-27,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000000,Sierra Wireless|AirLink RV50X|Modem,3000000000,,Ottawa,Active,Available,,sasha.whitfield@englobecorp.com,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5022,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999971071481847938,Ottawa,Active,Available,,sasha.whitfield@englobecorp.com,,MDM-3000000000,,,,,343-555-0158,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400002,Sigicom|V12|Geophone,400002,,SWO,Active,Deployed,1086 Pinery Road,,09000078,DL-D10-300006,2024-07-29,2025-07-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5023,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999930814617873926,Toronto,Active,Available,Toronto,,,,,,,,647-555-0185,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-300001,Sigicom|D10|DataLogger,300001,,SWO,Retired,Retired,,,,,2019-07-22,2020-07-22,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5024,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999908395690441169,SWO,Active,Retired,,,,DL-D10-300001,,,,,226-555-0115,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40008,Instantel|Micromate|DataLogger,UM40008,,Sudbury,Active,Deployed,2562 Greyrock Mine Road,,09000152,,2025-12-18,2026-12-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40008,Instantel|Micromate|Geophone,UM40008,,Sudbury,Active,Deployed,2562 Greyrock Mine Road,,09000152,DL-UM-40008,2025-12-09,2026-12-09,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400003,Sigicom|V12|Geophone,400003,,Toronto,Retired,Retired,,,,,2020-10-01,2021-10-01,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40009,Instantel|Micromate|DataLogger,UM40009,,SWO,Active,Deployed,3079 Erie Shore Drive,,09000238,,2026-01-26,2027-01-26,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40009,Instantel|Micromate|Geophone,UM40009,,SWO,Active,Deployed,3079 Erie Shore Drive,,09000238,DL-UM-40009,2026-01-28,2027-01-28,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000001,Sierra Wireless|AirLink RV50X|Modem,3000000001,,SWO,Active,CheckedOut,,solveig.adeyemi@englobecorp.com,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5025,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999944745483454884,SWO,Active,CheckedOut,,solveig.adeyemi@englobecorp.com,,MDM-3000000001,,,,,226-555-0171,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500005,Sigicom|S50|SoundLevelMeter,500005,,SWO,Active,Available,SWO,,,,2026-01-29,2027-01-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5026,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999950982063977775,SWO,Active,Available,SWO,,,,,,,,226-555-0114,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000002,Sierra Wireless|AirLink RV50X|Modem,3000000002,,SWO,Active,Deployed,3079 Erie Shore Drive,,09000238,DL-UM-40009,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5027,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999954598675486637,SWO,Active,Deployed,3079 Erie Shore Drive,,09000238,MDM-3000000002,,,,,226-555-0133,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40010,Instantel|Micromate|DataLogger,UM40010,,Ottawa,Active,Deployed,1894 Kettle Creek Road,,09000016,,2024-10-14,2025-10-14,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40010,Instantel|Micromate|Geophone,UM40010,,Ottawa,Active,Deployed,1894 Kettle Creek Road,,09000016,DL-UM-40010,2025-05-04,2026-05-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+VWR-70001,RST|Model 23600|VWReadout,70001,,Sudbury,Retired,Retired,,,,,2021-02-15,2023-02-15,Lost,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000003,Sierra Wireless|AirLink RV50X|Modem,3000000003,,SWO,Active,Deployed,2902 Pinery Road,,09000177,DL-UM-40016,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5028,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999986160977065452,SWO,Active,Deployed,2902 Pinery Road,,09000177,MDM-3000000003,,,,,226-555-0151,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-300002,Sigicom|D10|DataLogger,300002,,Ottawa,Active,CheckedOut,,zofia.jorgensen@englobecorp.com,,,2026-01-15,2027-01-15,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5029,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999983680167759658,Ottawa,Active,CheckedOut,,zofia.jorgensen@englobecorp.com,,DL-D10-300002,,,,,613-555-0156,192.0.2.107,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5030,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999955525992158176,Toronto,Active,Available,Toronto,,,,,,,,647-555-0138,198.51.100.78,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500006,Sigicom|S50|SoundLevelMeter,500006,,Ottawa,Active,Available,Ottawa,,,,2026-02-02,2027-02-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40011,Instantel|Micromate|DataLogger,UM40011,,Toronto,Active,Deployed,143 Portlands Way,,09000207,,2025-10-06,2026-10-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40011,Instantel|Micromate|Geophone,UM40011,,Toronto,Active,Available,Toronto,,,,2026-06-18,2027-06-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000004,Sierra Wireless|AirLink RV50X|Modem,3000000004,,Waterloo,Active,Available,Waterloo,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5031,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999901611201465365,Waterloo,Active,Available,Waterloo,,,MDM-3000000004,,,,,226-555-0120,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450001,Sigicom|C22|Geophone,450001,,Ottawa,Active,CheckedOut,,zofia.jorgensen@englobecorp.com,,,2026-02-16,2027-02-16,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500007,Sigicom|S50|SoundLevelMeter,500007,,Sudbury,Active,CheckedOut,,josee.belanger@englobecorp.com,09000201,,2026-06-11,2027-06-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5032,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999999214278978395,Toronto,Active,Available,Toronto,,,,,,,,647-555-0125,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40012,Instantel|Micromate|DataLogger,UM40012,,Toronto,Active,Available,Toronto,,,,2026-08-19,2027-08-19,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40012,Instantel|Micromate|Geophone,UM40012,,Toronto,Active,Available,Toronto,,,,2026-08-11,2027-08-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000005,Sierra Wireless|AirLink RV50X|Modem,3000000005,,Toronto,Active,Available,Toronto,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5033,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999974967132228617,Toronto,Active,Available,Toronto,,,MDM-3000000005,,,,,416-555-0158,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40013,Instantel|Micromate|DataLogger,UM40013,,Toronto,Active,Deployed,1596 Wexford Drive,,09000240,,2025-07-22,2026-07-22,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40013,Instantel|Micromate|Geophone,UM40013,,Toronto,Retired,Retired,,,,,2019-06-05,2020-06-05,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5034,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999993087332781872,SWO,Active,Available,SWO,,,,,,,,519-555-0113,198.51.100.202,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500008,Sigicom|S50|SoundLevelMeter,500008,,Ottawa,Active,Available,Ottawa,,,,2026-03-16,2027-03-16,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5035,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999902308866356216,Kitchener,Active,Available,Kitchener,,,,,,,,226-555-0110,203.0.113.228,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40014,Instantel|Micromate|DataLogger,UM40014,,Ottawa,Active,Deployed,485 Millrace Avenue,,09000138,,2022-03-31,2023-03-31,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40014,Instantel|Micromate|Geophone,UM40014,,Ottawa,Active,Available,Ottawa,,,,2026-08-12,2027-08-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40015,Instantel|Micromate|DataLogger,UM40015,,Ottawa,Active,InCalibration,Montreal Calibration,,,,2022-04-18,2023-04-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40015,Instantel|Micromate|Geophone,UM40015,,Ottawa,Active,Available,Ottawa,,,,2026-08-24,2027-08-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400004,Sigicom|V12|Geophone,400004,,Toronto,Active,Available,Toronto,,,,2026-08-24,2027-08-24,,Owned by Pinecrest Utilities; on loan to Englobe for the duration of their project.,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5036,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999919331155283744,SWO,Active,Available,SWO,,,,,,,,519-555-0124,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400005,Sigicom|V12|Geophone,400005,,Sudbury,Active,Available,Sudbury,,,,2025-10-21,2026-10-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+AC-5001,Larson Davis|CAL200|AcousticCalibrator,,,Sudbury,Retired,Retired,,,,,2019-12-16,2020-12-16,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+TS-62000000,"Trimble|S7 - 1"" Autolock AMTS|AutomatedTotalStation",62000000,,Ottawa,Active,CheckedOut,,sebastien.moreau@englobecorp.com,09000226,,2026-05-06,2027-05-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500009,Sigicom|S50|SoundLevelMeter,500009,,Sudbury,Retired,Retired,,,,,2022-11-02,2023-11-02,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500010,Sigicom|S50|SoundLevelMeter,500010,,Sudbury,Active,CheckedOut,,mathilde.quintero@englobecorp.com,09000249,,2026-03-04,2027-03-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5037,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999954149581393176,Ottawa,Active,Available,Ottawa,,,,,,,,343-555-0160,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5038,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999998462616631728,Toronto,Retired,Retired,,,,,,,Obsolete,,416-555-0163,192.0.2.189,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400006,Sigicom|V12|Geophone,400006,,Toronto,Active,Available,Toronto,,,,2026-08-03,2027-08-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5039,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999941575306146174,Sudbury,Retired,Retired,,,,,,,Damaged,,249-555-0114,203.0.113.251,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000006,Sierra Wireless|AirLink RV50X|Modem,3000000006,,Ottawa,Active,Available,Ottawa,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5040,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999938063440408961,Ottawa,Active,Available,Ottawa,,,MDM-3000000006,,,,,613-555-0136,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450002,Sigicom|C22|Geophone,450002,,Kitchener,Retired,Retired,,,,,2021-06-29,2022-06-29,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40016,Instantel|Micromate|DataLogger,UM40016,,SWO,Active,Deployed,2902 Pinery Road,,09000177,,2026-07-31,2027-07-31,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40016,Instantel|Micromate|Geophone,UM40016,,SWO,Active,Deployed,2902 Pinery Road,,09000177,DL-UM-40016,2026-06-29,2027-06-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40017,Instantel|Micromate|DataLogger,UM40017,,Ottawa,Active,Deployed,1531 Grist Mill Lane,,09000193,,2025-03-31,2026-03-31,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40017,Instantel|Micromate|Geophone,UM40017,,Ottawa,Active,Deployed,1531 Grist Mill Lane,,09000193,DL-UM-40017,2025-03-27,2026-03-27,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+CAM-7000000,Sony|HDR-CX455|HDCamera,7000000,,Sudbury,Retired,Retired,,,,,,,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-300003,Sigicom|D10|DataLogger,300003,,Toronto,Active,Deployed,3183 Danforth Ridge Road,,09000102,,2018-09-17,2019-09-17,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5041,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999949803066533700,Toronto,Active,Deployed,3183 Danforth Ridge Road,,09000102,DL-D10-300003,,,,,647-555-0176,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40018,Instantel|Micromate|DataLogger,UM40018,,Ottawa,Retired,Retired,,,,,2020-11-17,2021-11-17,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40018,Instantel|Micromate|Geophone,UM40018,,Ottawa,Active,Available,Ottawa,,,,2026-03-25,2027-03-25,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5042,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999911485511795508,Toronto,Retired,Retired,,,,,,,Damaged,,647-555-0178,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500011,Sigicom|S50|SoundLevelMeter,500011,,Ottawa,Active,CheckedOut,,ines.nakamura@englobecorp.com,09000109,,2026-02-25,2027-02-25,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40019,Instantel|Micromate|DataLogger,UM40019,,Mississauga,Active,Deployed,3376 Harbourview Lane,,09000229,,2022-09-09,2023-09-09,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40019,Instantel|Micromate|Geophone,UM40019,,Mississauga,Active,Available,Mississauga,,,,2025-12-11,2026-12-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5043,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999958630025117566,Sudbury,Active,Available,Sudbury,,,,,,,,705-555-0159,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400007,Sigicom|V12|Geophone,400007,,Sudbury,Active,Available,Sudbury,,,,2025-11-24,2026-11-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000007,Sierra Wireless|AirLink RV50X|Modem,3000000007,,SWO,Active,Available,SWO,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5044,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999990436128268839,SWO,Active,Available,SWO,,,MDM-3000000007,,,,,519-555-0189,,SYNTHETIC seed=englobe-ams-007 profile=demo
+AQDS-900000,Aeroqual|PCX|DustMonitor,900000,,Ottawa,Active,CheckedOut,,anika.jorgensen@englobecorp.com,09000193,,2025-12-15,2026-12-15,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40020,Instantel|Micromate|DataLogger,UM40020,,Ottawa,Active,Deployed,253 Fenwick Street,,09000163,,2025-12-09,2026-12-09,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40020,Instantel|Micromate|Geophone,UM40020,,Ottawa,Active,Deployed,253 Fenwick Street,,09000163,DL-UM-40020,2025-11-25,2026-11-25,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500012,Sigicom|S50|SoundLevelMeter,500012,,Ottawa,Retired,Retired,,,,,2023-06-08,2024-06-08,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+CAM-7000001,Sony|HDR-CX455|HDCamera,7000001,,Toronto,Active,Missing,,owen.okonkwo@englobecorp.com,09000160,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40021,Instantel|Micromate|DataLogger,UM40021,,Ottawa,Active,Available,Ottawa,,,,2026-04-12,2027-04-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40021,Instantel|Micromate|Geophone,UM40021,,Ottawa,Retired,Retired,,,,,2021-01-30,2022-01-30,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400008,Sigicom|V12|Geophone,400008,,Ottawa,Active,CheckedOut,,zofia.jorgensen@englobecorp.com,,,2026-03-04,2027-03-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5045,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999919948539907712,Toronto,Active,Available,Toronto,,,,,,,,647-555-0174,192.0.2.64,SYNTHETIC seed=englobe-ams-007 profile=demo
+CAM-7100000,Sony|AX-700|HDCamera,7100000,,Ottawa,Active,Available,Toronto,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400009,Sigicom|V12|Geophone,400009,,Ottawa,Active,InCalibration,Montreal Calibration,,,,2025-09-29,2026-09-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+TS-62000001,"Trimble|S7 - 1"" Autolock AMTS|AutomatedTotalStation",62000001,,Ottawa,Active,CheckedOut,,sebastien.moreau@englobecorp.com,09000226,,2025-08-07,2026-08-07,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40022,Instantel|Micromate|DataLogger,UM40022,,Kitchener,Active,Deployed,472 Fanshawe Ridge,,09000236,,2025-09-15,2026-09-15,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40022,Instantel|Micromate|Geophone,UM40022,,Kitchener,Active,Deployed,472 Fanshawe Ridge,,09000236,DL-UM-40022,2025-09-23,2026-09-23,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000008,Sierra Wireless|AirLink RV50X|Modem,3000000008,,SWO,Retired,Retired,,,,,,,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5046,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999977110458414787,SWO,Active,Retired,,,,MDM-3000000008,,,,,226-555-0140,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SB-600000,SINUS|Soundbook|SoundLevelMeter,600000,,SWO,Active,Available,SWO,,,,2025-10-15,2026-10-15,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400010,Sigicom|V12|Geophone,400010,,SWO,Active,Available,SWO,,,,2025-10-27,2026-10-27,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500013,Sigicom|S50|SoundLevelMeter,500013,,Toronto,Active,Available,Toronto,,,,2026-03-06,2027-03-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-300004,Sigicom|D10|DataLogger,300004,,Ottawa,Retired,Retired,,,,,2025-09-17,2026-09-17,Lost,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5047,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999997326738965473,Ottawa,Active,Retired,,,,DL-D10-300004,,,,,343-555-0131,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450003,Sigicom|C22|Geophone,450003,,Toronto,Active,Deployed,3312 Danforth Ridge Road,,09000102,DL-D10-350005,2026-04-06,2027-04-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500014,Sigicom|S50|SoundLevelMeter,500014,,Toronto,Active,Deployed,4380 Wexford Drive,,09000160,DL-D10-350008,2026-01-26,2027-01-26,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+AQDS-900001,Aeroqual|PCX|DustMonitor,900001,,Ottawa,Active,CheckedOut,,sasha.whitfield@englobecorp.com,09000226,,2024-12-02,2025-12-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450004,Sigicom|C22|Geophone,450004,,Kitchener,Retired,Retired,,,,,2024-11-01,2025-11-01,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40023,Instantel|Micromate|DataLogger,UM40023,,Kitchener,Active,Deployed,472 Fanshawe Ridge,,09000236,,2019-11-27,2020-11-27,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40023,Instantel|Micromate|Geophone,UM40023,,Kitchener,Active,Available,Kitchener,,,,2025-05-30,2026-05-30,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500015,Sigicom|S50|SoundLevelMeter,500015,,Toronto,Active,Deployed,500 Lakeshore Viaduct Road,,09000222,DL-D10-300005,2025-12-18,2026-12-18,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000009,Sierra Wireless|AirLink RV50X|Modem,3000000009,,Toronto,Active,Deployed,1871 Lawrence Heights Road,,09000054,DL-UM-40004,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5048,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999914393702895995,Toronto,Active,Deployed,1871 Lawrence Heights Road,,09000054,MDM-3000000009,,,,,647-555-0143,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450005,Sigicom|C22|Geophone,450005,,Toronto,Active,Available,Toronto,,,,2026-04-29,2027-04-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500016,Sigicom|S50|SoundLevelMeter,500016,,Ottawa,Active,Available,Ottawa,,,,2025-12-10,2026-12-10,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500017,Sigicom|S50|SoundLevelMeter,500017,,Sudbury,Active,Available,Sudbury,,,,2026-04-12,2027-04-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500018,Sigicom|S50|SoundLevelMeter,500018,,Ottawa,Retired,Retired,,,,,2022-10-25,2023-10-25,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40024,Instantel|Micromate|DataLogger,UM40024,,London,Active,Deployed,4841 Fanshawe Ridge,,09000239,,2025-11-11,2026-11-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40024,Instantel|Micromate|Geophone,UM40024,,London,Retired,Retired,,,,,2024-02-20,2025-02-20,Lost,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GoPro-C90000000,GoPro|White 7|HDCamera,C90000000,,Toronto,Active,Available,Toronto,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40025,Instantel|Micromate|DataLogger,UM40025,,Sudbury,Active,Deployed,3235 Long Lake Ridge,,09000189,,2025-12-22,2026-12-22,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40025,Instantel|Micromate|Geophone,UM40025,,Sudbury,Active,Deployed,3235 Long Lake Ridge,,09000189,DL-UM-40025,2025-12-24,2026-12-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40026,Instantel|Micromate|DataLogger,UM40026,,Ottawa,Active,Deployed,199 Old Quarry Road,,09000221,,2026-06-29,2027-06-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40026,Instantel|Micromate|Geophone,UM40026,,Ottawa,Active,Deployed,199 Old Quarry Road,,09000221,DL-UM-40026,2026-06-23,2027-06-23,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5049,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999942436753702036,SWO,Active,Available,SWO,,,,,,,,519-555-0131,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40027,Instantel|Micromate|DataLogger,UM40027,,Sudbury,Active,InCalibration,Montreal Calibration,,,,2025-02-03,2026-02-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40027,Instantel|Micromate|Geophone,UM40027,,Sudbury,Active,Available,Sudbury,,,,2026-02-09,2027-02-09,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40028,Instantel|Micromate|DataLogger,UM40028,,Ottawa,Active,Deployed,1231 Stonebridge Court,,09000088,,2025-06-02,2026-06-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40028,Instantel|Micromate|Geophone,UM40028,,Ottawa,Active,CheckedOut,,greta.larsson@englobecorp.com,,,2025-11-17,2026-11-17,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-UA-40001,Instantel|Micromate|Microphone,UA40001,,Ottawa,Retired,Retired,,,,,2020-10-27,2021-10-27,Sold,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40029,Instantel|Micromate|DataLogger,UM40029,,Ottawa,Active,Deployed,4600 Bellamy Ridge Road,,09000039,,2025-08-12,2026-08-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40029,Instantel|Micromate|Geophone,UM40029,,Ottawa,Active,Available,Ottawa,,,,2026-05-25,2027-05-25,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5050,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999980685424579818,SWO,Active,Available,SWO,,,,,,,,226-555-0174,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-300005,Sigicom|D10|DataLogger,300005,,Toronto,Active,Deployed,500 Lakeshore Viaduct Road,,09000222,,2025-11-24,2026-11-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5051,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999938014865238581,Toronto,Active,Deployed,500 Lakeshore Viaduct Road,,09000222,DL-D10-300005,,,,,416-555-0196,192.0.2.98,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40030,Instantel|Micromate|DataLogger,UM40030,,Ottawa,Active,Deployed,3864 Silverbirch Parkway,,09000039,,2026-03-12,2027-03-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40030,Instantel|Micromate|Geophone,UM40030,,Ottawa,Active,Deployed,3864 Silverbirch Parkway,,09000039,DL-UM-40030,2025-09-16,2026-09-16,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400011,Sigicom|V12|Geophone,400011,,Mississauga,Active,Deployed,3376 Harbourview Lane,,09000229,DL-D10-350001,2024-04-04,2025-04-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+AT-5001,Apple|AirTag|AssetTracker,,,Toronto,Active,CheckedOut,,rashid.oyelaran@englobecorp.com,09000222,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40031,Instantel|Micromate|DataLogger,UM40031,,Toronto,Active,InCalibration,Montreal Calibration,,,,2025-09-26,2026-09-26,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40031,Instantel|Micromate|Geophone,UM40031,,Toronto,Active,Available,Mississauga,,,,2025-11-10,2026-11-10,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5052,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999920354130142295,Mississauga,Active,Available,Mississauga,,,,,,,,905-555-0166,192.0.2.101,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40032,Instantel|Micromate|DataLogger,UM40032,,Toronto,Active,Deployed,2278 Sheridan Mews,,09000160,,2023-10-22,2024-10-22,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40032,Instantel|Micromate|Geophone,UM40032,,Toronto,Active,Deployed,2278 Sheridan Mews,,09000160,DL-UM-40032,2025-10-28,2026-10-28,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SRV-5001,Instantel|Vision (station server)|Server,,,Ottawa,Active,Available,Ottawa,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+AT-5002,Apple|AirTag|AssetTracker,,,Toronto,Active,CheckedOut,,callum.reyes@englobecorp.com,09000248,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-300006,Sigicom|D10|DataLogger,300006,,SWO,Active,Deployed,1086 Pinery Road,,09000078,,2024-08-06,2025-08-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5053,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999970490082602701,SWO,Active,Deployed,1086 Pinery Road,,09000078,DL-D10-300006,,,,,226-555-0167,203.0.113.9,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450006,Sigicom|C22|Geophone,450006,,Toronto,Retired,Retired,,,,,2021-06-07,2022-06-07,Damaged,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350000,Sigicom|D10M|DataLogger,350000,,Ottawa,Active,Deployed,253 Fenwick Street,,09000163,,2026-02-02,2027-02-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5054,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999963669835255532,Ottawa,Active,Deployed,253 Fenwick Street,,09000163,DL-D10-350000,,,,,613-555-0185,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500019,Sigicom|S50|SoundLevelMeter,500019,,Ottawa,Retired,Retired,,,,,2023-12-04,2024-12-04,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350001,Sigicom|D10M|DataLogger,350001,,Mississauga,Active,Deployed,3376 Harbourview Lane,,09000229,,2024-06-04,2025-06-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5055,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999946693838390148,Mississauga,Active,Deployed,3376 Harbourview Lane,,09000229,DL-D10-350001,,,,,905-555-0160,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40033,Instantel|Micromate|DataLogger,UM40033,,SWO,Active,Deployed,1870 Fanshawe Ridge,,09000108,,2024-09-17,2025-09-17,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40033,Instantel|Micromate|Geophone,UM40033,,SWO,Active,Deployed,1870 Fanshawe Ridge,,09000108,DL-UM-40033,2025-01-01,2026-01-01,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400012,Sigicom|V12|Geophone,400012,,Ottawa,Active,Deployed,253 Fenwick Street,,09000163,DL-D10-350000,2026-01-26,2027-01-26,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500020,Sigicom|S50|SoundLevelMeter,500020,,Toronto,Active,Available,Toronto,,,,2026-08-10,2027-08-10,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350002,Sigicom|D10M|DataLogger,350002,,Ottawa,Active,Deployed,480 Silverbirch Parkway,,09000109,,2025-07-28,2026-07-28,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5056,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999967421995901125,Ottawa,Active,Deployed,480 Silverbirch Parkway,,09000109,DL-D10-350002,,,,,613-555-0135,203.0.113.191,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5057,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999943118868315578,Ottawa,Active,Available,Ottawa,,,,,,,,613-555-0125,203.0.113.217,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40034,Instantel|Micromate|DataLogger,UM40034,,Sudbury,Retired,Retired,,,,,2021-10-11,2022-10-11,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40034,Instantel|Micromate|Geophone,UM40034,,Sudbury,Active,Available,Sudbury,,,,2026-05-12,2027-05-12,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400013,Sigicom|V12|Geophone,400013,,Ottawa,Active,Available,Ottawa,,,,2026-02-20,2027-02-20,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350003,Sigicom|D10M|DataLogger,350003,,SWO,Active,Deployed,747 Conestoga Parkway Extension,,09000108,,2025-08-11,2026-08-11,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5058,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999962128268863156,SWO,Active,Deployed,747 Conestoga Parkway Extension,,09000108,DL-D10-350003,,,,,519-555-0128,192.0.2.215,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5059,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999963159402970853,SWO,Active,Available,SWO,,,,,,,,519-555-0178,198.51.100.135,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500021,Sigicom|S50|SoundLevelMeter,500021,,SWO,Retired,Retired,,,,,2023-07-03,2024-07-03,Obsolete,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350004,Sigicom|D10M|DataLogger,350004,,SWO,Active,Deployed,3079 Erie Shore Drive,,09000238,,2025-09-22,2026-09-22,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5060,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999913118523100924,SWO,Active,Deployed,3079 Erie Shore Drive,,09000238,DL-D10-350004,,,,,519-555-0181,,SYNTHETIC seed=englobe-ams-007 profile=demo
+TMP-5002,Larson Davis|831C|SoundLevelMeter,5000001,,Toronto,Active,Available,Toronto,,,,2026-01-14,2027-01-14,,"Tag illegible on receipt — temporary tag issued, needs completion.",,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-LD-PA-5001,Larson Davis|831C Pre-Amp|Microphone,5001,,Toronto,Active,Available,Toronto,,,TMP-5002,2026-01-14,2027-01-14,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-LD-EL-700001,Larson Davis|831C Element|Microphone,700001,,Toronto,Active,Available,Toronto,,,TMP-5002,2026-01-14,2027-01-14,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450007,Sigicom|C22|Geophone,450007,,Toronto,Active,InCalibration,Montreal Calibration,,,,2025-07-09,2026-07-09,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MEMS-DP6000,RST|MEMS Digital|MEMSSensor,DP6000,,Toronto,Active,Available,Toronto,,,,2025-11-21,2027-11-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40035,Instantel|Micromate|DataLogger,UM40035,,Ottawa,Active,Deployed,3502 Kettle Creek Road,,09000138,,2026-06-02,2027-06-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40035,Instantel|Micromate|Geophone,UM40035,,Ottawa,Active,Deployed,3502 Kettle Creek Road,,09000138,DL-UM-40035,2026-02-02,2027-02-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500022,Sigicom|S50|SoundLevelMeter,500022,,Toronto,Active,CheckedOut,,owen.okonkwo@englobecorp.com,09000150,,2026-04-06,2027-04-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-UA-40002,Instantel|Micromate|Microphone,UA40002,,Toronto,Active,Deployed,143 Portlands Way,,09000207,DL-UM-40011,2026-01-05,2027-01-05,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000010,Sierra Wireless|AirLink RV50X|Modem,3000000010,,Ottawa,Active,Deployed,485 Millrace Avenue,,09000138,DL-UM-40014,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5061,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999925728857081049,Ottawa,Active,Deployed,485 Millrace Avenue,,09000138,MDM-3000000010,,,,,613-555-0121,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40036,Instantel|Micromate|DataLogger,UM40036,,Sudbury,Active,Deployed,1494 Frood Extension Road,,09000219,,2025-05-15,2026-05-15,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40036,Instantel|Micromate|Geophone,UM40036,,Sudbury,Active,Available,Sudbury,,,,2026-05-20,2027-05-20,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-C22-450008,Sigicom|C22|Geophone,450008,,Toronto,Active,Deployed,4380 Wexford Drive,,09000160,DL-D10-350008,2025-12-30,2026-12-30,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000011,Sierra Wireless|AirLink RV50X|Modem,3000000011,,Kitchener,Active,Deployed,472 Fanshawe Ridge,,09000236,DL-UM-40023,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5062,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999999375639760341,Kitchener,Active,Deployed,472 Fanshawe Ridge,,09000236,MDM-3000000011,,,,,519-555-0126,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350005,Sigicom|D10M|DataLogger,350005,,Toronto,Active,Deployed,3312 Danforth Ridge Road,,09000102,,2023-05-29,2024-05-29,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5063,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999934409139424096,Toronto,Active,Deployed,3312 Danforth Ridge Road,,09000102,DL-D10-350005,,,,,416-555-0184,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5064,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999996951487422441,Toronto,Active,Available,Toronto,,,,,,,,416-555-0177,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400014,Sigicom|V12|Geophone,400014,,Toronto,Active,Deployed,4380 Wexford Drive,,09000160,DL-D10-350008,2025-11-28,2026-11-28,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40037,Instantel|Micromate|DataLogger,UM40037,,Ottawa,Active,Deployed,3800 Millrace Avenue,,09000221,,2024-10-02,2025-10-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40037,Instantel|Micromate|Geophone,UM40037,,Ottawa,Active,Deployed,3800 Millrace Avenue,,09000221,DL-UM-40037,2024-10-02,2025-10-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40038,Instantel|Micromate|DataLogger,UM40038,,Ottawa,Active,Deployed,1216 Silverbirch Parkway,,09000039,,2023-12-05,2024-12-05,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40038,Instantel|Micromate|Geophone,UM40038,,Ottawa,Active,Deployed,1216 Silverbirch Parkway,,09000039,DL-UM-40038,2025-04-14,2026-04-14,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400015,Sigicom|V12|Geophone,400015,,Toronto,Active,Deployed,500 Lakeshore Viaduct Road,,09000222,DL-D10-300005,2026-07-06,2027-07-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5065,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999902294594797337,Sudbury,Active,Available,Sudbury,,,,,,,,249-555-0165,,SYNTHETIC seed=englobe-ams-007 profile=demo
+VWR-50000,Campbell Scientific|VW-Analyzer|VWReadout,50000,,Toronto,Active,CheckedOut,,marcus.kowalczyk@englobecorp.com,09000248,,2026-05-04,2028-05-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500023,Sigicom|S50|SoundLevelMeter,500023,,Toronto,Active,InCalibration,Montreal Calibration,,,,2025-09-04,2026-09-04,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40039,Instantel|Micromate|DataLogger,UM40039,,Toronto,Active,Deployed,2599 Eastgate Boulevard,,09000160,,2024-11-01,2025-11-01,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40039,Instantel|Micromate|Geophone,UM40039,,Toronto,Active,Deployed,2599 Eastgate Boulevard,,09000160,DL-UM-40039,2024-11-01,2025-11-01,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350006,Sigicom|D10M|DataLogger,350006,,SWO,Active,Deployed,196 Grand River Line,,09000108,,2025-02-24,2026-02-24,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5066,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999968830416487689,SWO,Active,Deployed,196 Grand River Line,,09000108,DL-D10-350006,,,,,226-555-0199,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400016,Sigicom|V12|Geophone,400016,,Toronto,Active,Deployed,3312 Danforth Ridge Road,,09000102,DL-D10-350005,2025-02-28,2026-02-28,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+SLM-S50-500024,Sigicom|S50|SoundLevelMeter,500024,,Ottawa,Active,Deployed,480 Silverbirch Parkway,,09000109,DL-D10-350002,2025-04-03,2026-04-03,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-V12-400017,Sigicom|V12|Geophone,400017,,SWO,Active,Deployed,1086 Pinery Road,,09000078,DL-D10-300006,2025-06-06,2026-06-06,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000012,Sierra Wireless|AirLink RV50X|Modem,3000000012,,Toronto,Active,Deployed,1596 Wexford Drive,,09000240,DL-UM-40013,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5067,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999984285720514100,Toronto,Active,Deployed,1596 Wexford Drive,,09000240,MDM-3000000012,,,,,647-555-0135,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000013,Sierra Wireless|AirLink RV50X|Modem,3000000013,,Stoney Creek,Active,Available,Stoney Creek,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5068,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999991319012816914,Stoney Creek,Active,Available,Stoney Creek,,,MDM-3000000013,,,,,905-555-0165,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350007,Sigicom|D10M|DataLogger,350007,,Ottawa,Active,Deployed,1486 Fenwick Street,,09000146,,2025-08-26,2026-08-26,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5069,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999999948525223382,Ottawa,Active,Deployed,1486 Fenwick Street,,09000146,DL-D10-350007,,,,,613-555-0155,203.0.113.91,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5070,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999947175721147495,Toronto,Active,Available,Toronto,,,,,,,,416-555-0110,,SYNTHETIC seed=englobe-ams-007 profile=demo
+TLT-800000,Slope Indicator|EL Tilt Sensor|TiltSensor,800000,,Toronto,Active,Available,Toronto,,,,2025-11-21,2027-11-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+AC-5002,Bruel & Kjaer|4231|AcousticCalibrator,,,SWO,Active,CheckedOut,,fergus.jorgensen@englobecorp.com,09000108,,2026-01-21,2027-01-21,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5071,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999929868803479875,Sudbury,Active,Available,Sudbury,,,,,,,,249-555-0193,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000014,Sierra Wireless|AirLink RV50X|Modem,3000000014,,Kitchener,Active,Available,Kitchener,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5072,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999986177384493317,Kitchener,Active,Available,Kitchener,,,MDM-3000000014,,,,,226-555-0101,198.51.100.247,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-UM-40040,Instantel|Micromate|DataLogger,UM40040,,Ottawa,Active,Deployed,4176 Silverbirch Parkway,,09000244,,2026-04-02,2027-04-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+GEO-UM-40040,Instantel|Micromate|Geophone,UM40040,,Ottawa,Active,Deployed,4176 Silverbirch Parkway,,09000244,DL-UM-40040,2026-04-02,2027-04-02,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DL-D10-350008,Sigicom|D10M|DataLogger,350008,,Toronto,Active,Deployed,4380 Wexford Drive,,09000160,,2026-04-07,2027-04-07,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5073,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999929663151337613,Toronto,Active,Deployed,4380 Wexford Drive,,09000160,DL-D10-350008,,,,,416-555-0176,,SYNTHETIC seed=englobe-ams-007 profile=demo
+MDM-3000000015,Sierra Wireless|AirLink RV50X|Modem,3000000015,,Sudbury,Active,Available,Sudbury,,,,,,,,,,SYNTHETIC seed=englobe-ams-007 profile=demo
+DST-5074,"N/A (service, not a manufactured unit)|SIM Card|CellularService",,8999990219307635725,Sudbury,Active,Available,Sudbury,,,MDM-3000000015,,,,,249-555-0107,192.0.2.205,SYNTHETIC seed=englobe-ams-007 profile=demo

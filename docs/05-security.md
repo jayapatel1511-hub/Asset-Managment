@@ -22,7 +22,23 @@
 Field security profile `AMS Sensitive`: `eng_asset.eng_phonenumber`, `eng_staticip`, `eng_identifiervalue`
 (ICCID) — read for Office Admin+, hidden for Field User.
 
-Role assignment via Entra security groups: `SG-AMS-FieldUsers`, `SG-AMS-OfficeAdmins-{Ottawa|Toronto|Sudbury|SWO}`, `SG-AMS-Owners`.
+Role assignment via Entra security groups: `SG-AMS-FieldUsers`, `SG-AMS-OfficeAdmins`, `SG-AMS-Owners`.
+
+> **Corrected 2026-09-02.** This previously read `SG-AMS-OfficeAdmins-{Ottawa|Toronto|Sudbury|SWO}` —
+> a **fixed four-group list**, which contradicts the N-offices decision of the same date. Under that
+> decision an eleventh office can be created in the app by an administrator; with per-office groups
+> its admins would silently get no rights and no calibration reminders until somebody hand-created a
+> group, and nobody would notice until an instrument went out of calibration in the field. This is the
+> same defect that superseded `data/reference/office_admins.csv`.
+>
+> **Use one `SG-AMS-OfficeAdmins` group.** Which offices a given admin administers is data in the
+> location table, not group membership — consistent with feature 001's FR-011c, which requires every
+> per-office behaviour to be derived from the location table as it stands. Feature 004's FR-027 fans
+> notifications out to whatever offices exist; FR-027a reports an office with no administrator as a
+> gap rather than skipping it.
+>
+> If per-office Entra groups are later required for a reason outside this system, group creation must
+> become a mandatory step of the office-creation procedure, and that procedure must be written down.
 Office-scoped admin filtering is done in the app by home office, not by Dataverse business units (keep it simple).
 
 ## App registration

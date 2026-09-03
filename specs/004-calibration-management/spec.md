@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-02
 
-**Status**: Draft — 2 blocking clarifications open (Q4, and the reminder cadence in US4). Q5 resolved 2026-09-02; see `docs/08-decisions.md`
+**Status**: Draft — built 2026-09-02 including US4 assignment; notification delivery itself needs the tenant. Open: the reminder cadence in US4 (proceeded on: once per threshold crossing — `docs/08-decisions.md`) and Q18 (component despatch, FR-021, added 2026-09-02). FR-020a–e and FR-032a–b are recorded as ASSUMED pending Jay in `docs/08-decisions.md`, not as blocking clarifications. Q4 and Q5 resolved; see also `docs/10-integration.md`
 
 **Input**: `IM30 - Asset Managment via M365.docx` § What We Need → Calibration Status, § Reporting ("What equipment requires calibration?"), § Future Enhancements (calibration reminders, document storage for certificates); `Asset AMS - SharePoint.xlsx` sheet *Assets - Calibration History* (253 records) and *Start Here* (Calibration form draft, Montreal Calibration Portal); `docs/01-data-model.md`, `docs/03-automation.md` (flows F2, F3)
 
@@ -155,6 +155,15 @@ when nothing is due.
   own certificates. If they are not separate assets, their calibration cannot be tracked at all.
 - **Two calibrations recorded for the same asset on the same date**, typically a duplicate entry. Must
   be detectable.
+- **The certificate upload fails after the calibration is saved.** The record must survive; see
+  FR-020a. Discarding it would lose the compliance date to protect a file.
+- **A certificate is uploaded twice for one asset in one year.** Any date-only file name collides;
+  see FR-020b.
+- **A 200 MB scanned certificate.** Nothing currently caps size or type; see FR-020c.
+- **A retention or cleanup process deletes a retired asset's folder.** Contradicts FR-019; see
+  FR-020d.
+- **Teams or email is unavailable when the reminder job runs.** Best-effort delivery, logged, job
+  still succeeds; see FR-032a.
 - **A certificate uploaded against the wrong asset.** Must be correctable without deleting the
   calibration history.
 - **An asset in calibration when the migration runs.** Its physical location is the lab but the source
@@ -212,11 +221,29 @@ when nothing is due.
 - **FR-019**: System MUST retain certificates for the life of the asset and beyond its retirement.
 - **FR-020**: System MUST allow a certificate to be replaced or re-associated without deleting the
   calibration record.
+- **FR-020a**: System MUST keep the calibration record when the certificate upload fails, MUST show
+  the record as missing its certificate, and MUST let the certificate be attached later. A failed
+  upload MUST NOT discard a recorded calibration — the date is the compliance fact; the PDF is
+  evidence of it. *(Resolves an unstated behaviour identified 2026-09-02.)*
+- **FR-020b**: System MUST name a stored certificate so that two calibrations of the same asset in
+  the same year cannot collide, and MUST keep the name traceable to the asset and the calibration
+  date. *(Proposed: `{AssetID}_{calibrationdate}_{certificatenumber}`.)*
+- **FR-020c**: System MUST restrict certificate uploads to document and image formats and MUST
+  enforce a maximum file size, refusing anything larger with a stated reason rather than failing
+  silently. *(Proposed: PDF and common image formats, 25 MB.)*
+- **FR-020d**: System MUST NOT delete a certificate, or the folder holding it, when its asset is
+  retired — FR-019 requires retention beyond retirement, and nothing currently prevents a cleanup
+  process from contradicting it.
+- **FR-020e**: System MUST record who uploaded a certificate and when, so an evidential pack can be
+  attributed.
 
 **Lab round-trip**
 
 - **FR-021**: Users MUST be able to record the despatch of one or more assets to a calibration lab in a
-  single action.
+  single action. [NEEDS CLARIFICATION: Q18 — whether a permanent component (an SLM pre-amp or
+  element) can be despatched on its own. Q5 requires each to be calibrated and due-listed separately,
+  which presupposes an answer; feature 003 FR-032b carries the question and
+  `specs/clarifications.md` Q18 the recommendation.]
 - **FR-022**: System MUST set a despatched asset's status to in-calibration, its location to the lab,
   and MUST clear its custodian.
 - **FR-023**: System MUST refuse checkout, transfer and deployment of an asset in calibration.
@@ -238,6 +265,14 @@ when nothing is due.
 - **FR-030**: System MUST link from the notification to the due list.
 - **FR-031**: System MUST limit repeat notification about the same asset to a defined cadence.
 - **FR-032**: System MUST allow notification to be disabled without affecting US1.
+- **FR-032a**: Notification delivery MUST be best-effort: a failure to deliver MUST NOT fail the
+  scheduled job, MUST NOT prevent other offices being notified, and MUST be logged. This follows
+  from FR-032 — if notification can be switched off without consequence, an outage cannot be a
+  fatal error — but it was previously unstated. *(Resolves an unstated behaviour identified
+  2026-09-02.)*
+- **FR-032b**: System MUST bound the size of a single notification, so that a first run against a
+  large backlog does not produce an unreadable message. *(107 assets are overdue today; the first
+  real run is the worst case, not the steady state.)*
 
 **Model intervals**
 
@@ -286,10 +321,10 @@ when nothing is due.
 ## Assumptions
 
 - Calibration intervals are a property of the equipment model, with per-asset override as the exception.
-  [NEEDS CLARIFICATION: Q4 — no intervals are set anywhere in the source data. Instantel and Sigicom
-  loggers and sensors are assumed to be 12 months; sound level meters and acoustic calibrators may
-  differ, and total stations may follow a different regime entirely. Without these, FR-009 cannot
-  prefill and every calibration record requires a manually-entered due date]
+  *(Q4 done 2026-09-02: intervals set per model in the corrected catalogue — 12 months for the Instantel
+  and Sigicom loggers and sensors and the sound level meters, explicitly "not calibrated" for SIMs and
+  the like — reviewable at `migration/reports/03_models_review.md`. FR-009 prefills against them; Jay's
+  read-through of the interval column is part of that sign-off.)*
 - Calibration is tracked at the level of the asset that carries the certificate, and a sound level
   meter's pre-amp and element are each such an asset. *(Q5 resolved: they get their own Asset IDs and
   attach to the meter as permanent Components. So acoustic calibration is fully trackable — each

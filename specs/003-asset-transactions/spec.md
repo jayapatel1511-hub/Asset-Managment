@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-02
 
-**Status**: Draft — 3 blocking clarifications open (Q8, Q9, and the inactive-project rule in FR-027). Q3 and Q7 resolved 2026-09-02; see `docs/08-decisions.md`
+**Status**: Draft — built 2026-09-02 including US5. Open: Q8 and the inactive-project rule in FR-027 (both proceeded on their recommendation — `docs/08-decisions.md`), Q9, and Q18 (component calibration despatch, FR-032b, added 2026-09-02). Q3 and Q7 resolved
 
 **Input**: `IM30 - Asset Managment via M365.docx` § What We Need → Asset Transactions, § Basic User Experience, § Key Design Principles; `Asset AMS - SharePoint.xlsx` sheets *Assets - Action History* (action taxonomy) and *Start Here* (Checkout / Return / Transfer form drafts, checkout→deployment→transfer→return→retirement flow); `docs/01-data-model.md` (state machine), `docs/03-automation.md` (flow F1)
 
@@ -307,6 +307,7 @@ in a repair queue, and can later be marked repaired and returned to service.
   directing the user to the parent instead.
 - **FR-027**: System MUST refuse a checkout, transfer or deployment naming an inactive project.
   [NEEDS CLARIFICATION: refuse outright, or warn and permit for legitimate late charges?]
+  *(Proceeded on 2026-09-02: refuse outright — `docs/08-decisions.md`. Needs confirmation.)*
 
 **Kits and attachments**
 
@@ -326,6 +327,13 @@ in a repair queue, and can later be marked repaired and returned to service.
 - **FR-032a**: System MUST record a permanent component relationship as standing rather than
   per-transaction, and MUST allow an administrator to attach and detach one — a SIM is moved between
   modems rarely, but it is not immovable.
+- **FR-032b**: [NEEDS CLARIFICATION: Q18 — a permanent component that is calibrated separately (an
+  SLM pre-amp or element under Q5; a SIM's modem) must reach the lab without its parent. FR-032 says
+  the parent's line is the component's history and FR-026 keeps it out of checkout, but nothing says
+  whether a component may carry its own lab-despatch and lab-return lines, or whether the
+  administrator must detach it under FR-032a, despatch it, and re-attach it on return. If
+  component-level despatch is allowed, the propagation in FR-032 must skip a component while it is
+  in calibration. Recommendation and consequences in `specs/clarifications.md` Q18.]
 
 **History**
 
@@ -354,6 +362,7 @@ in a repair queue, and can later be marked repaired and returned to service.
 - **FR-043**: Users MUST be able to record an expected return date on checkout.
   [NEEDS CLARIFICATION: Q8 — required or optional? Required makes overdue-return notification reliable
   and adds friction to every checkout; optional means the notification covers only part of the fleet]
+  *(Proceeded on 2026-09-02: optional, prefilled at 14 days, editable — `docs/08-decisions.md`.)*
 - **FR-044**: System MUST record who performed a transaction distinctly from whom it affected, so that
   an administrator acting for a technician is visible as such.
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-02
 
-**Status**: Draft — 1 blocking clarification open (Q4). Q1, Q2, Q3, Q5 and Q13 resolved 2026-09-02; see `docs/08-decisions.md`
+**Status**: Draft — built and run 2026-09-02 (1,053 source rows → 1,026 staged assets, 9 reports, idempotent). Q4 done as data work; the two sign-offs (`migration/reports/02_conflicts.md`, `03_models_review.md`) gate the production load. Q1, Q2, Q3, Q5 and Q13 resolved; see `docs/08-decisions.md`
 
 **Input**: `Asset AMS - SharePoint.xlsx` sheets *IM Asset Registry* (1,053 data rows, 28 columns) and *Assets - Calibration History* (253 rows, no Asset ID column); `IM30 - Asset Managment via M365.docx` § Current System; `docs/00-brief.md` (profile baseline), `docs/04-migration.md`
 
@@ -390,10 +390,10 @@ the resulting data. The diff must be empty.
   offices under Ontario and re-parented afterwards on a screen. Migration no longer needs to know
   whether SWO is a region, no asset receives a guessed home office, and this question stops blocking
   the load. The 268 assets previously at risk are unaffected.)*
-- The equipment model catalogue is corrected before this feature runs. [NEEDS CLARIFICATION: Q4 —
-  FR-005 fails the run on an unresolved model, so an uncorrected catalogue blocks migration entirely.
-  Now the **only** remaining blocker for this feature, and the single largest dependency in the
-  programme]
+- The equipment model catalogue is corrected before this feature runs. *(Q4 done 2026-09-02: FR-005
+  fails the run on an unresolved model, which is exactly why the catalogue was corrected first — 35 of
+  64 rows, reviewable at `migration/reports/03_models_review.md`. The run is clean against it; Jay's
+  read-through is a production-load gate.)*
 - Retired assets and their history are retained indefinitely. *(Q13 resolved: indefinite.)*
 - The pre-amp and element of a sound level meter are migrated as their own assets, attached to the
   meter as permanent Components. *(Q5 resolved. Only 3 source rows carry `Pre Amp Serial` or

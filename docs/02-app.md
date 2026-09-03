@@ -3,6 +3,8 @@
 React 18 + TypeScript + Vite. `@microsoft/power-apps` SDK for Dataverse. Fluent UI v9 components.
 Phone-first (390px design width), works to desktop. Dark mode follows OS.
 
+UI specification for design tooling (screen inventory, tokens, components, states, exact copy): `docs/12-ui-spec.md`.
+
 ## Screens (Phase 1)
 
 ### Home / Search

@@ -1,10 +1,10 @@
 # Feature Specification: Asset Registry
 
-**Feature Branch**: `001-asset-registry` (directory-selected; this workspace is not a git repository — set `SPECIFY_FEATURE=001-asset-registry`)
+**Feature Branch**: `001-asset-registry` (directory-selected; set `SPECIFY_FEATURE=001-asset-registry`)
 
 **Created**: 2026-09-02
 
-**Status**: Draft — 2 blocking clarifications open (Q4, Q6). Q1, Q2, Q5 and Q13 resolved 2026-09-02; see `docs/08-decisions.md`
+**Status**: Draft — built 2026-09-02. Open: Q6 (proceeded on: Azure rows excluded, three appliances kept), Q10. Q4 done as data work, awaiting sign-off. Q1, Q2, Q5 and Q13 resolved. FR-010 corrected 2026-09-02 to the three-part catalogue key — see `docs/08-decisions.md`
 
 **Input**: `IM30 - Asset Managment via M365.docx` § Objective, § What We Need → Asset Registry; `Asset AMS - SharePoint.xlsx` sheets *IM Asset Registry* (1,053 rows) and *Start Here* (Asset ID conventions, asset group taxonomy); `docs/00-brief.md`, `docs/01-data-model.md`
 
@@ -127,8 +127,8 @@ an asset of that model can then be registered, calibrated and reported on with n
 
 1. **Given** a new model is added, **When** the admin saves it, **Then** manufacturer, model, equipment
    type, asset group, ID prefix, whether it is serialised, and its identifier type are all required.
-2. **Given** a model whose manufacturer and model name duplicate an existing row, **When** it is
-   saved, **Then** the save is refused.
+2. **Given** a model whose manufacturer, model name and equipment type duplicate an existing row,
+   **When** it is saved, **Then** the save is refused.
 3. **Given** a model with a default calibration interval of 12 months, **When** an asset of that model
    has a calibration recorded, **Then** the next due date defaults to 12 months later.
 4. **Given** an office is added under a region, **When** the location tree is displayed, **Then** the
@@ -234,7 +234,10 @@ confirm each scan reaches the right asset in one action, or one action plus one 
 - **FR-008**: System MUST hold manufacturer, model, equipment type, asset group, location, project and
   staff as lookups to curated records, with no free-text alternative on the asset.
 - **FR-009**: System MUST require every asset to reference exactly one equipment model.
-- **FR-010**: System MUST enforce uniqueness of manufacturer + model in the model catalogue.
+- **FR-010**: System MUST enforce uniqueness of manufacturer + model + equipment type in the model
+  catalogue. *(Corrected 2026-09-02: manufacturer + model alone would merge three real catalogue rows
+  in which one product is classified under different equipment types — see `docs/08-decisions.md`.
+  The display name carries the type where needed so the rows stay distinguishable.)*
 - **FR-011**: System MUST support a hierarchical location structure covering region, office, site,
   vehicle, calibration lab, client premises and storage, and MUST prevent cyclic parentage.
 - **FR-011a**: System MUST support an unbounded number of offices, at any level of the hierarchy, added
@@ -373,15 +376,16 @@ confirm each scan reaches the right asset in one action, or one action plus one 
   inference; SWO, Mississauga and Thunder Bay are re-parented by an admin afterwards on a screen. This
   is strictly better than deciding it in a script: no asset receives a guessed home office, and the
   structure stays changeable as the business changes.)*
-- The equipment model catalogue is corrected before migration. [NEEDS CLARIFICATION: Q4 — the 65-row
-  draft in `data/reference/equipment_models_draft.csv` still contains the source data's mislabels: a
-  Larson Davis 831C prefixed as a SIM, `Series IV` and `Minimate Pro` sitting in the manufacturer
-  column, and a Sigicom V12 typed as a Data Logger in 4 rows. Default calibration intervals per model
-  are also unset. Both are needed before FR-009 can hold]
+- The equipment model catalogue is corrected before migration. *(Q4 done 2026-09-02: 35 of 64 draft
+  rows corrected — the Larson Davis 831C prefix, the swapped manufacturer/model columns, the Sigicom
+  V12 type — and calibration intervals set or explicitly nulled; reviewable at
+  `migration/reports/03_models_review.md`, awaiting Jay's read-through. FR-009 holds against the
+  corrected catalogue.)*
 - Servers are treated as assets of equipment type Server, non-serialised, never checked out.
   [NEEDS CLARIFICATION: Q6 — the 16 rows naming `Azure`, `THOR`, `Vision` and `INFRANet` may be
   configuration rather than trackable equipment. If they are configuration, they leave this feature
-  entirely]
+  entirely] *(Proceeded on 2026-09-02: the 13 `Azure` rows excluded as configuration; the 3 named
+  appliances kept as Server — `docs/08-decisions.md`. Needs Jay's confirmation.)*
 - A sound level meter is three assets: the meter, its pre-amp and its element. *(Q5 resolved: separate
   Asset IDs, attached to the meter as permanent Components. They move with the meter automatically and
   never appear in a checkout cart, but each holds its own calibration records and certificates — which

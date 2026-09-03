@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-02
 
-**Status**: Draft — 1 blocking clarification open (Q11)
+**Status**: Draft — built 2026-09-02 (WS-B): domain modules, in-app reports surface, PBIP text model; the Power BI publish needs the tenant. Q11 open. FR-028 clarified 2026-09-02 and the built guard recorded as a defect against it — see `docs/08-decisions.md`
 
 **Input**: `IM30 - Asset Managment via M365.docx` § Reporting (the five questions), § Future Enhancements (dashboards and analytics); `Asset AMS - SharePoint.xlsx` sheet *Start Here* (Metrics & Reporting, Equipment Dashboards, Upcoming Calibrations wishlist); `docs/00-brief.md` (the seven acceptance questions), `docs/06-delivery-plan.md` Step 6
 
@@ -213,7 +213,15 @@ utilised equipment types per office, and check the answer against the technician
 - **FR-027**: System MUST state when available history is insufficient for a reliable figure rather
   than presenting one.
 - **FR-028**: System MUST NOT compute utilisation across the migration boundary as though pre-go-live
-  history existed.
+  history existed. *(Clarified 2026-09-02.)* The boundary is the date the fleet's records began, not
+  each asset's first transaction. A period that begins before an asset's **acquisition** is a
+  different case: the asset did not yet exist, and it MUST be excluded from the figure or clipped to
+  its acquisition date rather than triggering an insufficient-history refusal. The two coincide in the
+  migrated data, where every asset's first line is dated the migration day — which is why the
+  distinction was invisible until feature 007 supplied a fleet acquired across twenty years, and why
+  it will matter for every asset bought after go-live. The current implementation uses an asset's
+  first transaction as its proxy for the boundary; that is recorded as a defect in
+  `docs/08-decisions.md`.
 
 **Historical integrity**
 

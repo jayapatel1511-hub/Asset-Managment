@@ -1,0 +1,62 @@
+[
+ {
+  "office": "Ottawa",
+  "adminUpns": [
+   "admin@englobecorp.com",
+   "mathilde.farouk@englobecorp.com"
+  ]
+ },
+ {
+  "office": "Toronto",
+  "adminUpns": [
+   "arjun.mensah@englobecorp.com",
+   "gavin.osei@englobecorp.com"
+  ]
+ },
+ {
+  "office": "Sudbury",
+  "adminUpns": [
+   "owen.marchetti@englobecorp.com"
+  ]
+ },
+ {
+  "office": "SWO",
+  "adminUpns": [
+   "anika.lauzon@englobecorp.com"
+  ]
+ },
+ {
+  "office": "London",
+  "adminUpns": [
+   "saoirse.nakamura@englobecorp.com"
+  ]
+ },
+ {
+  "office": "Kitchener",
+  "adminUpns": [
+   "sasha.vaillancourt@englobecorp.com"
+  ]
+ },
+ {
+  "office": "Stoney Creek",
+  "adminUpns": [
+   "rohan.beaulieu@englobecorp.com"
+  ]
+ },
+ {
+  "office": "Mississauga",
+  "adminUpns": [
+   "amara.kaur@englobecorp.com"
+  ]
+ },
+ {
+  "office": "Waterloo",
+  "adminUpns": [
+   "anika.castellano@englobecorp.com"
+  ]
+ },
+ {
+  "office": "Thunder Bay",
+  "adminUpns": []
+ }
+]

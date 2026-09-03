@@ -1,0 +1,54 @@
+{
+  "_comment": "Fictional projects. numberPrefix keeps every synthetic project number in a range no real project uses (FR-040 — real numbers begin 01/02). Disciplines carry weights per region so Sudbury/Thunder Bay skew to blasting and Toronto/Ottawa to construction. Durations are lognormal medians in days. stations = how many kits a project typically consumes at once. deployMedianDays = typical time a station stays on site for this discipline.",
+  "numberPrefix": "09",
+  "clients": [
+    "Northfield Aggregates", "Cardinal Blasting Ltd.", "Lakeshore Transit Authority", "Meridian Infrastructure Group",
+    "Boreal Nickel Operations", "Harrowgate Developments", "Ironwood Rail Partners", "Silverbirch Homes",
+    "Tamarack Hydro", "Greyrock Mining Co.", "Kingsbridge Constructors", "Marchmont Municipal Works",
+    "Pinecrest Utilities", "Fallowfield Quarries", "Bluewater Port Authority", "Whitepine Forestry Products"
+  ],
+  "disciplines": [
+    {
+      "key": "blast", "label": "Blast Vibration Monitoring",
+      "regionWeights": { "Sudbury": 5, "Thunder Bay": 5, "Ottawa": 1, "Toronto": 0.5, "SWO": 1 },
+      "templates": ["{site} — Blast Vibration Monitoring", "{site} Bench Blasting — Vibration & Overpressure", "{client} {site} — Blast Compliance Monitoring"],
+      "durationMedianDays": 720, "durationSigma": 0.7, "stations": { "1": 0.3, "2": 0.35, "3": 0.25, "4": 0.1 },
+      "deployMedianDays": 150, "deploySigma": 0.7, "needsMic": 0.35, "standaloneTypes": ["SoundLevelMeter", "AcousticCalibrator", "DustMonitor"]
+    },
+    {
+      "key": "construction", "label": "Construction Vibration & Noise",
+      "regionWeights": { "Ottawa": 5, "Toronto": 6, "SWO": 3, "Sudbury": 1, "Thunder Bay": 0.5 },
+      "templates": ["{site} — Pile Driving Vibration Monitoring", "{site} Excavation — Vibration & Noise Monitoring", "{site} Demolition — Vibration Monitoring", "{client} {site} — Construction Noise & Vibration"],
+      "durationMedianDays": 270, "durationSigma": 0.8, "stations": { "1": 0.45, "2": 0.35, "3": 0.2 },
+      "deployMedianDays": 35, "deploySigma": 0.8, "needsMic": 0.6, "standaloneTypes": ["SoundLevelMeter", "AcousticCalibrator", "HDCamera"]
+    },
+    {
+      "key": "transit", "label": "Transit & Tunnelling",
+      "regionWeights": { "Ottawa": 3, "Toronto": 5, "SWO": 1 },
+      "templates": ["{site} Tunnel Drive — Vibration Monitoring", "{site} Station Box — Vibration & Settlement", "{client} {site} — Grade Separation Monitoring"],
+      "durationMedianDays": 900, "durationSigma": 0.5, "stations": { "2": 0.3, "3": 0.4, "4": 0.3 },
+      "deployMedianDays": 240, "deploySigma": 0.6, "needsMic": 0.5, "standaloneTypes": ["TotalStation", "AutomatedTotalStation", "FieldController", "TiltSensor", "MEMSSensor"]
+    },
+    {
+      "key": "dam", "label": "Dam & Tailings Instrumentation",
+      "regionWeights": { "Sudbury": 4, "Thunder Bay": 3, "Ottawa": 1, "SWO": 0.5 },
+      "templates": ["{site} Tailings Dam — Instrumentation Monitoring", "{site} Dam Crest — Deformation Monitoring", "{client} {site} — Piezometer & Tilt Monitoring"],
+      "durationMedianDays": 1200, "durationSigma": 0.5, "stations": { "1": 0.5, "2": 0.5 },
+      "deployMedianDays": 330, "deploySigma": 0.4, "needsMic": 0.0, "standaloneTypes": ["VWReadout", "TiltSensor", "MEMSSensor", "Other"]
+    },
+    {
+      "key": "noise", "label": "Noise Assessment",
+      "regionWeights": { "Ottawa": 3, "Toronto": 4, "SWO": 3, "Sudbury": 1 },
+      "templates": ["{site} — Environmental Noise Assessment", "{site} Compressor Yard — Noise Survey", "{client} {site} — Acoustic Compliance Survey"],
+      "durationMedianDays": 60, "durationSigma": 0.7, "stations": { "0": 0.6, "1": 0.4 },
+      "deployMedianDays": 14, "deploySigma": 0.5, "needsMic": 1.0, "standaloneTypes": ["SoundLevelMeter", "AcousticCalibrator"]
+    },
+    {
+      "key": "survey", "label": "Settlement & Survey Monitoring",
+      "regionWeights": { "Ottawa": 2, "Toronto": 3, "SWO": 2, "Sudbury": 1 },
+      "templates": ["{site} — Settlement Monitoring", "{site} Retaining Wall — Survey Monitoring", "{client} {site} — Automated Deformation Survey"],
+      "durationMedianDays": 240, "durationSigma": 0.6, "stations": { "0": 0.7, "1": 0.3 },
+      "deployMedianDays": 60, "deploySigma": 0.6, "needsMic": 0.0, "standaloneTypes": ["TotalStation", "AutomatedTotalStation", "FieldController", "HDCamera"]
+    }
+  ]
+}

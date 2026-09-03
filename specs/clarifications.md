@@ -2,12 +2,19 @@
 
 **Created**: 2026-09-02
 **Owner**: Jay Patel (System Owner)
-**Status**: 5 resolved 2026-09-02, 8 open. **Q4 is the critical path.**
+**Status** (refreshed 2026-09-02 after the spec review): 6 resolved (Q1, Q2, Q3, Q5, Q7, Q13); Q4
+done as data work and awaiting Jay's read-through; 4 proceeded on under their recorded recommendation
+and needing confirmation (Q6, Q8, reminder cadence, inactive-project rule); open with nothing built on
+them yet (Q9, Q10, Q11, Q12); and five added 2026-09-02 (Q14–Q18). **Nothing here is on the build's
+critical path any more; Q4's sign-off and the conflict-report sign-off are on the production load's.**
 
 Per the constitution's Development Workflow, a `plan.md` is not written for a feature while a blocking
-`[NEEDS CLARIFICATION]` marker in its spec is open. That is why `specs/001-*` through `specs/004-*`
-currently hold `spec.md` and a requirements checklist but no plan — the specs are complete and
-reviewable, the plans are gated.
+`[NEEDS CLARIFICATION]` marker in its spec is open. **That gate was waived once**, on 2026-09-02, by
+the System Owner (see `README.md` § Blocking clarifications): features 001–006 were built on each open
+item's recorded recommendation, marked `// ASSUMPTION` in code and logged in `docs/08-decisions.md`.
+`specs/001-*` through `specs/004-*` therefore still hold `spec.md` and a requirements checklist but no
+plan; 005 and 006 have plans; 008 gained one on 2026-09-02; 007 does not yet have one and the gate
+applies to it normally.
 
 Each question below states what is actually at stake, gives a recommended answer, and names what
 changes if the answer differs.
@@ -17,10 +24,10 @@ decision recorded, because the reasoning matters later. Q1 is worth reading even
 it was answered with a requirement rather than a placement, which dissolved the blocker instead of
 resolving it.
 
-**Q4 is now the only thing on the critical path.** Feature 002 fails its entire migration run on an
-unresolved equipment model — deliberately, so nothing loads with a guessed classification. Nothing
-migrates until the catalogue is corrected, and unlike the rest of this list it is data work rather
-than a decision, so it takes elapsed time.
+**Q4 is done.** Feature 002 fails its entire migration run on an unresolved equipment model —
+deliberately, so nothing loads with a guessed classification — and that is why the catalogue was
+corrected first: 35 of 64 draft rows fixed and calibration intervals set, reviewable in full at
+`migration/reports/03_models_review.md`. It is a sign-off now, not a blocker.
 
 ---
 
@@ -83,7 +90,7 @@ custodian, an administrator performs the sweep's returns. Feature 002's FR-015a 
 
 ---
 
-### Q4. Correct the equipment model catalogue — OPEN, CRITICAL PATH
+### Q4. Correct the equipment model catalogue — DONE 2026-09-02, AWAITING SIGN-OFF
 
 **Evidence**: `data/reference/equipment_models_draft.csv` holds 65 rows derived directly from the
 source data, including its errors:
@@ -112,7 +119,14 @@ different regime.
 **This is data work, not a decision.** It is also the one item on this list that cannot be answered in
 a sentence, so it should start first.
 
-**Blocks**: 001 (CHK003), 002 (CHK003), 004
+**DONE**: executed as data work under the System Owner's waiver. 35 of 64 rows corrected (prefixes,
+swapped manufacturer/model columns, misspellings, Sigicom V12 retyped as Geophone), intervals set or
+explicitly nulled, and the SLM pre-amp and element added as permanent Component models per Q5. The
+review file is `migration/reports/03_models_review.md`; the migration ran clean against it. **Jay's
+read-through of that file is one of the two hard gates before a production load** (with
+`02_conflicts.md`, feature 002 FR-026).
+
+~~**Blocks**: 001 (CHK003), 002 (CHK003), 004~~ — no longer blocking the build; gates production.
 
 ---
 
@@ -172,7 +186,11 @@ only as a kit role on a deployment — *if* they are physical machines or applia
 a hosted endpoint rather than a box, exclude those 13 rows from the registry entirely and record them
 wherever infrastructure is documented.
 
-**Blocks**: 001 (CHK004)
+**Proceeded on** (2026-09-02, `docs/08-decisions.md`): the 13 `Microsoft/Azure` rows excluded from
+the registry as configuration; the 3 named appliances (`Vision`, `Vision II`, `INFRANet`) kept as
+physical Server assets. Needs Jay's confirmation, not a fresh decision.
+
+**Blocks**: 001 (CHK004) — confirmation only
 
 ---
 
@@ -208,7 +226,10 @@ optional means the notification covers part of the fleet.
 the highest-frequency screen will be filled with whatever dismisses the keyboard fastest, which is
 worse than an honest blank.
 
-**Blocks**: 003 (CHK002)
+**Proceeded on** (2026-09-02, `docs/08-decisions.md`): optional, prefilled at +14 days, editable and
+clearable — the recommendation exactly. Needs Jay's confirmation.
+
+**Blocks**: 003 (CHK002) — confirmation only
 
 ---
 
@@ -273,19 +294,107 @@ retention policy demands it, not a default to build in now.
 
 ---
 
+## Added 2026-09-02
+
+### Q14. May the synthetic dataset be loaded into `Englobe-AMS-Dev`?
+
+**At stake**: Feature 007 US5 — exercising flows F1–F5 and the Power BI model against twenty years
+of fictional history before any production history exists. Every synthetic row carries a marker
+naming its seed, so bulk removal by marker is mechanical. `CLAUDE.md` requires asking before
+anything that deletes data in Dev, which the removal step does. Production is excluded outright by
+the spec (FR-009).
+
+**Recommendation**: Yes, with the loader refusing any environment other than a development one, and
+removal by marker permitted.
+
+**Blocks**: 007 US5 only. US1–US4 are entirely local.
+
+---
+
+### Q15. Fictional identities under the real e-mail domain, or a placeholder domain?
+
+**At stake**: A placeholder domain reads as broken in a demo; the real domain risks a fictional
+name colliding with a real employee outside the registry's Staff column, which is all the generator
+can check against.
+
+**Recommendation**: Real domain, following the three demo identities the app already ships with.
+*Proceeded on by WS-G.*
+
+**Blocks**: 007 (confirmation only)
+
+---
+
+### Q16. May the synthetic catalogue add one real modem model?
+
+**At stake**: The real catalogue has 232 SIMs and no modem, yet Q7 decided a SIM is a permanent
+Component of its modem. Without a modem model the decided pattern cannot exist in the synthetic
+fleet.
+
+**Recommendation**: Yes — one real, publicly documented, commonly paired modem, listed in the
+manifest as a catalogue extension (007 FR-031). Alternatively an admin adds the real modem models to
+`equipment_models.csv` first, which is the better long-term answer anyway. *Proceeded on by WS-G.*
+
+**Blocks**: 007 (confirmation only)
+
+---
+
+### Q17. Per-app or Premium licensing for code apps?
+
+**Evidence**: `docs/08-decisions.md` has carried this as an OPEN row since 2026-09-02 with no owner
+and no question number. The code-apps documentation says every end user needs Power Apps Premium;
+the Dataverse licensing documentation says "per app or per user". Two Microsoft sources disagree.
+
+**At stake**: Roughly four times the programme's dominant cost — on the order of $5 versus $20 per
+user per month across some 45 users.
+
+**Recommendation**: Ask the reseller for a written answer citing the current SKU terms before Step 0
+commits to a count. Pilot on Premium for Ottawa only if the answer is slow.
+
+**Blocks**: `docs/06-delivery-plan.md` Step 0 licensing
+
+---
+
+### Q18. How does a permanent component reach the calibration lab without its parent?
+
+**Evidence**: Q5 decided the SLM pre-amp and element are separate assets, calibrated separately,
+each with its own due date and certificate. Q7 decided a SIM is a permanent Component of its modem.
+Feature 003 FR-032 says a permanent component carries no lines of its own — the parent's line is its
+history — and FR-026 keeps it out of checkout. Feature 004 US3 sends instruments to the lab by
+transaction. Feature 007 FR-019 hardens this to "no transaction line of its own after registration,
+mirrors its parent". Nothing anywhere says how a pre-amp gets to Montreal while its meter stays in
+Ottawa.
+
+**At stake**: Every separately calibrated component, every year. Without an answer the admin must
+detach the component (003 FR-032a), despatch it, and re-attach it on return — three administrative
+actions for a routine event — or the component's lab visit goes unrecorded and the due list lies.
+The synthetic generator has to produce whichever sequence is true.
+
+**Recommendation**: Allow exactly one component-level transaction pair, SendToCalibration and
+ReturnFromCalibration, on a permanent component: its location becomes the lab and its parent is
+unaffected. While a component is InCalibration, the parent-to-component mirroring in 003 FR-032 must
+skip it, and its parent's due list must show the component as away. Everything else about
+components stays as decided.
+
+**If detach/despatch/re-attach instead**: no state-machine change, but three admin steps per
+calibration and a relationship history that ends and restarts annually for reasons that have nothing
+to do with the equipment.
+
+**Blocks**: 003 FR-032b, 004 FR-021, 007 FR-019 — all marked `[NEEDS CLARIFICATION: Q18]`
+
+---
+
 ## What happens when these are answered
 
-| Still needed | Unblocks |
+| Still needed | Gates |
 |---|---|
-| **Q4**, Q6, Q10 | `specs/001-asset-registry/plan.md` |
-| **Q4** *(only)* | `specs/002-inventory-migration/plan.md` |
-| Q8, Q9, inactive-project rule | `specs/003-asset-transactions/plan.md` |
-| **Q4**, reminder cadence | `specs/004-calibration-management/plan.md` |
-| Site-coordinate scope | `specs/005-deployment-and-kits/plan.md` |
-| Q11 | `specs/006-fleet-reporting/plan.md` |
-
-Q4 alone unblocks feature 002 completely, and it is the programme's critical path. Q8, Q9 and the
-inactive-project rule are one short conversation and unblock feature 003.
+| Q4 read-through, `02_conflicts.md` sign-off | The production load (feature 002 FR-026) |
+| Q6, Q8, inactive-project rule, reminder cadence | Confirming — or reversing — what the build proceeded on |
+| Q9 | Backdating in feature 003; nothing built depends on it yet |
+| Q10, Q11, Q12 | Phase 2/3 scope; Q11 also decides Power BI reader licensing |
+| Q14 | 007 US5, the Dev load |
+| Q15, Q16 | 007 generator inputs — proceeded on the recommendation |
+| Q17 | Step 0 licensing purchase |
+| Q18 | 003/004 component-despatch rule; what 007 FR-019 generates |
 
 Answers are recorded in `docs/08-decisions.md` with date and rationale, the corresponding
 `[NEEDS CLARIFICATION]` markers are removed from the specs, and the checklist gates are checked.

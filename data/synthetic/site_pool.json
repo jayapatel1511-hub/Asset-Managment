@@ -1,0 +1,26 @@
+{
+  "_comment": "Fictional streets and landmark templates per region (FR-042). Site names are '{number} {street}' or a landmark. None of these should resolve to a real client facility; the three real site strings in the source registry are excluded at generation time.",
+  "regions": {
+    "Ottawa": {
+      "streets": ["Fenwick Street", "Millrace Avenue", "Harrow Gate Drive", "Copperhead Road", "Tamarack Line", "Ironwood Crescent", "Grist Mill Lane", "Bellamy Ridge Road", "Silverbirch Parkway", "Old Quarry Road", "Ashgrove Terrace", "Kettle Creek Road", "Larkspur Way", "Stonebridge Court"],
+      "landmarks": ["Rideau Bend Rail Grade Separation", "Marchmont Interchange Pier 4", "Westgate LRT Shaft 2", "Carleton Ridge Pump Station", "Greenbelt Trunk Sewer Shaft B", "Fallowfield Quarry East Bench", "Kanata North Substation", "Chapel Hill Overpass"]
+    },
+    "Toronto": {
+      "streets": ["Lakeshore Viaduct Road", "Eastgate Boulevard", "Harbourview Lane", "Queensway Ridge", "Birchmount Terrace", "Wexford Drive", "Danforth Ridge Road", "Humberline Court", "Willowdale Crescent", "Portlands Way", "Sheridan Mews", "Lawrence Heights Road"],
+      "landmarks": ["Eastgate Transit Station Box", "Lakeshore Viaduct Pier 7", "Harbourview Condominium Excavation", "Midtown Relief Sewer Shaft 3", "Airport Corridor Guideway Segment 12", "Portlands Flood Channel", "Junction Rail Underpass", "Northline Hospital Redevelopment"]
+    },
+    "Sudbury": {
+      "streets": ["Nickel Belt Road", "Boreal Pit Road", "Greyrock Mine Road", "Lily Creek Drive", "Tailings Access Road", "Portal Avenue", "Shaft Road", "Kelly Lake Line", "Long Lake Ridge", "Frood Extension Road"],
+      "landmarks": ["Boreal Pit Bench 4", "Greyrock Mine Portal", "Nickel Belt Tailings Dam Crest", "Lily Creek Culvert Replacement", "Copper Ridge Crusher Pad", "Kelly Lake Dam Spillway", "Long Lake Haul Road Cut", "Frood Extension Ventilation Raise"]
+    },
+    "SWO": {
+      "streets": ["Grand River Line", "Thames Valley Road", "Fanshawe Ridge", "Conestoga Parkway Extension", "Bluewater Road", "Erie Shore Drive", "Oxford Mill Lane", "Pinery Road", "Wellington Bypass", "Highbury Crossing"],
+      "landmarks": ["Grand River Bridge Pier 2", "Thames Valley Trunk Sewer Shaft A", "Conestoga Interchange Abutment", "Bluewater Port Berth 5", "Erie Shore Wind Farm Access", "Oxford Mill Dam Refurbishment", "Pinery Quarry North Face", "Highbury Grade Separation"]
+    },
+    "Thunder Bay": {
+      "streets": ["Kaministiquia Line", "Sleeping Giant Road", "Harbour Expressway Extension", "Current River Road", "Boulevard Lake Drive", "Mount McKay Access"],
+      "landmarks": ["Kaministiquia Terminal Pier 1", "Sleeping Giant Quarry Bench 2", "Harbour Expressway Overpass", "Current River Dam Crest", "Northwood Pulp Mill Chipper Yard", "Mount McKay Aggregate Pit"]
+    }
+  },
+  "positions": ["POR-1", "POR-2", "POR-3", "Pier 3", "NE corner", "SW corner", "Berm crest", "Toe of slope", "Property line", "Foundation wall", "Adjacent residence", "Bench 4", "Shaft collar", null, null, null]
+}

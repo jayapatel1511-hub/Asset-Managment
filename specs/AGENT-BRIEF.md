@@ -47,6 +47,17 @@ portable Node PATH entry. Invoke `node.exe` on `vite/bin/vite.js` directly, and 
 node scripts/generate-state-machine.mjs && node scripts/copy-staged-data.mjs
 ```
 
+## 1b. MCP servers
+
+`.mcp.json` (project scope) registers **`microsoft-learn`** — the official Microsoft Learn MCP
+server, read-only, free, no auth. Use it to check current Microsoft documentation instead of
+trusting memory or a stale doc; the `pac code push` command in `CLAUDE.md` was deprecated and
+nobody noticed until it was checked. Needs one-time approval in an interactive `claude` session.
+
+**Dataverse MCP is not installed and must not be added without the guardrails in
+`docs/10-integration.md` § Agent and tooling access.** Its tools include `update_record` and
+`delete_record`, which are one call away from breaking Principle I and Principle II.
+
 ## 2. What already exists — do not rebuild
 
 | Layer | Status | Location |
@@ -54,12 +65,15 @@ node scripts/generate-state-machine.mjs && node scripts/copy-staged-data.mjs
 | Migration pipeline | **Done.** 1,053 source rows → 1,026 staged assets, idempotent, 9 reports | `migration/01_profile.py`…`05_calibrations.py` |
 | Domain layer | **Done.** 179 tests across 6 modules | `app/src/domain/` |
 | Backend seam | **Done.** `mock/` fully working, `dataverse/` typed stub that throws | `app/src/api/` |
-| Screens for 001, 003, 004 (P1–P2, most P3–P4) | **Done**, verified live at 390px against real data | `app/src/features/` |
+| Screens for 001–006, incl. 003 US5 offline queue and 004 US4 admin assignment | **Done**; 001/003/004 verified live at 390px against real data, 005/006 per `docs/09-build-report.md` § Phase 0–2 | `app/src/features/`, `app/src/api/queue/` |
 | Flow specifications F1–F5 | **Done** as files, not published | `solution/flows/` |
 | Tests | **281 passing** across 12 files, `npm run build` clean | `app/tests/` |
 
-Features **005** (Deployment & Kits) and **006** (Fleet Reporting) were never attempted. The
-stubs are listed in `docs/09-build-report.md` § "What is stubbed". That is the work.
+Features **005** and **006**, plus 003 US5 and 004 US4, were built in the multi-agent session
+recorded in `docs/09-build-report.md` § "Phase 0–2 — multi-agent extension" (WS-A to WS-D, complete).
+What remains is WS-E, WS-F, WS-G (in progress) and WS-H (US1 built; US2–US5 tenant-bound) — see
+`specs/REMAINING-WORK.md`. The still-stubbed items are the tenant-bound ones in `docs/09-build-report.md`
+§ "What is stubbed", as amended by its "Superseding" note.
 
 ## 3. Architecture invariants — breaking one is a defect, not a style choice
 
@@ -133,9 +147,13 @@ app/src/api/mock/admin.ts        owned by WS-D
 | **D** | 004 US4 admin assignment + reminder logic | `features/admin/OfficeAdminsPage.tsx`, `api/mock/admin.ts`, `tests/features/admin*` | everything | — |
 | **E** | `api/dataverse/` implementation | `api/dataverse/**` | everything | — |
 | **F** | Schema + solution artefacts | `solution/**` | everything | — |
+| **G** | 007 Synthetic fleet history | `data/synthetic/**`, `app/scripts/synthetic/**` (the generator, TypeScript), its outputs beside `migration/staged/`, its verification report, the synthetic-data indicator component | everything | `App.tsx` and the app shell (the FR-007 indicator mounts there — coordinate, as WS-H does for T016); `api/mock/store.ts` (FR-060's persistence change is orchestrator work) |
+| **H** | 008 Release & Operations | `app/scripts/**` **except** `app/scripts/synthetic/**`, `app/vite.config.ts`, `app/package.json` scripts, `docs/11-runbook.md`, `tests/build/**` | everything | `App.tsx` (T012 and T016 must coordinate) |
 
-Agents A–F are independent after Phase 0 and can run concurrently. **E cannot be verified**
-without a tenant — it must compile and be reviewed, not tested.
+Agents A–H are independent after Phase 0 and can run concurrently; A–D are complete. **E cannot be
+verified** without a tenant — it must compile and be reviewed, not tested. *(Update 2026-09-02:
+`docs/08-decisions.md` records Jay's free Developer environment as a proving ground, which would let
+E and F be exercised for real. It is individual-use only and does not replace `Englobe-AMS-Dev`.)*
 
 ### Never parallelise these
 
@@ -143,6 +161,15 @@ without a tenant — it must compile and be reviewed, not tested.
 - `migration/*.py` — one agent at a time; the scripts share `staged/` output and reports.
 - `data/reference/*.csv` — changing these changes every downstream artefact.
 - `domain/stateMachine.ts` — generated.
+
+### Concurrent sessions are real
+
+Three interactive `claude` sessions were writing to this repo at once on 2026-09-02 — WS-G, WS-H
+and a spec review — not subagents under one orchestrator, but separate windows. The ownership map
+still applies, and three habits make it hold: run `ListAgents` and tell peers with `SendMessage`
+which files you are about to edit; re-read any shared file immediately before editing it; and
+**append** to `docs/08-decisions.md` rather than rewriting it, because it is the one file every
+session writes.
 
 ### Definition of done, per agent
 

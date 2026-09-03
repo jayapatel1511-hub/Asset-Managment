@@ -93,6 +93,150 @@ one adaptive card plus one email per office admin. F4 DMs the custodian about an
 
 ---
 
+## Licensing — what must be bought
+
+Verified against Microsoft Learn 2026-08-14 (`admin/pricing-billing-skus`,
+`admin/power-automate-licensing/types`) and `code-apps/overview` 2026-08-19. **Confirm final SKUs
+and pricing with the reseller** — entitlements change, and this is a budget commitment.
+
+| Who / what | Licence | Notes |
+|---|---|---|
+| **Every technician and admin who opens the app** | **Power Apps Premium**, per user | `code-apps/overview`: *"End users that run code apps need a Power Apps Premium license."* Not just makers. ~25–45 technicians plus 4–8 admins. **This is the dominant cost of the programme** |
+| Dataverse storage and access | Included with Power Apps Premium | Premium Power Apps / Power Automate licences *"include access to Dataverse to store and manage data"*, with a per-licence storage entitlement plus a tenant base allocation |
+| **The five flows (F1–F5)**, owned by `svc-ams` | **Either** a Power Automate Premium user licence on `svc-ams`, **or** a **Power Automate Process** licence per flow | A Process licence *"entitles it to higher action limits and allows use of premium and custom connectors **regardless of the owning or triggering user's license**"*, and *"flows must be in a solution"* — ours already are (`CLAUDE.md` ALM row), so this route is open. Dataverse is a premium connector, so one of the two is required |
+| Power BI **report authors** | Power BI Pro | Publishing always needs Pro or PPU |
+| Power BI **report readers** (managers, PMs) | **Free** — *if* the workspace sits on **Fabric F64 or larger** capacity. Otherwise Pro each | This is where a Fabric capacity actually pays for itself here |
+
+### Tenant reality check, 2026-09-02
+
+Run against the live tenant with `pac` (v2.11.2), authenticated as `Jay.Patel@englobecorp.com`.
+
+| Finding | Detail |
+|---|---|
+| **`pac` is installed and authenticated** | `C:\Users\patjay\.dotnet\tools\pac.exe`. Not on the Git Bash PATH, which is why an earlier check reported it missing — call it by full path, or add `.dotnet\tools` to PATH |
+| **Jay holds Power Platform admin** | `pac admin list-tenant-settings` succeeds, which requires it |
+| **Three environments exist** | `EnGlobe Corp. (default)` — `org4b5b2c68.crm.dynamics.com`; `Englobe UAT Env` — `orgd2bfd754.crm3.dynamics.com`; `Jay Patel` — `orgdd188c52.crm3.dynamics.com`, type **Developer**, in environment group *Quebec* |
+| **Neither AMS environment exists** | `CLAUDE.md` assumes `Englobe-AMS-Dev` / `Englobe-AMS-Prod` at `englobe-ams-dev.crm3.dynamics.com`. Neither is provisioned. `pac admin create` can make them — Jay has the rights |
+| **Region mismatch worth checking** | The default environment is on `crm.dynamics.com`; UAT and Jay's developer environment are on `crm3.dynamics.com` — different regional clusters. The Canada data-residency requirement means the AMS environments must be created in Canada explicitly. **Confirm each environment's region in the admin centre rather than inferring it from the URL** |
+| **`pac code` subcommands are present** | `init`, `push`, `run`, `add-data-source`, `list`, `list-tables`. These coexist with the newer `pa app *` CLI |
+
+### You can build the whole thing today, for free
+
+**Jay has a Developer environment.** The Power Apps Developer Plan is free and grants full Dataverse
+with premium connectors — for **individual use only; it cannot be shared**.
+
+That is enough to unblock nearly everything currently listed as "needs the tenant":
+
+- Create the 9 tables, choice sets, alternate keys, relationships and security roles (WS-F)
+- Run `migration/04_load.py` against real Dataverse instead of staged JSON
+- Implement and actually **test** `api/dataverse/` (WS-E), which today can only be compiled
+- Build and publish flows F1-F5 and verify F1 against `deriveState.ts`
+- `pa app init` / `pa app push` the code app, and answer feature 008's two open questions — does it
+  run in the mobile player, and does it work offline
+
+None of that needs a purchased licence. Licensing only becomes blocking at the point technicians
+need to open the app, because a Developer environment cannot be shared.
+
+**Caveats**: developer environments have smaller capacity, are individual, and can be reset or
+reclaimed if unused. Treat it as a proving ground, not as Dev — the real `Englobe-AMS-Dev` still
+gets created properly. But it converts "blocked on IT and procurement" into "start now, buy later".
+
+### Who needs a Power Apps licence, and who does not
+
+Two audiences, and conflating them is easy:
+
+| Audience | Count | Uses | Power Apps licence? |
+|---|---|---|---|
+| Field technicians | 25–45 | The app — search, checkout, return, transfer, deploy | **Yes** |
+| Office admins | 4–8 | The app — everything above plus registration, calibration, retirement | **Yes** |
+| Managers, PMs | many | **Power BI reports only.** Never opens the app | **No** — this is what feature 006 means by *"without an app licence"* |
+| `svc-ams` | 1 | Owns and runs the flows | Power Automate, not Power Apps |
+
+### The licence is for Dataverse, not for Power Apps hosting
+
+This matters if anyone asks whether the cost could be avoided by hosting the React app somewhere
+else — Azure Static Web Apps, a SharePoint page, anywhere. It could not:
+
+> *"Accessing an environment with Dataverse requires **all users** to have a corresponding
+> standalone Power Platform license for each service being utilized. For example, a user accessing
+> an app running on Dataverse needs to be licensed by either the Power Apps per app or per user
+> plan."* — Power Platform licensing FAQs
+
+Move the hosting and the per-user Dataverse licence follows the user anyway. Power Apps hosting is
+therefore close to free in licensing terms, and it brings Entra SSO, DLP, Conditional Access,
+sharing and admin telemetry that a self-hosted SPA would have to reimplement. **Keep it.**
+
+### The one question worth asking the reseller — it is worth roughly 4×
+
+The code apps documentation says end users need **Power Apps Premium** (the per-user plan, list
+~$20/user/month). The general Dataverse licensing guidance says a user accessing a Dataverse app
+needs *"either the Power Apps per app or per user plan"*, and **per app** lists at roughly
+$5/user/app/month.
+
+If a **per-app** plan covers a code app, the licensing cost of this programme drops by about
+three-quarters. If code apps genuinely require Premium specifically, it does not. The two Microsoft
+sources do not settle it, and the difference across 45 users is material.
+
+**Ask exactly this**: *"Does a Power Apps per-app plan entitle an end user to run a Power Apps
+**code app** backed by Dataverse, or is Power Apps Premium (per user) required?"*
+
+### If premium licensing is refused entirely
+
+The constitution already anticipates this: *"Fallback if premium licensing is denied: SharePoint
+Lists as the store."* That is the genuine escape hatch — SharePoint Lists are covered by the
+existing Microsoft 365 licences, with no premium Power Platform seat at all.
+
+The entity design in `docs/01-data-model.md` was written to be re-targetable, and the app talks only
+to `AmsBackend`, so the seam exists at both layers. It costs the transactional guarantees, the field
+security profile and the audit trail — a real downgrade, not a free swap — but it is a coherent
+fallback rather than a rewrite.
+
+**Not an option**: server-to-server authentication. It genuinely avoids per-user licensing (*"there
+is no license fee for the special application user account"*), but it makes the *application* the
+trust boundary instead of Dataverse. Field-level security on ICCID, phone and static IP would stop
+being enforced by the platform, which breaks FR-030 and Principle VII, and every user would appear
+in the audit trail as one service account, which breaks Principle II's attribution. It solves a
+budget problem by dismantling the security model.
+
+### What Microsoft 365 licences do *not* cover
+
+E3/E5 include a limited Dataverse service plan, and it explicitly does not help:
+
+> *"the capabilities of Dataverse included with select Microsoft 365 licenses don't allow customers
+> to create custom apps with Power Apps or use the premium connectors with Power Automate"*
+
+and creating a Dataverse instance in a production or sandbox environment — which is exactly what
+`Englobe-AMS-Dev` and `-Prod` are — *"still requires a premium Power Apps or Power Automate
+license."*
+
+### Where a Fabric capacity does and does not help
+
+**It does not touch the app.** Fabric is analytics capacity. It grants no Power Apps entitlement, no
+Dataverse app entitlement, and no Power Automate entitlement. Feature 006 aside, a Fabric licence
+moves nothing in this programme.
+
+**It does help feature 006**, and materially: on **F64 or larger**, users holding only a Free licence
+can view Power BI content in a viewer role. That is the difference between buying Power BI Pro for
+every manager and PM who reads a report, and buying none. Below F64, every reader needs Pro.
+
+Two cautions before counting on it:
+
+- **A Fabric *trial* is not a purchased capacity.** Trials are time-boxed and their free-viewer
+  behaviour should not be assumed to match a paid F64. Verify with the reseller before planning the
+  reporting rollout around one.
+- **Fabric remains out of scope as a platform** (`docs/08-decisions.md`, 2026-09-02 — *"Fabric is an
+  analytics platform, not an app store"*). Using Fabric *capacity to host Power BI* is a different
+  thing from building on Fabric, and only the former is in play.
+
+### Cheapest honest path
+
+1. Power Apps Premium for the Ottawa pilot users only — the pilot is one office, so this is the
+   smallest commitment that proves the system.
+2. One Power Automate Process licence per scheduled flow, or Premium on `svc-ams` — compare the two
+   once the flow count and daily action volume are known.
+3. Decide Power BI reader licensing only after the pilot, when the reader list is real (Q11 is still
+   open). If the Fabric capacity is F64+ and permanent, readers are free.
+
 ## Entra ID and licensing
 
 Three Dataverse roles (`AMS Field User`, `AMS Office Admin`, `AMS System Owner`) assigned via
@@ -115,28 +259,92 @@ Step 0.
 
 ---
 
-## Agent and tooling access — currently none
+## Agent and tooling access — MCP
 
-There is **no MCP server, connector or programmatic tenant access configured** in any development
-session to date. Verified 2026-09-02: the connector registry returns nothing for `microsoft`,
-`dataverse`, `power platform`, `sharepoint`, `microsoft 365`, `azure`, `excel`, `outlook`, `teams`,
-`onedrive` or `office`.
+### Installed: Microsoft Learn MCP *(safe, free, no tenant)*
 
-Every "needs the tenant" item in `docs/09-build-report.md` and
-`specs/REMAINING-WORK.md` is premised on that. The sanctioned path is the `pac` CLI run by a human
-with `pac auth create`, per `CLAUDE.md`.
+```
+.mcp.json → microsoft-learn → https://learn.microsoft.com/api/mcp   (HTTP, project scope)
+```
 
-**If programmatic tenant access is ever granted to an agent**, it needs written guardrails first,
-because it is a write path to production data and two constitutional principles are at risk:
+Official Microsoft server ([docs](https://learn.microsoft.com/en-us/training/support/mcp),
+[repo](https://github.com/microsoftdocs/mcp)). Read-only access to current Microsoft documentation
+and code samples, publicly available at no charge, no authentication. Committed at **project**
+scope so every session and every agent on this repo gets it.
 
-- Read-only by default; Prod never; no schema change without the System Owner's sign-off.
-- **Never write an `eng_transactionline` directly.** It must go through the app or a flow, or
-  Principle I's "state is derived, never typed" is dead and the history stops being trustworthy.
-- Never update or delete a transaction line (Principle II) — corrections are compensating
-  transactions.
-- Every write reported, with counts, in the session's build report.
+Why it earns its place: the code-apps CLI we had documented (`pac code push`) had already been
+deprecated and nobody noticed. This server makes "check the current documentation" a tool call
+rather than a web search, which is how that class of staleness gets caught.
 
-That is a decision for `docs/08-decisions.md`, not a convenience toggle.
+**It needs one-time approval** — run `claude` interactively and approve `microsoft-learn`. A
+non-interactive session cannot approve it.
+
+### Not installed: Dataverse MCP *(real, official, blocked on the tenant)*
+
+Microsoft ships a Dataverse MCP server ([overview](https://learn.microsoft.com/en-us/power-apps/maker/data-platform/data-platform-mcp),
+[non-Microsoft clients](https://learn.microsoft.com/en-us/power-apps/maker/data-platform/data-platform-mcp-other-clients)).
+It is an **environment-side capability**, not a package you install — you enable it on a Power
+Platform environment and point a client at it. We have no environment, so it cannot be enabled.
+
+When the environment exists, the whole setup is:
+
+1. **Tenant admin consent**, once per tenant:
+   `https://login.microsoftonline.com/{tenant-id}/adminconsent?client_id=0c412cc3-0dd6-449b-987f-05b053db9457`
+2. **Enable the MCP server on the environment**: Power Platform admin center → Manage →
+   Environments → *env* → Settings → Product → Features → **Dataverse Model Context Protocol**.
+3. **Allow the client**: same screen → Advanced Settings → **Dataverse CLI**
+   (app ID `0c412cc3-0dd6-449b-987f-05b053db9457`) → *Is Enabled* = Yes. Add it manually if absent.
+4. **Register it in Claude Code** (Node 18+ required; we have 22.14):
+
+```bash
+claude mcp add dataverse -t stdio -- npx -y @microsoft/dataverse mcp https://englobe-ams-dev.crm3.dynamics.com
+```
+
+A remote-endpoint alternative exists (`https://<org>/api/mcp`) if you would rather register your
+own Entra app with the `Dynamics CRM → mcp.tools` permission than use the Dataverse CLI app.
+
+**Cost**: since 15 December 2025, Dataverse MCP tools are **charged** when used by agents created
+outside Copilot Studio, unless the tenant holds qualifying Dynamics 365 Premium or Microsoft 365
+Copilot licences. Confirm before enabling.
+
+### ⚠️ Guardrails required before Dataverse MCP is enabled
+
+Its tools are `search_data`, `search`, `create_record`, **`update_record`** and
+**`delete_record`** — direct, unmediated write access to Dataverse rows. Two constitutional
+principles are one tool call away from being broken:
+
+| Tool use | Breaks |
+|---|---|
+| `update_record` on `eng_asset` status / location / custodian / project / parent | **Principle I** — current state is derived, never typed. This is precisely the failure that killed the spreadsheet |
+| `update_record` or `delete_record` on `eng_transactionline` | **Principle II** — history is append-only. An edited log cannot settle a damage claim |
+| `create_record` on `eng_transactionline` outside the app or a flow | Bypasses the transition matrix — **Principle V**, refused at both layers |
+
+So before it is enabled, write these down and agree them:
+
+- **Read-only by default.** `search_data` and `search` yes; the three write tools disabled unless a
+  specific task needs them and the System Owner has said so.
+- **Never Production.** Development environment only.
+- **Never write `eng_asset` derived fields, and never write, update or delete
+  `eng_transactionline`.** Corrections are compensating transactions through the app or a flow.
+- **No schema changes** without the System Owner's sign-off.
+- **Every write reported** — count and table — in the session's build report.
+
+None of this is hypothetical caution: the tool names are `update_record` and `delete_record`, and
+the principles they threaten are the two the whole design rests on.
+
+### Deliberately not installed: third-party Power Platform MCP servers
+
+A community server advertising 228 tools for Power Platform authoring, debugging, data and
+**administration** exists on GitHub. It is not published by Microsoft. A third-party server with
+administrative reach over the tenant is not something to add on a one-line instruction — if it is
+ever wanted, it needs its own review and its own decision entry.
+
+### What MCP does *not* solve
+
+Nothing that remains buildable needs MCP. WS-G (synthetic data) and WS-H (release safety) are
+TypeScript, Python and markdown — local file work, fully tooled today. MCP matters only for tenant
+work, and the sanctioned path there stays the `pac` / `pa` CLI run by a human with `pac auth create`
+(`CLAUDE.md`).
 
 ---
 
@@ -171,6 +379,70 @@ app, where the chrome costs a fifth of the viewport.
 Identity comes from the host: Entra SSO, no auth code in the app. Managed-platform policies apply
 automatically — canvas-app sharing limits, DLP enforced at launch, per-app Conditional Access,
 tenant isolation, health metrics in the admin centre.
+
+### How you and your users actually open the app
+
+Verified against Microsoft Learn 2026-08-19 plus the code-apps CLI reference.
+
+**The address.** Once published, the app lives at:
+
+```
+https://apps.powerapps.com/play/e/{environment id}/a/{app id}?hideNavBar=true
+```
+
+`pa app push` returns it. It is also reachable from [make.powerapps.com](https://make.powerapps.com)
+→ **Apps** → play, which is how most people will find it the first time.
+
+**Granting access.** Two separate things must both be true, and this is the classic first-day
+support call:
+
+1. **The app is shared with them** — `pa app share --principal <emails or Entra object IDs> --access play`
+   (`play` is the default; `edit` only for co-owners and the service principal that runs
+   `pa app push`). Or share from make.powerapps.com. Code apps follow canvas-app sharing limits.
+2. **They hold a Dataverse security role** — `AMS Field User`, `AMS Office Admin` or
+   `AMS System Owner`, via the `SG-AMS-*` groups. Sharing the app does **not** grant data access.
+   A user with the app shared but no role opens it successfully and sees nothing, which looks like
+   a broken app rather than a permissions problem.
+
+Plus the licence: **Power Apps Premium**, or it will not open at all.
+
+**Where users find the link.** Nobody remembers a GUID URL. Put it where they already are:
+
+- The **Ontario Instrumentation Hub** SharePoint site — the *Equipment Hub* page is the natural
+  home, and the source spreadsheet's own site map already anticipated it.
+- A **QR code** on the storage-room wall and inside the truck — the fastest path for a technician
+  holding a phone.
+- **Add to Home Screen** on iOS/Android, which gives a browser-launched app an icon and full-screen
+  chrome. Combined with `?hideNavBar=true` this is the closest thing to a native feel.
+
+**Which clients work:**
+
+| Client | Status |
+|---|---|
+| Desktop browser (Edge, Chrome, Firefox, Safari) | ✅ The primary path for office admins |
+| Mobile browser on iOS/Android | ✅ Expected — the app is a hosted SPA and is designed for 390 px |
+| **Power Apps for Windows** | ❌ **Explicitly unsupported** for code apps |
+| Power Apps mobile app (iOS/Android) | ⚠️ **Undocumented for code apps.** See below |
+
+### Mobile and offline — what the documentation actually says
+
+Neither is stated for code apps. What *is* documented, and worth reading as a signal rather than an
+answer:
+
+- Every offline capability in the Power Apps ecosystem — canvas and model-driven — is a feature of
+  the **native Power Apps Mobile player**, not the browser. Microsoft is explicit that *"canvas apps
+  running in web browsers can't run offline, even when using a web browser on a mobile device."*
+- Code apps are hosted SPAs served from `apps.powerapps.com`, and the only client the documentation
+  rules out by name is Power Apps for Windows.
+
+So the honest position: **assume mobile browser, and assume no platform-provided offline**, until
+tested. Feature 003 US5's queue is built against an injectable transport and a browser
+`localStorage`, so it does not depend on a platform offline feature — but whether the app *loads
+at all* with no connectivity is the thing to test, and it is the difference between a technician in
+a basement being able to work or not.
+
+Both are day-one verification tasks in `specs/008-release-and-operations/spec.md`, not assumptions
+to carry into a pilot.
 
 ### The CLI changed — our documented command was wrong
 

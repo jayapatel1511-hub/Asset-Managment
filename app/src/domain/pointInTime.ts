@@ -11,14 +11,16 @@
  *
  * Two real limits found while building this, worth reading before changing the logic:
  *
- * 1. `AddToInventory` (and `Audit`) are not directional workflow transactions the way Checkout or
- *    Return are — they don't mean "something arrived from X and went to Y", they mean "this is
- *    what we found to be true when we started keeping records." deriveState.ts's own switch
- *    statement treats both as a no-op ("return base", i.e. carry the previous state forward
- *    unchanged) because deriveState.ts is only ever called with a REAL prior snapshot to carry
- *    forward from. Point-in-time replay has no such snapshot before an asset's first line — so
- *    for that first, seeding line only, this file derives location/custodian/project from the
- *    resulting status itself (the same convention migration/02_clean.py uses when it computes
+ * 1. `AddToInventory` (and an `Audit` that happens to be an asset's very first line) are not
+ *    directional workflow transactions the way Checkout or Return are — they don't mean
+ *    "something arrived from X and went to Y", they mean "this is what we found to be true when
+ *    we started keeping records." deriveState.ts's own switch statement treats both as a no-op
+ *    ("return base", i.e. carry the previous state forward unchanged) because deriveState.ts is
+ *    only ever called with a REAL prior snapshot to carry forward from. Point-in-time replay has
+ *    no such snapshot before an asset's first line — so for that first, seeding line only, this
+ *    file derives location/custodian/project from the resulting status itself. Every LATER Audit
+ *    is replayed through deriveState like any other line, i.e. as the no-op it is (2026-09-02
+ *    fix — see the loop in stateAsOf) (the same convention migration/02_clean.py uses when it computes
  *    each staged asset's initial currentlocation: known-location statuses get the office recorded
  *    on the line, custody-bearing statuses get whatever custodian/project the line carries, and
  *    everything else is honestly unknown — Principle I). Verified against all 1,026 real staged
@@ -166,11 +168,15 @@ export function stateAsOf(history: HistoryEntry[], asOf: string, relationships: 
   }
 
   let snapshot = seedSnapshot(assetId, relevant[0].statusbefore);
-  for (const entry of relevant) {
-    snapshot =
-      entry.transactiontype === "AddToInventory" || entry.transactiontype === "Audit"
-        ? applySeedEntry(snapshot, entry)
-        : applyWorkflowEntry(snapshot, entry);
+  for (let i = 0; i < relevant.length; i++) {
+    const entry = relevant[i];
+    // Only a FIRST line seeds. A later Audit (an annual stocktake, or feature 005's
+    // configuration-change Audit on a deployed station) carries no to-fields, and reading it as a
+    // seeding line wiped the known location/custodian/project — the replay disagreed with the
+    // write path, which derives an Audit as a no-op. Found by feature 007's replay verification
+    // (SC-004) and recorded in docs/08-decisions.md.
+    const seeds = entry.transactiontype === "AddToInventory" || (entry.transactiontype === "Audit" && i === 0);
+    snapshot = seeds ? applySeedEntry(snapshot, entry) : applyWorkflowEntry(snapshot, entry);
   }
   return { ...snapshot, parentasset: parentAssetAt(assetId, relationships, asOf) };
 }

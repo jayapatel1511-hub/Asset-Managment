@@ -32,19 +32,24 @@ in `docs/08-decisions.md`.
 
 ## Features
 
-Delivery order was top to bottom. `001`–`004` are built and tested and verified live at 390 px against the real migrated data;
-`005` and `006` have since been built too. **281 tests passing across 12 files**, re-verified
-2026-09-02. `docs/09-build-report.md` predates the 005/006 work — treat this table and the report
-as needing a refresh against the current tree.
+Delivery order was top to bottom. `001`–`006` are built and tested: `001`–`004` were verified live at
+390 px against the real migrated data, and `005`/`006` plus 003 US5 and 004 US4 followed in the
+multi-agent session recorded in `docs/09-build-report.md` § "Phase 0–2 — multi-agent extension".
+**281 tests passing across 12 files** at the last independent re-run (2026-09-02, spec review); WS-H
+reports 291 with its release-guard tests added. Feature 007's generator and feature 008 US1 were in
+progress in **concurrent sessions** when this table was last refreshed — check `git status` before
+trusting either row.
 
 | # | Feature | Delivers | Build status |
 |---|---|---|---|
 | [001](001-asset-registry/spec.md) | **Asset Registry** | A trustworthy, searchable catalogue: stable identity, N admin-managed offices, curated reference data, add/retire, scan-to-open | **Built** (P1–P2, most P3–P4). Camera scan stubbed |
 | [002](002-inventory-migration/spec.md) | **Inventory Migration** | The existing 1,053 rows loaded clean, deduplicated, with every judgement call visible and signed off | **Built.** 1,026 staged assets, 9 reports, idempotent. Needs Jay's sign-off before Prod |
-| [003](003-asset-transactions/spec.md) | **Asset Transactions** | Checkout / Return / Transfer, derived current state, complete immutable history, conflict refusal, offline queueing | **Built** except US5 offline queue → WS-C |
-| [004](004-calibration-management/spec.md) | **Calibration Management** | Due lists, calibration records with certificates, reminders, lab round-trip | **Built** except US4 admin assignment → WS-D |
-| [005](005-deployment-and-kits/spec.md) | **Deployment & Kits** | Deploy an instrument kit to a site with orientation, power and site detail; undeploy; historical kit composition | **Not started.** [plan](005-deployment-and-kits/plan.md) · [contracts](005-deployment-and-kits/contracts/ams-backend-deployment.md) · [tasks](005-deployment-and-kits/tasks.md) → WS-A |
-| [006](006-fleet-reporting/spec.md) | **Fleet Reporting** | The seven acceptance questions answered from a report, without an app licence | **Not started.** [plan](006-fleet-reporting/plan.md) · [tasks](006-fleet-reporting/tasks.md) → WS-B |
+| [003](003-asset-transactions/spec.md) | **Asset Transactions** | Checkout / Return / Transfer, derived current state, complete immutable history, conflict refusal, offline queueing | **Built**, including US5 offline queue (WS-C, `api/queue/`). Open: Q8, Q9, inactive-project rule, Q18 |
+| [004](004-calibration-management/spec.md) | **Calibration Management** | Due lists, calibration records with certificates, reminders, lab round-trip | **Built**, including US4 admin assignment (WS-D). Notification delivery itself needs the tenant. Open: reminder cadence, Q18 |
+| [005](005-deployment-and-kits/spec.md) | **Deployment & Kits** | Deploy an instrument kit to a site with orientation, power and site detail; undeploy; historical kit composition | **Built** (WS-A). [plan](005-deployment-and-kits/plan.md) · [contracts](005-deployment-and-kits/contracts/ams-backend-deployment.md) · [tasks](005-deployment-and-kits/tasks.md) — tasks.md boxes were never ticked; the build report is the record. Two new tables requested, pending Jay |
+| [006](006-fleet-reporting/spec.md) | **Fleet Reporting** | The seven acceptance questions answered from a report, without an app licence | **Built** (WS-B): domain, in-app surface, PBIP text model. Power BI publish needs the tenant. FR-028 clarified 2026-09-02 and the built guard is now a recorded defect against it. [plan](006-fleet-reporting/plan.md) · [tasks](006-fleet-reporting/tasks.md) |
+| [007](007-synthetic-data/spec.md) | **Synthetic Fleet History** | A fictional fleet with 20 years of valid, deterministic history and 5 years of full operational detail; answer key for the seven questions; planted training scenarios; scale profiles. Never touches production | **In progress** (WS-G, concurrent session 2026-09-02): inputs in `data/synthetic/`, generator in `app/scripts/synthetic/`. **No plan.md yet** — required before it is called done. Spec amended 2026-09-02 (FR-019, 026, 039, 041, 049, 060, SC-005, US3). Open: Q14 (US5 only), Q18 |
+| [008](008-release-and-operations/spec.md) | **Release & Operations** | Publish, verify, roll back, promote, monitor — for the successor admin. Owns the release-safety guard that makes a data leak structurally impossible | **US1 built** (WS-H, concurrent session 2026-09-02): release guard, bundle scan, mode-conditional `publicDir`, `build:release`. T012 deferred (needs `App.tsx`), T032 blocked on WS-G `tsc` errors. US2–US5 are operator documentation, tenant-verified only. [plan](008-release-and-operations/plan.md) · [tasks](008-release-and-operations/tasks.md) |
 
 Build detail, every assumption and the exact remaining steps: `docs/09-build-report.md` — read it
 fresh rather than trusting any summary, including this table.
@@ -98,7 +103,9 @@ production load — the sign-offs below are still hard gates.
 **[`clarifications.md`](clarifications.md)** states each question with its evidence, what is at stake,
 a recommendation, and what changes if the answer differs.
 
-Five of the thirteen were resolved outright. **Q4 is no longer a blocker** — it was data work, and it
+Six of the thirteen (Q1, Q2, Q3, Q5, Q7, Q13) were resolved outright, and four more (Q6, Q8, the
+reminder cadence, the inactive-project rule) were proceeded on under their recorded recommendation —
+those need confirming or reversing, not deciding from scratch. **Q4 is no longer a blocker** — it was data work, and it
 was done: 35 of 64 catalogue rows corrected, reviewable in full at
 `migration/reports/03_models_review.md`. It is now a completed deliverable awaiting a read-through, not
 a pending decision.
@@ -127,6 +134,11 @@ a pending decision.
 | — | Calibration reminder cadence — daily until actioned, weekly, or once per threshold? | 004 |
 | — | Site coordinates — captured from the device, entered by hand, or both? | 005 |
 | Q12 | French labels — confirm Phase 1 ships English only | Phase 3 |
+| Q14 | May the synthetic dataset (007) be loaded into `Englobe-AMS-Dev` and bulk-removed afterwards? | 007 US5 |
+| Q15 | Fictional roster identities under the real e-mail domain, or a placeholder domain? *(Recommendation: real domain, per the existing demo identities)* | 007 |
+| Q16 | May the synthetic catalogue add one real modem model to give SIMs a parent, as `docs/08-decisions.md` assumes exists? *(Recommendation: yes, marked in the manifest)* | 007 |
+| **Q17** | Per-app or Premium licensing for code apps? Two Microsoft sources disagree, and the gap is roughly four times the programme's dominant cost. Sat as an OPEN row in `docs/08-decisions.md` with no owner until 2026-09-02 | Step 0 licensing |
+| **Q18** | How does a permanent component (SLM pre-amp, element; a SIM) reach the lab without its parent? Q5 says it is calibrated separately; 003 FR-032 says the parent's line is its history; nothing bridges the two. *(Recommendation: allow the SendToCalibration / ReturnFromCalibration pair on a component, and suspend parent-to-component mirroring while it is InCalibration)* | 003 FR-032b, 004 FR-021, 007 FR-019 |
 
 **Two sign-offs are hard gates before any production load**, neither of them a question:
 `migration/reports/03_models_review.md` (35 corrected model rows) and

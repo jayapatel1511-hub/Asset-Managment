@@ -1,0 +1,1699 @@
+{
+ "asOf": "2026-09-02",
+ "probeDates": [
+  "2016-09-02",
+  "2021-09-02",
+  "2025-09-02",
+  "2026-09-02"
+ ],
+ "fleet": {
+  "total": 301,
+  "byOffice": {
+   "Ottawa": 90,
+   "Toronto": 93,
+   "Sudbury": 45,
+   "SWO": 46,
+   "London": 6,
+   "Kitchener": 10,
+   "Stoney Creek": 3,
+   "Waterloo": 2,
+   "Mississauga": 6
+  },
+  "byAssetGroup": {
+   "Seismographs": 201,
+   "Communications": 77,
+   "Acoustics": 7,
+   "GeotechnicalMonitoring": 6,
+   "Imaging": 4,
+   "Geomatics": 2,
+   "AirQuality": 2,
+   "General": 2
+  },
+  "byEquipmentType": {
+   "Geophone": 84,
+   "DataLogger": 98,
+   "CellularService": 61,
+   "Microphone": 5,
+   "VWReadout": 3,
+   "Other": 1,
+   "SoundLevelMeter": 20,
+   "HDCamera": 4,
+   "Modem": 15,
+   "AutomatedTotalStation": 2,
+   "DustMonitor": 2,
+   "AssetTracker": 2,
+   "Server": 1,
+   "MEMSSensor": 1,
+   "TiltSensor": 1,
+   "AcousticCalibrator": 1
+  },
+  "temporaryTags": 2,
+  "thirdPartyOwned": 2
+ },
+ "available": {
+  "total": 102,
+  "byOffice": {
+   "Ottawa": 21,
+   "Toronto": 35,
+   "Sudbury": 20,
+   "SWO": 14,
+   "London": 1,
+   "Kitchener": 5,
+   "Waterloo": 2,
+   "Mississauga": 2,
+   "Stoney Creek": 2
+  },
+  "byEquipmentType": {
+   "CellularService": 37,
+   "DataLogger": 6,
+   "Geophone": 29,
+   "VWReadout": 2,
+   "Other": 1,
+   "SoundLevelMeter": 11,
+   "HDCamera": 3,
+   "Modem": 8,
+   "Server": 1,
+   "Microphone": 2,
+   "MEMSSensor": 1,
+   "TiltSensor": 1
+  }
+ },
+ "calibration": {
+  "30": {
+   "Ottawa": {
+    "inCalibration": 2,
+    "dueSoon": 2,
+    "overdue": 31,
+    "unknown": 0
+   },
+   "Toronto": {
+    "inCalibration": 3,
+    "dueSoon": 0,
+    "overdue": 25,
+    "unknown": 0
+   },
+   "Sudbury": {
+    "inCalibration": 1,
+    "dueSoon": 0,
+    "overdue": 17,
+    "unknown": 0
+   },
+   "SWO": {
+    "inCalibration": 1,
+    "dueSoon": 1,
+    "overdue": 9,
+    "unknown": 0
+   },
+   "London": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 3,
+    "unknown": 0
+   },
+   "Stoney Creek": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 0,
+    "unknown": 0
+   },
+   "Mississauga": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 3,
+    "unknown": 0
+   },
+   "Kitchener": {
+    "inCalibration": 0,
+    "dueSoon": 2,
+    "overdue": 2,
+    "unknown": 0
+   }
+  },
+  "60": {
+   "Ottawa": {
+    "inCalibration": 2,
+    "dueSoon": 3,
+    "overdue": 31,
+    "unknown": 0
+   },
+   "Toronto": {
+    "inCalibration": 3,
+    "dueSoon": 3,
+    "overdue": 25,
+    "unknown": 0
+   },
+   "Sudbury": {
+    "inCalibration": 1,
+    "dueSoon": 1,
+    "overdue": 17,
+    "unknown": 0
+   },
+   "SWO": {
+    "inCalibration": 1,
+    "dueSoon": 3,
+    "overdue": 9,
+    "unknown": 0
+   },
+   "London": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 3,
+    "unknown": 0
+   },
+   "Stoney Creek": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 0,
+    "unknown": 0
+   },
+   "Mississauga": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 3,
+    "unknown": 0
+   },
+   "Kitchener": {
+    "inCalibration": 0,
+    "dueSoon": 2,
+    "overdue": 2,
+    "unknown": 0
+   }
+  },
+  "90": {
+   "Ottawa": {
+    "inCalibration": 2,
+    "dueSoon": 6,
+    "overdue": 31,
+    "unknown": 0
+   },
+   "Toronto": {
+    "inCalibration": 3,
+    "dueSoon": 12,
+    "overdue": 25,
+    "unknown": 0
+   },
+   "Sudbury": {
+    "inCalibration": 1,
+    "dueSoon": 4,
+    "overdue": 17,
+    "unknown": 0
+   },
+   "SWO": {
+    "inCalibration": 1,
+    "dueSoon": 4,
+    "overdue": 9,
+    "unknown": 0
+   },
+   "London": {
+    "inCalibration": 0,
+    "dueSoon": 1,
+    "overdue": 3,
+    "unknown": 0
+   },
+   "Stoney Creek": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 0,
+    "unknown": 0
+   },
+   "Mississauga": {
+    "inCalibration": 0,
+    "dueSoon": 0,
+    "overdue": 3,
+    "unknown": 0
+   },
+   "Kitchener": {
+    "inCalibration": 0,
+    "dueSoon": 2,
+    "overdue": 2,
+    "unknown": 0
+   }
+  }
+ },
+ "probeAssets": [
+  {
+   "assetId": "DL-BE-30008",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1837 Queensway Ridge",
+     "custodian": null,
+     "currentproject": "09000083",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "3183 Danforth Ridge Road",
+     "custodian": null,
+     "currentproject": "09000102",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1654 Harbourview Lane",
+     "custodian": null,
+     "currentproject": "09000199",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "367 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000199",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30052",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "2058 Thames Valley Road",
+     "custodian": null,
+     "currentproject": "09000078",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4569 Fanshawe Ridge",
+     "custodian": null,
+     "currentproject": "09000078",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "bartek.makinen@englobecorp.com",
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "3204 Erie Shore Drive",
+     "custodian": null,
+     "currentproject": "09000078",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30000",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1845 Willowdale Crescent",
+     "custodian": null,
+     "currentproject": "09000054",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1849 Willowdale Crescent",
+     "custodian": null,
+     "currentproject": "09000097",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "367 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000199",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1572 Danforth Ridge Road",
+     "custodian": null,
+     "currentproject": "09000150",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30036",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4429 Pinery Road",
+     "custodian": null,
+     "currentproject": "09000078",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1789 Fanshawe Ridge",
+     "custodian": null,
+     "currentproject": "09000108",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "SWO",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "3890 Wellington Bypass",
+     "custodian": null,
+     "currentproject": "09000177",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30027",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4014 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000011",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4858 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000006",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "rashid.oyelaran@englobecorp.com",
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "2333 Birchmount Terrace",
+     "custodian": null,
+     "currentproject": "09000233",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30009",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4600 Bellamy Ridge Road",
+     "custodian": null,
+     "currentproject": "09000039",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "2036 Bellamy Ridge Road",
+     "custodian": null,
+     "currentproject": "09000030",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "2390 Grist Mill Lane",
+     "custodian": null,
+     "currentproject": "09000138",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "3711 Millrace Avenue",
+     "custodian": null,
+     "currentproject": "09000109",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30019",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "2424 Queensway Ridge",
+     "custodian": null,
+     "currentproject": "09000037",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "757 Lawrence Heights Road",
+     "custodian": null,
+     "currentproject": "09000150",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "3675 Portlands Way",
+     "custodian": null,
+     "currentproject": "09000054",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "3672 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000054",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "GEO-BG-30024",
+   "states": {
+    "2016-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "renata.gagnon@englobecorp.com",
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "SWO",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4419 Fanshawe Ridge",
+     "custodian": null,
+     "currentproject": "09000220",
+     "parentasset": "DL-BE-30034"
+    },
+    "2026-09-02": {
+     "status": "InCalibration",
+     "lifecycle": "Active",
+     "currentlocation": "Montreal Calibration",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "GEO-BG-30001",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1845 Willowdale Crescent",
+     "custodian": null,
+     "currentproject": "09000054",
+     "parentasset": "DL-BE-30000"
+    },
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Toronto",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "367 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000199",
+     "parentasset": "DL-BE-30000"
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1572 Danforth Ridge Road",
+     "custodian": null,
+     "currentproject": "09000150",
+     "parentasset": "DL-BE-30000"
+    }
+   }
+  },
+  {
+   "assetId": "GEO-BG-30030",
+   "states": {
+    "2016-09-02": {
+     "status": "InCalibration",
+     "lifecycle": "Active",
+     "currentlocation": "Montreal Calibration",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4643 Oxford Mill Lane",
+     "custodian": null,
+     "currentproject": "09000117",
+     "parentasset": "DL-BE-30040"
+    },
+    "2025-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "bartek.makinen@englobecorp.com",
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "3204 Erie Shore Drive",
+     "custodian": null,
+     "currentproject": "09000078",
+     "parentasset": "DL-BE-30052"
+    }
+   }
+  },
+  {
+   "assetId": "SLM-S50-500001",
+   "states": {
+    "2016-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "mathilde.quintero@englobecorp.com",
+     "currentproject": "09000205",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": "finlay.achterberg@englobecorp.com",
+     "currentproject": "09000205",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "SLM-S50-500007",
+   "states": {
+    "2021-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "bianca.haugen@englobecorp.com",
+     "currentproject": "09000134",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "josee.belanger@englobecorp.com",
+     "currentproject": "09000201",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30034",
+   "states": {
+    "2016-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "renata.gagnon@englobecorp.com",
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "SWO",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4419 Fanshawe Ridge",
+     "custodian": null,
+     "currentproject": "09000220",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Retired",
+     "lifecycle": "Retired",
+     "currentlocation": null,
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "DL-BE-30040",
+   "states": {
+    "2016-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "SWO",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "4643 Oxford Mill Lane",
+     "custodian": null,
+     "currentproject": "09000117",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Retired",
+     "lifecycle": "Retired",
+     "currentlocation": null,
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Retired",
+     "lifecycle": "Retired",
+     "currentlocation": null,
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "SLM-LD-EL-700000",
+   "states": {
+    "2016-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "emeka.reyes@englobecorp.com",
+     "currentproject": "09000037",
+     "parentasset": "SLM-LD-5000000"
+    },
+    "2021-09-02": {
+     "status": "NeedsRepair",
+     "lifecycle": "Active",
+     "currentlocation": "Toronto",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": "SLM-LD-5000000"
+    },
+    "2025-09-02": {
+     "status": "Retired",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": "SLM-LD-5000000"
+    },
+    "2026-09-02": {
+     "status": "Retired",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": "SLM-LD-5000000"
+    }
+   }
+  },
+  {
+   "assetId": "DST-5004",
+   "states": {
+    "2016-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Ottawa",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "TMP-5001",
+   "states": {
+    "2016-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "2541 Birchmount Terrace",
+     "custodian": null,
+     "currentproject": "09000011",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1572 Danforth Ridge Road",
+     "custodian": null,
+     "currentproject": "09000150",
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1231 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000102",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Deployed",
+     "lifecycle": "Active",
+     "currentlocation": "1231 Lakeshore Viaduct Road",
+     "custodian": null,
+     "currentproject": "09000102",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "CAM-7000001",
+   "states": {
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Toronto",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "owen.okonkwo@englobecorp.com",
+     "currentproject": "09000160",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Missing",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "owen.okonkwo@englobecorp.com",
+     "currentproject": "09000160",
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "VWR-E-2000000",
+   "states": {
+    "2016-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Toronto",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Toronto",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "fatima.nascimento@englobecorp.com",
+     "currentproject": "09000212",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Toronto",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    }
+   }
+  },
+  {
+   "assetId": "SLM-S50-500000",
+   "states": {
+    "2016-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "bianca.haugen@englobecorp.com",
+     "currentproject": "09000018",
+     "parentasset": null
+    },
+    "2021-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    },
+    "2025-09-02": {
+     "status": "CheckedOut",
+     "lifecycle": "Active",
+     "currentlocation": null,
+     "custodian": "bianca.haugen@englobecorp.com",
+     "currentproject": "09000201",
+     "parentasset": null
+    },
+    "2026-09-02": {
+     "status": "Available",
+     "lifecycle": "Active",
+     "currentlocation": "Sudbury",
+     "custodian": null,
+     "currentproject": null,
+     "parentasset": null
+    }
+   }
+  }
+ ],
+ "probeProjects": [
+  {
+   "projectnumber": "09000168",
+   "assignedAtAsOf": [
+    "DL-BE-30001",
+    "DL-BE-30038",
+    "GEO-BG-30000"
+   ],
+   "everUsed": [
+    "CAM-7100000",
+    "DL-BE-30001",
+    "DL-BE-30006",
+    "DL-BE-30007",
+    "DL-BE-30022",
+    "DL-BE-30032",
+    "DL-BE-30038",
+    "DL-BE-30059",
+    "DL-D10-300002",
+    "DL-D10-300004",
+    "DL-UM-40010",
+    "DL-UM-40015",
+    "DL-UM-40020",
+    "DL-UM-40037",
+    "DL-UM-40038",
+    "GEO-BG-30000",
+    "GEO-C22-450000",
+    "GEO-C22-450001",
+    "GEO-UM-40014",
+    "GEO-UM-40015",
+    "GEO-UM-40020",
+    "GEO-UM-40037",
+    "GEO-UM-40038",
+    "GEO-V12-400008",
+    "GEO-V12-400009",
+    "SLM-S50-500006",
+    "SLM-S50-500008",
+    "SLM-S50-500011",
+    "SLM-S50-500016",
+    "SLM-S50-500019",
+    "TS-62000000",
+    "TS-62000001",
+    "VWR-70000"
+   ]
+  },
+  {
+   "projectnumber": "09000150",
+   "assignedAtAsOf": [
+    "DL-BE-30000",
+    "GEO-BG-30001",
+    "SLM-S50-500022"
+   ],
+   "everUsed": [
+    "AT-5001",
+    "AT-5002",
+    "CAM-7000001",
+    "DL-BE-30000",
+    "DL-BE-30003",
+    "DL-BE-30005",
+    "DL-BE-30016",
+    "DL-BE-30019",
+    "DL-BE-30024",
+    "DL-BE-30027",
+    "DL-BE-30046",
+    "DL-UM-40004",
+    "DL-UM-40012",
+    "DL-UM-40013",
+    "DL-UM-40031",
+    "DL-UM-40032",
+    "GEO-BG-30001",
+    "GEO-BG-30002",
+    "GEO-BG-30006",
+    "GEO-BG-30007",
+    "GEO-UM-40004",
+    "GEO-UM-40012",
+    "GEO-UM-40031",
+    "GEO-UM-40032",
+    "GoPro-C90000000",
+    "MDM-3000000009",
+    "MDM-3000000012",
+    "MEMS-DP6000",
+    "SLM-LD-5000000",
+    "SLM-S50-500013",
+    "SLM-S50-500014",
+    "SLM-S50-500015",
+    "SLM-S50-500022",
+    "SLM-S50-500023",
+    "TMP-5001",
+    "TMP-5002",
+    "VWR-50000",
+    "VWR-E-2000000"
+   ]
+  },
+  {
+   "projectnumber": "09000221",
+   "assignedAtAsOf": [
+    "DL-BE-30002",
+    "DL-UM-40026",
+    "DL-UM-40037",
+    "GEO-UM-40026",
+    "GEO-UM-40037"
+   ],
+   "everUsed": [
+    "AQDS-900000",
+    "CAM-7100000",
+    "DL-BE-30001",
+    "DL-BE-30002",
+    "DL-BE-30026",
+    "DL-D10-300002",
+    "DL-UM-40002",
+    "DL-UM-40026",
+    "DL-UM-40028",
+    "DL-UM-40037",
+    "GEO-BG-30000",
+    "GEO-C22-450000",
+    "GEO-C22-450001",
+    "GEO-UM-40026",
+    "GEO-UM-40037",
+    "GEO-V12-400008",
+    "SLM-S50-500011"
+   ]
+  },
+  {
+   "projectnumber": "09000199",
+   "assignedAtAsOf": [
+    "DL-BE-30003",
+    "DL-BE-30005",
+    "DL-BE-30008",
+    "DL-BE-30010",
+    "GEO-BG-30008"
+   ],
+   "everUsed": [
+    "CAM-7000001",
+    "DL-BE-30000",
+    "DL-BE-30003",
+    "DL-BE-30005",
+    "DL-BE-30008",
+    "DL-BE-30010",
+    "DL-BE-30011",
+    "DL-BE-30019",
+    "DL-BE-30039",
+    "DL-D10-300005",
+    "DL-UM-40012",
+    "GEO-BG-30001",
+    "GEO-BG-30008",
+    "GEO-BG-30025",
+    "GEO-C22-450008",
+    "GEO-UM-40012",
+    "GEO-V12-400014",
+    "GoPro-C90000000",
+    "MEMS-DP6000",
+    "SLM-S50-500013",
+    "SLM-S50-500014",
+    "SLM-S50-500022",
+    "SLM-S50-500023",
+    "TLT-800000",
+    "TMP-5002"
+   ]
+  },
+  {
+   "projectnumber": "09000102",
+   "assignedAtAsOf": [
+    "DL-D10-300003",
+    "DL-D10-350005",
+    "DST-5041",
+    "DST-5063",
+    "GEO-BG-30006",
+    "GEO-C22-450003",
+    "GEO-V12-400000",
+    "GEO-V12-400016",
+    "TMP-5001"
+   ],
+   "everUsed": [
+    "AT-5001",
+    "AT-5002",
+    "CAM-7000001",
+    "DL-BE-30000",
+    "DL-BE-30003",
+    "DL-BE-30005",
+    "DL-BE-30008",
+    "DL-BE-30010",
+    "DL-BE-30011",
+    "DL-BE-30012",
+    "DL-BE-30016",
+    "DL-BE-30025",
+    "DL-BE-30027",
+    "DL-BE-30030",
+    "DL-BE-30039",
+    "DL-BE-30050",
+    "DL-D10-300003",
+    "DL-D10-300005",
+    "DL-D10-350005",
+    "DL-UM-40000",
+    "DL-UM-40004",
+    "DL-UM-40011",
+    "DL-UM-40013",
+    "DL-UM-40032",
+    "GEO-BG-30001",
+    "GEO-BG-30002",
+    "GEO-BG-30006",
+    "GEO-BG-30008",
+    "GEO-BG-30025",
+    "GEO-C22-450003",
+    "GEO-C22-450007",
+    "GEO-UM-40000",
+    "GEO-UM-40011",
+    "GEO-UM-40032",
+    "GEO-V12-400000",
+    "GEO-V12-400004",
+    "GEO-V12-400006",
+    "GEO-V12-400016",
+    "GoPro-C90000000",
+    "MDM-3000000005",
+    "MEMS-DP6000",
+    "SLM-LD-5000000",
+    "SLM-S50-500004",
+    "SLM-S50-500013",
+    "SLM-S50-500014",
+    "SLM-S50-500015",
+    "SLM-S50-500020",
+    "SLM-S50-500022",
+    "TMP-5001",
+    "TMP-5002",
+    "VWR-50000",
+    "VWR-E-2000000"
+   ]
+  },
+  {
+   "projectnumber": "09000088",
+   "assignedAtAsOf": [
+    "DL-BE-30007",
+    "DL-BE-30042",
+    "DL-UM-40028",
+    "GEO-BG-30012"
+   ],
+   "everUsed": [
+    "AQDS-900000",
+    "AQDS-900001",
+    "CAM-7100000",
+    "DL-BE-30002",
+    "DL-BE-30006",
+    "DL-BE-30007",
+    "DL-BE-30009",
+    "DL-BE-30022",
+    "DL-BE-30026",
+    "DL-BE-30031",
+    "DL-BE-30032",
+    "DL-BE-30038",
+    "DL-BE-30042",
+    "DL-BE-30044",
+    "DL-BE-30054",
+    "DL-BE-30059",
+    "DL-D10-300004",
+    "DL-D10-350002",
+    "DL-UM-40002",
+    "DL-UM-40010",
+    "DL-UM-40014",
+    "DL-UM-40017",
+    "DL-UM-40018",
+    "DL-UM-40021",
+    "DL-UM-40026",
+    "DL-UM-40028",
+    "DL-UM-40029",
+    "DL-UM-40037",
+    "GEO-BG-30004",
+    "GEO-BG-30012",
+    "GEO-BG-30021",
+    "GEO-BG-30028",
+    "GEO-UM-40002",
+    "GEO-UM-40003",
+    "GEO-UM-40010",
+    "GEO-UM-40017",
+    "GEO-UM-40018",
+    "GEO-UM-40026",
+    "GEO-UM-40028",
+    "GEO-UM-40029",
+    "GEO-UM-40037",
+    "GEO-V12-400009",
+    "MDM-3000000000",
+    "MDM-3000000006",
+    "SLM-S50-500008",
+    "SLM-S50-500011",
+    "SLM-S50-500012",
+    "SLM-S50-500016",
+    "SLM-S50-500019",
+    "TS-62000000",
+    "TS-62000001",
+    "VWR-70000"
+   ]
+  },
+  {
+   "projectnumber": "09000109",
+   "assignedAtAsOf": [
+    "DL-BE-30009",
+    "DL-BE-30059",
+    "DL-D10-350002",
+    "DST-5056",
+    "GEO-BG-30021",
+    "SLM-S50-500011",
+    "SLM-S50-500024"
+   ],
+   "everUsed": [
+    "AQDS-900000",
+    "AQDS-900001",
+    "CAM-7100000",
+    "DL-BE-30006",
+    "DL-BE-30009",
+    "DL-BE-30018",
+    "DL-BE-30022",
+    "DL-BE-30032",
+    "DL-BE-30038",
+    "DL-BE-30042",
+    "DL-BE-30045",
+    "DL-BE-30059",
+    "DL-D10-300004",
+    "DL-D10-350000",
+    "DL-D10-350002",
+    "DL-UM-40014",
+    "DL-UM-40017",
+    "DL-UM-40028",
+    "DL-UM-40029",
+    "DL-UM-40030",
+    "DL-UM-40037",
+    "GEO-BG-30004",
+    "GEO-BG-30020",
+    "GEO-BG-30021",
+    "GEO-BG-30028",
+    "GEO-UM-40003",
+    "GEO-UM-40017",
+    "GEO-UM-40028",
+    "GEO-UM-40029",
+    "GEO-UM-40030",
+    "GEO-UM-40037",
+    "GEO-V12-400012",
+    "GEO-V12-400013",
+    "MDM-3000000010",
+    "SLM-S50-500008",
+    "SLM-S50-500011",
+    "SLM-S50-500012",
+    "SLM-S50-500016",
+    "SLM-S50-500019",
+    "SLM-S50-500024",
+    "TS-62000000",
+    "VWR-70000"
+   ]
+  },
+  {
+   "projectnumber": "09000160",
+   "assignedAtAsOf": [
+    "CAM-7000001",
+    "DL-BE-30011",
+    "DL-D10-350008",
+    "DL-UM-40032",
+    "DL-UM-40039",
+    "DST-5073",
+    "GEO-BG-30025",
+    "GEO-C22-450008",
+    "GEO-UM-40032",
+    "GEO-UM-40039",
+    "GEO-V12-400014",
+    "SLM-S50-500014"
+   ],
+   "everUsed": [
+    "AT-5001",
+    "AT-5002",
+    "CAM-7000001",
+    "DL-BE-30000",
+    "DL-BE-30010",
+    "DL-BE-30011",
+    "DL-BE-30016",
+    "DL-BE-30024",
+    "DL-BE-30027",
+    "DL-BE-30030",
+    "DL-BE-30037",
+    "DL-BE-30061",
+    "DL-D10-350005",
+    "DL-D10-350008",
+    "DL-UM-40004",
+    "DL-UM-40011",
+    "DL-UM-40013",
+    "DL-UM-40032",
+    "DL-UM-40039",
+    "GEO-BG-30001",
+    "GEO-BG-30007",
+    "GEO-BG-30019",
+    "GEO-BG-30025",
+    "GEO-C22-450003",
+    "GEO-C22-450005",
+    "GEO-C22-450008",
+    "GEO-UM-40004",
+    "GEO-UM-40032",
+    "GEO-UM-40039",
+    "GEO-V12-400014",
+    "GoPro-C90000000",
+    "MDM-3000000009",
+    "MEMS-DP6000",
+    "SLM-S50-500004",
+    "SLM-S50-500013",
+    "SLM-S50-500014",
+    "SLM-S50-500015",
+    "SLM-S50-500022",
+    "SLM-S50-500023",
+    "TMP-5001",
+    "TMP-5002",
+    "VWR-E-2000000"
+   ]
+  },
+  {
+   "projectnumber": "09000247",
+   "assignedAtAsOf": [
+    "DL-BE-30013",
+    "GEO-BG-30011"
+   ],
+   "everUsed": [
+    "DL-BE-30013",
+    "GEO-BG-30011",
+    "SLM-S50-500000"
+   ]
+  },
+  {
+   "projectnumber": "09000201",
+   "assignedAtAsOf": [
+    "DL-BE-30014",
+    "GEO-BG-30029",
+    "SLM-S50-500007"
+   ],
+   "everUsed": [
+    "DL-BE-30014",
+    "DL-BE-30017",
+    "DL-BE-30055",
+    "GEO-BG-30029",
+    "SLM-S50-500000",
+    "SLM-S50-500001",
+    "SLM-S50-500007",
+    "SLM-S50-500010",
+    "SLM-S50-500017"
+   ]
+  }
+ ],
+ "probeSites": [
+  {
+   "site": "4635 Sheridan Mews",
+   "installationId": "12223941-1077-5cdc-83dd-db3e2440bab6",
+   "asOf": "2022-09-09T09:17:12Z",
+   "components": [
+    {
+     "asset": "DL-D10-300005",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450003",
+     "kitrole": "Sensor1",
+     "orientation": "S"
+    },
+    {
+     "asset": "GEO-V12-400004",
+     "kitrole": "Sensor2",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-V12-400006",
+     "kitrole": "Sensor3",
+     "orientation": "BH"
+    },
+    {
+     "asset": "SLM-S50-500020",
+     "kitrole": "Microphone",
+     "orientation": null
+    }
+   ]
+  },
+  {
+   "site": "1231 Lakeshore Viaduct Road",
+   "installationId": "246df3cc-1b27-5f01-985f-c94f06984df7",
+   "asOf": "2026-03-17T16:03:46Z",
+   "components": [
+    {
+     "asset": "DL-D10-300005",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450007",
+     "kitrole": "Sensor3",
+     "orientation": "BH"
+    },
+    {
+     "asset": "GEO-V12-400004",
+     "kitrole": "Sensor1",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-V12-400006",
+     "kitrole": "Sensor2",
+     "orientation": "N"
+    },
+    {
+     "asset": "SLM-S50-500020",
+     "kitrole": "Microphone",
+     "orientation": null
+    }
+   ]
+  },
+  {
+   "site": "2256 Ashgrove Terrace",
+   "installationId": "2bda753d-5c8a-53c1-8470-7a1023e0f6c2",
+   "asOf": "2025-11-25T08:05:30Z",
+   "components": [
+    {
+     "asset": "DL-D10-300002",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450000",
+     "kitrole": "Sensor1",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-C22-450001",
+     "kitrole": "Sensor2",
+     "orientation": "W"
+    },
+    {
+     "asset": "GEO-V12-400008",
+     "kitrole": "Sensor3",
+     "orientation": "V"
+    },
+    {
+     "asset": "SLM-S50-500006",
+     "kitrole": "Microphone",
+     "orientation": null
+    }
+   ]
+  },
+  {
+   "site": "3384 Lawrence Heights Road",
+   "installationId": "63c2188b-2c96-592a-8042-2cb61d2449f0",
+   "asOf": "2025-02-25T15:58:17Z",
+   "components": [
+    {
+     "asset": "DL-D10-350005",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450003",
+     "kitrole": "Sensor1",
+     "orientation": "V"
+    },
+    {
+     "asset": "GEO-C22-450005",
+     "kitrole": "Sensor2",
+     "orientation": "W"
+    },
+    {
+     "asset": "GEO-C22-450008",
+     "kitrole": "Sensor3",
+     "orientation": "H"
+    },
+    {
+     "asset": "SLM-S50-500014",
+     "kitrole": "Microphone",
+     "orientation": null
+    }
+   ]
+  },
+  {
+   "site": "3354 Grist Mill Lane",
+   "installationId": "66c6d212-394c-50c8-8af4-f0a8f76d5db7",
+   "asOf": "2022-05-29T17:02:19Z",
+   "components": [
+    {
+     "asset": "DL-D10-300002",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450000",
+     "kitrole": "Sensor1",
+     "orientation": "W"
+    },
+    {
+     "asset": "GEO-C22-450001",
+     "kitrole": "Sensor2",
+     "orientation": "BH"
+    },
+    {
+     "asset": "GEO-V12-400008",
+     "kitrole": "Sensor3",
+     "orientation": "E"
+    },
+    {
+     "asset": "SLM-S50-500006",
+     "kitrole": "Microphone",
+     "orientation": null
+    }
+   ]
+  },
+  {
+   "site": "4240 Stonebridge Court",
+   "installationId": "ea49b300-45f1-5768-87fd-c6f42d11ad7e",
+   "asOf": "2024-01-08T21:35:42Z",
+   "components": [
+    {
+     "asset": "DL-D10-300002",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450000",
+     "kitrole": "Sensor1",
+     "orientation": "S"
+    },
+    {
+     "asset": "GEO-C22-450001",
+     "kitrole": "Sensor2",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-V12-400008",
+     "kitrole": "Sensor3",
+     "orientation": "S"
+    },
+    {
+     "asset": "SLM-S50-500006",
+     "kitrole": "Microphone",
+     "orientation": null
+    }
+   ]
+  },
+  {
+   "site": "2302 Kettle Creek Road",
+   "installationId": "1cfe991c-34b3-582f-841f-0623547f788a",
+   "asOf": "2024-12-07T04:33:30Z",
+   "components": [
+    {
+     "asset": "DL-D10-300002",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450000",
+     "kitrole": "Sensor1",
+     "orientation": "V"
+    },
+    {
+     "asset": "GEO-C22-450001",
+     "kitrole": "Sensor2",
+     "orientation": "S"
+    },
+    {
+     "asset": "GEO-V12-400008",
+     "kitrole": "Sensor3",
+     "orientation": "W"
+    }
+   ]
+  },
+  {
+   "site": "4380 Wexford Drive",
+   "installationId": "2a111c96-0525-5e3f-976b-52cc47a680f6",
+   "asOf": "2026-06-29T07:03:50Z",
+   "components": [
+    {
+     "asset": "DL-D10-350008",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450008",
+     "kitrole": "Sensor1",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-V12-400014",
+     "kitrole": "Sensor2",
+     "orientation": "N"
+    },
+    {
+     "asset": "SLM-S50-500014",
+     "kitrole": "Microphone",
+     "orientation": null
+    }
+   ]
+  },
+  {
+   "site": "748 Sheridan Mews",
+   "installationId": "39e8e955-d04e-5892-8b47-0e9b6da94e15",
+   "asOf": "2021-04-23T06:48:27Z",
+   "components": [
+    {
+     "asset": "DL-D10-300005",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-V12-400003",
+     "kitrole": "Sensor1",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-V12-400004",
+     "kitrole": "Sensor2",
+     "orientation": "W"
+    },
+    {
+     "asset": "GEO-V12-400006",
+     "kitrole": "Sensor3",
+     "orientation": "S"
+    }
+   ]
+  },
+  {
+   "site": "4511 Ironwood Crescent",
+   "installationId": "5731d12c-5ed9-5286-b0c1-d6d1ac53a49e",
+   "asOf": "2019-12-08T08:10:17Z",
+   "components": [
+    {
+     "asset": "DL-D10-300002",
+     "kitrole": "Primary",
+     "orientation": null
+    },
+    {
+     "asset": "GEO-C22-450000",
+     "kitrole": "Sensor1",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-C22-450001",
+     "kitrole": "Sensor2",
+     "orientation": "H"
+    },
+    {
+     "asset": "GEO-V12-400008",
+     "kitrole": "Sensor3",
+     "orientation": "E"
+    }
+   ]
+  }
+ ]
+}

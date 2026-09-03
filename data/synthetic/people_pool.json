@@ -1,0 +1,30 @@
+{
+  "_comment": "Fictional name pools for the roster. FR-003: make-roster.ts refuses any combination whose family name, or whose full name, appears in the Staff column of data/source/registry_2026-09-02.csv. None of these are meant to be real Englobe staff; if one turns out to be, replace it here and regenerate.",
+  "given": [
+    "Priya", "Marcus", "Elodie", "Tomasz", "Aisha", "Declan", "Ingrid", "Rohan", "Chantal", "Yusuf",
+    "Mei", "Gavin", "Simone", "Anders", "Fatima", "Leonard", "Bianca", "Kwame", "Sasha", "Owen",
+    "Nadia", "Pierre-Luc", "Harriet", "Emeka", "Lucia", "Callum", "Ravi", "Josee", "Bartek", "Ayesha",
+    "Fergus", "Mathilde", "Dmitri", "Oluwaseun", "Renata", "Hamish", "Ines", "Kenji", "Solveig", "Tariq",
+    "Marguerite", "Lachlan", "Anika", "Theo", "Ngozi", "Wojciech", "Camille", "Idris", "Greta", "Sebastien",
+    "Amara", "Finlay", "Zofia", "Rashid", "Vivienne", "Kofi", "Helga", "Matteo", "Saoirse", "Arjun"
+  ],
+  "family": [
+    "Okafor", "Lindqvist", "Beaulieu", "Nakamura", "Petrov", "Whitfield", "Desrochers", "Adeyemi", "Castellano", "Brennan",
+    "Haugen", "Moreau", "Kowalczyk", "Fontaine", "Achterberg", "Oyelaran", "Marchetti", "Thibodeau", "Reyes", "Larsson",
+    "Nwosu", "Gagnon", "Kaur", "Jorgensen", "Belanger", "Mensah", "Halvorsen", "Ferreira", "Iqbal", "Sorensen",
+    "Lachance", "Okonkwo", "Dubois", "Vasquez", "Bergstrom", "Lefebvre", "Abara", "Cormier", "Delacroix", "Eriksen",
+    "Farouk", "Grzybowski", "Haddad", "Ivarsson", "Jankowski", "Kimathi", "Lauzon", "Makinen", "Nascimento", "Osei",
+    "Pellerin", "Quintero", "Rousseau", "Szabo", "Tanaka", "Umeh", "Vaillancourt", "Wisniewski", "Yilmaz", "Zielinski"
+  ],
+  "demo": [
+    { "upn": "tech@englobecorp.com",    "displayName": "Sam Tech",     "office": "Ottawa", "role": "FieldUser",   "start": "2019-03-04", "end": null },
+    { "upn": "admin@englobecorp.com",   "displayName": "Alex Admin",   "office": "Ottawa", "role": "OfficeAdmin", "start": "2014-06-02", "end": null },
+    { "upn": "svc-ams@englobecorp.com", "displayName": "System Owner", "office": "Ottawa", "role": "SystemOwner", "start": "2006-01-01", "end": null }
+  ],
+  "headcount": {
+    "_comment": "Active field technicians company-wide by year (docs/00-brief.md: 25–45 today). Interpolated between anchors. Administrators: one per active office, a second for Ottawa and Toronto from 2016.",
+    "technicians": { "2006": 8, "2010": 10, "2014": 16, "2018": 28, "2022": 36, "2026": 40 },
+    "meanTenureYears": 8,
+    "minTenureYears": 1
+  }
+}

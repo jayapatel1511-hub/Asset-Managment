@@ -18,7 +18,10 @@ Steps:
 3. Update `eng_asset`:
    - status = line.statusafter
    - Checkout / Deploy: custodian = txn.touser, currentproject = txn.toproject, currentlocation = txn.tolocation ?? (Deploy: site)
-   - Return / Undeploy: custodian = null, currentproject = null, currentlocation = txn.tolocation ?? asset.homeoffice
+   - Return: custodian = null, currentproject = null, currentlocation = txn.tolocation ?? asset.homeoffice
+   - Undeploy: custodian = txn.touser (the recovering user), currentlocation = null — the component is in someone's
+     custody, so its location is unknown until a later Return, exactly as for Checkout. *(Corrected 2026-09-02 per
+     feature 005 FR-013 and `docs/08-decisions.md`; `domain/deriveState.ts` already does this and F1 must match it.)*
    - Transfer: any of the three that are non-null on the txn
    - SendToCalibration: currentlocation = txn.tolocation (CalLab), custodian = null
    - ReturnFromCalibration: currentlocation = asset.homeoffice
@@ -44,7 +47,11 @@ transaction + line (performedby = record creator) so F1 moves it to Available. N
 
 **Trigger:** recurrence, daily 06:00 America/Toronto.
 Query Active assets where nextcaldue ≤ today+30 grouped by homeoffice. One Teams adaptive card + one email
-per office admin (role membership → `AMS Office Admin` for that office; mapping table in `data/reference/office_admins.csv`).
+per office admin. The office→administrator assignment is **derived from the location table at run time** (feature 004
+FR-027/FR-027a; WS-D's `OfficeAdminAssignment` in the app, a table or multi-select column in Dataverse pending Jay —
+`docs/08-decisions.md`), so a newly added office is covered without configuration and an office with no administrator
+is reported as a gap, not skipped. `data/reference/office_admins.csv` is superseded — do not read it. Delivery is
+best-effort (004 FR-032a): a Teams or email failure is logged and never fails the run.
 Flag ≤ 0 days as OVERDUE. Suppress if nothing due.
 
 ## F4 — Overdue returns

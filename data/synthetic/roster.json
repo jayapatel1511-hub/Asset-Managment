@@ -1,0 +1,986 @@
+[
+  {
+    "upn": "rashid.cormier@englobecorp.com",
+    "displayName": "Rashid Cormier",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2006-01-01",
+    "end": "2011-10-26"
+  },
+  {
+    "upn": "svc-ams@englobecorp.com",
+    "displayName": "System Owner",
+    "office": "Ottawa",
+    "role": "SystemOwner",
+    "start": "2006-01-01",
+    "end": null
+  },
+  {
+    "upn": "yusuf.belanger@englobecorp.com",
+    "displayName": "Yusuf Belanger",
+    "office": "Ottawa",
+    "role": "OfficeAdmin",
+    "start": "2006-01-01",
+    "end": "2014-06-02"
+  },
+  {
+    "upn": "gavin.nwosu@englobecorp.com",
+    "displayName": "Gavin Nwosu",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2007-01-12"
+  },
+  {
+    "upn": "ingrid.quintero@englobecorp.com",
+    "displayName": "Ingrid Quintero",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2013-09-14"
+  },
+  {
+    "upn": "kenji.yilmaz@englobecorp.com",
+    "displayName": "Kenji Yilmaz",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2010-05-03"
+  },
+  {
+    "upn": "mathilde.grzybowski@englobecorp.com",
+    "displayName": "Mathilde Grzybowski",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2016-05-13"
+  },
+  {
+    "upn": "pierre-luc.cormier@englobecorp.com",
+    "displayName": "Pierre-Luc Cormier",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2007-01-12"
+  },
+  {
+    "upn": "sebastien.lachance@englobecorp.com",
+    "displayName": "Sebastien Lachance",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2009-10-04"
+  },
+  {
+    "upn": "simone.ferreira@englobecorp.com",
+    "displayName": "Simone Ferreira",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2015-08-16"
+  },
+  {
+    "upn": "solveig.zielinski@englobecorp.com",
+    "displayName": "Solveig Zielinski",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2006-01-12",
+    "end": "2007-11-06"
+  },
+  {
+    "upn": "ines.zielinski@englobecorp.com",
+    "displayName": "Ines Zielinski",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2007-01-09",
+    "end": "2014-12-06"
+  },
+  {
+    "upn": "fergus.mensah@englobecorp.com",
+    "displayName": "Fergus Mensah",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2007-02-12",
+    "end": "2010-03-18"
+  },
+  {
+    "upn": "pierre-luc.mensah@englobecorp.com",
+    "displayName": "Pierre-Luc Mensah",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2007-02-12",
+    "end": "2009-11-08"
+  },
+  {
+    "upn": "mei.gagnon@englobecorp.com",
+    "displayName": "Mei Gagnon",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2007-11-06",
+    "end": "2011-04-17"
+  },
+  {
+    "upn": "elodie.whitfield@englobecorp.com",
+    "displayName": "Elodie Whitfield",
+    "office": "Sudbury",
+    "role": "OfficeAdmin",
+    "start": "2008-04-01",
+    "end": "2017-05-25"
+  },
+  {
+    "upn": "elodie.mensah@englobecorp.com",
+    "displayName": "Elodie Mensah",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2009-01-04",
+    "end": "2025-11-20"
+  },
+  {
+    "upn": "greta.larsson@englobecorp.com",
+    "displayName": "Greta Larsson",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2009-11-11",
+    "end": null
+  },
+  {
+    "upn": "kofi.reyes@englobecorp.com",
+    "displayName": "Kofi Reyes",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2009-11-11",
+    "end": "2016-02-25"
+  },
+  {
+    "upn": "josee.lindqvist@englobecorp.com",
+    "displayName": "Josee Lindqvist",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2010-03-24",
+    "end": "2011-09-29"
+  },
+  {
+    "upn": "vivienne.grzybowski@englobecorp.com",
+    "displayName": "Vivienne Grzybowski",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2010-05-11",
+    "end": "2015-06-29"
+  },
+  {
+    "upn": "harriet.osei@englobecorp.com",
+    "displayName": "Harriet Osei",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2010-06-13",
+    "end": "2025-02-01"
+  },
+  {
+    "upn": "bianca.haugen@englobecorp.com",
+    "displayName": "Bianca Haugen",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2011-01-13",
+    "end": null
+  },
+  {
+    "upn": "anders.lauzon@englobecorp.com",
+    "displayName": "Anders Lauzon",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2011-04-20",
+    "end": "2013-01-25"
+  },
+  {
+    "upn": "solveig.desrochers@englobecorp.com",
+    "displayName": "Solveig Desrochers",
+    "office": "SWO",
+    "role": "OfficeAdmin",
+    "start": "2011-06-01",
+    "end": "2012-05-31"
+  },
+  {
+    "upn": "simone.belanger@englobecorp.com",
+    "displayName": "Simone Belanger",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2011-09-24",
+    "end": "2021-02-21"
+  },
+  {
+    "upn": "pierre-luc.iqbal@englobecorp.com",
+    "displayName": "Pierre-Luc Iqbal",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2011-10-02",
+    "end": "2024-01-29"
+  },
+  {
+    "upn": "elodie.pellerin@englobecorp.com",
+    "displayName": "Elodie Pellerin",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2011-11-16",
+    "end": "2013-06-29"
+  },
+  {
+    "upn": "aisha.belanger@englobecorp.com",
+    "displayName": "Aisha Belanger",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2012-06-15",
+    "end": "2020-10-23"
+  },
+  {
+    "upn": "ravi.lachance@englobecorp.com",
+    "displayName": "Ravi Lachance",
+    "office": "SWO",
+    "role": "OfficeAdmin",
+    "start": "2012-06-28",
+    "end": "2017-10-09"
+  },
+  {
+    "upn": "chantal.quintero@englobecorp.com",
+    "displayName": "Chantal Quintero",
+    "office": "London",
+    "role": "OfficeAdmin",
+    "start": "2013-01-01",
+    "end": "2014-01-01"
+  },
+  {
+    "upn": "rashid.achterberg@englobecorp.com",
+    "displayName": "Rashid Achterberg",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2013-01-24",
+    "end": "2014-03-28"
+  },
+  {
+    "upn": "emeka.reyes@englobecorp.com",
+    "displayName": "Emeka Reyes",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2013-02-17",
+    "end": "2016-12-01"
+  },
+  {
+    "upn": "tomasz.thibodeau@englobecorp.com",
+    "displayName": "Tomasz Thibodeau",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2013-08-05",
+    "end": "2017-04-25"
+  },
+  {
+    "upn": "emeka.rousseau@englobecorp.com",
+    "displayName": "Emeka Rousseau",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2013-09-23",
+    "end": null
+  },
+  {
+    "upn": "marguerite.vasquez@englobecorp.com",
+    "displayName": "Marguerite Vasquez",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2013-09-23",
+    "end": "2019-09-10"
+  },
+  {
+    "upn": "harriet.gagnon@englobecorp.com",
+    "displayName": "Harriet Gagnon",
+    "office": "Kitchener",
+    "role": "OfficeAdmin",
+    "start": "2014-01-01",
+    "end": "2016-11-27"
+  },
+  {
+    "upn": "saoirse.nakamura@englobecorp.com",
+    "displayName": "Saoirse Nakamura",
+    "office": "London",
+    "role": "OfficeAdmin",
+    "start": "2014-01-26",
+    "end": null
+  },
+  {
+    "upn": "pierre-luc.jorgensen@englobecorp.com",
+    "displayName": "Pierre-Luc Jorgensen",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2014-03-06",
+    "end": "2026-04-22"
+  },
+  {
+    "upn": "matteo.nwosu@englobecorp.com",
+    "displayName": "Matteo Nwosu",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2014-04-10",
+    "end": null
+  },
+  {
+    "upn": "admin@englobecorp.com",
+    "displayName": "Alex Admin",
+    "office": "Ottawa",
+    "role": "OfficeAdmin",
+    "start": "2014-06-02",
+    "end": null
+  },
+  {
+    "upn": "fatima.lachance@englobecorp.com",
+    "displayName": "Fatima Lachance",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2014-07-17",
+    "end": null
+  },
+  {
+    "upn": "tariq.ferreira@englobecorp.com",
+    "displayName": "Tariq Ferreira",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2014-12-02",
+    "end": "2015-12-02"
+  },
+  {
+    "upn": "rohan.beaulieu@englobecorp.com",
+    "displayName": "Rohan Beaulieu",
+    "office": "Stoney Creek",
+    "role": "OfficeAdmin",
+    "start": "2015-01-01",
+    "end": null
+  },
+  {
+    "upn": "ines.delacroix@englobecorp.com",
+    "displayName": "Ines Delacroix",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2015-01-04",
+    "end": "2016-01-04"
+  },
+  {
+    "upn": "callum.reyes@englobecorp.com",
+    "displayName": "Callum Reyes",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2015-03-25",
+    "end": null
+  },
+  {
+    "upn": "ayesha.eriksen@englobecorp.com",
+    "displayName": "Ayesha Eriksen",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2015-07-14",
+    "end": "2016-07-13"
+  },
+  {
+    "upn": "theo.szabo@englobecorp.com",
+    "displayName": "Theo Szabo",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2015-07-14",
+    "end": "2017-06-27"
+  },
+  {
+    "upn": "chantal.moreau@englobecorp.com",
+    "displayName": "Chantal Moreau",
+    "office": "Stoney Creek",
+    "role": "FieldUser",
+    "start": "2015-09-12",
+    "end": "2021-12-03"
+  },
+  {
+    "upn": "dmitri.gagnon@englobecorp.com",
+    "displayName": "Dmitri Gagnon",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2015-12-17",
+    "end": "2019-01-25"
+  },
+  {
+    "upn": "kwame.grzybowski@englobecorp.com",
+    "displayName": "Kwame Grzybowski",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2015-12-17",
+    "end": null
+  },
+  {
+    "upn": "kofi.iqbal@englobecorp.com",
+    "displayName": "Kofi Iqbal",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2016-01-04",
+    "end": "2017-03-19"
+  },
+  {
+    "upn": "mathilde.farouk@englobecorp.com",
+    "displayName": "Mathilde Farouk",
+    "office": "Ottawa",
+    "role": "OfficeAdmin",
+    "start": "2016-01-04",
+    "end": null
+  },
+  {
+    "upn": "renata.gagnon@englobecorp.com",
+    "displayName": "Renata Gagnon",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2016-01-22",
+    "end": "2017-11-12"
+  },
+  {
+    "upn": "leonard.nascimento@englobecorp.com",
+    "displayName": "Leonard Nascimento",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2016-03-13",
+    "end": "2017-07-02"
+  },
+  {
+    "upn": "priya.halvorsen@englobecorp.com",
+    "displayName": "Priya Halvorsen",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2016-03-13",
+    "end": "2026-05-16"
+  },
+  {
+    "upn": "matteo.mensah@englobecorp.com",
+    "displayName": "Matteo Mensah",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2016-06-26",
+    "end": "2018-01-10"
+  },
+  {
+    "upn": "aisha.mensah@englobecorp.com",
+    "displayName": "Aisha Mensah",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2016-07-10",
+    "end": "2018-09-30"
+  },
+  {
+    "upn": "anika.jorgensen@englobecorp.com",
+    "displayName": "Anika Jorgensen",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2016-08-23",
+    "end": null
+  },
+  {
+    "upn": "elodie.beaulieu@englobecorp.com",
+    "displayName": "Elodie Beaulieu",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2016-12-10",
+    "end": "2023-09-04"
+  },
+  {
+    "upn": "emeka.kowalczyk@englobecorp.com",
+    "displayName": "Emeka Kowalczyk",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2016-12-10",
+    "end": "2024-03-01"
+  },
+  {
+    "upn": "sasha.moreau@englobecorp.com",
+    "displayName": "Sasha Moreau",
+    "office": "Waterloo",
+    "role": "OfficeAdmin",
+    "start": "2017-01-01",
+    "end": "2026-06-24"
+  },
+  {
+    "upn": "fergus.lindqvist@englobecorp.com",
+    "displayName": "Fergus Lindqvist",
+    "office": "Kitchener",
+    "role": "OfficeAdmin",
+    "start": "2017-01-08",
+    "end": "2021-09-22"
+  },
+  {
+    "upn": "owen.okonkwo@englobecorp.com",
+    "displayName": "Owen Okonkwo",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2017-03-24",
+    "end": null
+  },
+  {
+    "upn": "kenji.okafor@englobecorp.com",
+    "displayName": "Kenji Okafor",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2017-04-23",
+    "end": "2018-04-23"
+  },
+  {
+    "upn": "arjun.mensah@englobecorp.com",
+    "displayName": "Arjun Mensah",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2017-05-16",
+    "end": null
+  },
+  {
+    "upn": "ines.osei@englobecorp.com",
+    "displayName": "Ines Osei",
+    "office": "Sudbury",
+    "role": "OfficeAdmin",
+    "start": "2017-07-01",
+    "end": "2021-01-27"
+  },
+  {
+    "upn": "gavin.tanaka@englobecorp.com",
+    "displayName": "Gavin Tanaka",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2017-07-13",
+    "end": null
+  },
+  {
+    "upn": "yusuf.dubois@englobecorp.com",
+    "displayName": "Yusuf Dubois",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2017-07-13",
+    "end": null
+  },
+  {
+    "upn": "yusuf.wisniewski@englobecorp.com",
+    "displayName": "Yusuf Wisniewski",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2017-07-13",
+    "end": "2018-07-13"
+  },
+  {
+    "upn": "callum.moreau@englobecorp.com",
+    "displayName": "Callum Moreau",
+    "office": "Stoney Creek",
+    "role": "FieldUser",
+    "start": "2017-11-15",
+    "end": "2026-03-15"
+  },
+  {
+    "upn": "declan.nakamura@englobecorp.com",
+    "displayName": "Declan Nakamura",
+    "office": "SWO",
+    "role": "OfficeAdmin",
+    "start": "2017-11-21",
+    "end": "2022-07-06"
+  },
+  {
+    "upn": "kwame.lindqvist@englobecorp.com",
+    "displayName": "Kwame Lindqvist",
+    "office": "Waterloo",
+    "role": "FieldUser",
+    "start": "2017-12-26",
+    "end": null
+  },
+  {
+    "upn": "emeka.lindqvist@englobecorp.com",
+    "displayName": "Emeka Lindqvist",
+    "office": "Mississauga",
+    "role": "OfficeAdmin",
+    "start": "2018-01-01",
+    "end": "2019-01-01"
+  },
+  {
+    "upn": "sasha.whitfield@englobecorp.com",
+    "displayName": "Sasha Whitfield",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2018-02-14",
+    "end": null
+  },
+  {
+    "upn": "ines.farouk@englobecorp.com",
+    "displayName": "Ines Farouk",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2018-04-10",
+    "end": "2019-09-17"
+  },
+  {
+    "upn": "sebastien.rousseau@englobecorp.com",
+    "displayName": "Sebastien Rousseau",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2018-05-10",
+    "end": "2026-01-10"
+  },
+  {
+    "upn": "solveig.adeyemi@englobecorp.com",
+    "displayName": "Solveig Adeyemi",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2018-08-10",
+    "end": null
+  },
+  {
+    "upn": "bartek.achterberg@englobecorp.com",
+    "displayName": "Bartek Achterberg",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2018-10-05",
+    "end": null
+  },
+  {
+    "upn": "ines.nakamura@englobecorp.com",
+    "displayName": "Ines Nakamura",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2018-10-05",
+    "end": null
+  },
+  {
+    "upn": "amara.kaur@englobecorp.com",
+    "displayName": "Amara Kaur",
+    "office": "Mississauga",
+    "role": "OfficeAdmin",
+    "start": "2019-01-28",
+    "end": null
+  },
+  {
+    "upn": "rohan.vaillancourt@englobecorp.com",
+    "displayName": "Rohan Vaillancourt",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2019-02-21",
+    "end": "2022-04-04"
+  },
+  {
+    "upn": "tech@englobecorp.com",
+    "displayName": "Sam Tech",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2019-03-04",
+    "end": null
+  },
+  {
+    "upn": "elodie.kaur@englobecorp.com",
+    "displayName": "Elodie Kaur",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2019-09-12",
+    "end": "2024-01-14"
+  },
+  {
+    "upn": "fergus.ivarsson@englobecorp.com",
+    "displayName": "Fergus Ivarsson",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2019-10-14",
+    "end": null
+  },
+  {
+    "upn": "kwame.rousseau@englobecorp.com",
+    "displayName": "Kwame Rousseau",
+    "office": "London",
+    "role": "FieldUser",
+    "start": "2019-10-14",
+    "end": "2022-11-15"
+  },
+  {
+    "upn": "theo.lefebvre@englobecorp.com",
+    "displayName": "Theo Lefebvre",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2020-04-17",
+    "end": null
+  },
+  {
+    "upn": "rohan.marchetti@englobecorp.com",
+    "displayName": "Rohan Marchetti",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2020-10-15",
+    "end": "2026-01-15"
+  },
+  {
+    "upn": "mathilde.pellerin@englobecorp.com",
+    "displayName": "Mathilde Pellerin",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2020-11-21",
+    "end": null
+  },
+  {
+    "upn": "owen.marchetti@englobecorp.com",
+    "displayName": "Owen Marchetti",
+    "office": "Sudbury",
+    "role": "OfficeAdmin",
+    "start": "2021-02-09",
+    "end": null
+  },
+  {
+    "upn": "fergus.jorgensen@englobecorp.com",
+    "displayName": "Fergus Jorgensen",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2021-03-16",
+    "end": null
+  },
+  {
+    "upn": "leonard.kowalczyk@englobecorp.com",
+    "displayName": "Leonard Kowalczyk",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2021-04-22",
+    "end": "2024-05-15"
+  },
+  {
+    "upn": "hamish.haddad@englobecorp.com",
+    "displayName": "Hamish Haddad",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2021-10-15",
+    "end": null
+  },
+  {
+    "upn": "theo.thibodeau@englobecorp.com",
+    "displayName": "Theo Thibodeau",
+    "office": "Kitchener",
+    "role": "OfficeAdmin",
+    "start": "2021-10-25",
+    "end": "2024-04-20"
+  },
+  {
+    "upn": "rohan.kimathi@englobecorp.com",
+    "displayName": "Rohan Kimathi",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2021-12-12",
+    "end": "2023-01-30"
+  },
+  {
+    "upn": "hamish.brennan@englobecorp.com",
+    "displayName": "Hamish Brennan",
+    "office": "Thunder Bay",
+    "role": "OfficeAdmin",
+    "start": "2022-01-01",
+    "end": "2023-11-26"
+  },
+  {
+    "upn": "sebastien.moreau@englobecorp.com",
+    "displayName": "Sebastien Moreau",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2022-05-10",
+    "end": null
+  },
+  {
+    "upn": "matteo.thibodeau@englobecorp.com",
+    "displayName": "Matteo Thibodeau",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2022-07-05",
+    "end": "2023-07-05"
+  },
+  {
+    "upn": "anika.lauzon@englobecorp.com",
+    "displayName": "Anika Lauzon",
+    "office": "SWO",
+    "role": "OfficeAdmin",
+    "start": "2022-08-13",
+    "end": null
+  },
+  {
+    "upn": "emeka.eriksen@englobecorp.com",
+    "displayName": "Emeka Eriksen",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2022-12-13",
+    "end": null
+  },
+  {
+    "upn": "vivienne.halvorsen@englobecorp.com",
+    "displayName": "Vivienne Halvorsen",
+    "office": "Kitchener",
+    "role": "FieldUser",
+    "start": "2023-02-03",
+    "end": null
+  },
+  {
+    "upn": "josee.belanger@englobecorp.com",
+    "displayName": "Josee Belanger",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2023-07-03",
+    "end": null
+  },
+  {
+    "upn": "solveig.iqbal@englobecorp.com",
+    "displayName": "Solveig Iqbal",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2023-08-15",
+    "end": "2024-08-14"
+  },
+  {
+    "upn": "elodie.okonkwo@englobecorp.com",
+    "displayName": "Elodie Okonkwo",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2023-09-04",
+    "end": "2024-09-03"
+  },
+  {
+    "upn": "helga.lauzon@englobecorp.com",
+    "displayName": "Helga Lauzon",
+    "office": "Thunder Bay",
+    "role": "OfficeAdmin",
+    "start": "2023-12-29",
+    "end": null
+  },
+  {
+    "upn": "mathilde.quintero@englobecorp.com",
+    "displayName": "Mathilde Quintero",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2024-02-25",
+    "end": null
+  },
+  {
+    "upn": "oluwaseun.lauzon@englobecorp.com",
+    "displayName": "Oluwaseun Lauzon",
+    "office": "Stoney Creek",
+    "role": "FieldUser",
+    "start": "2024-02-25",
+    "end": "2026-08-07"
+  },
+  {
+    "upn": "declan.vasquez@englobecorp.com",
+    "displayName": "Declan Vasquez",
+    "office": "Kitchener",
+    "role": "FieldUser",
+    "start": "2024-03-15",
+    "end": null
+  },
+  {
+    "upn": "sasha.vaillancourt@englobecorp.com",
+    "displayName": "Sasha Vaillancourt",
+    "office": "Kitchener",
+    "role": "OfficeAdmin",
+    "start": "2024-05-22",
+    "end": null
+  },
+  {
+    "upn": "marguerite.farouk@englobecorp.com",
+    "displayName": "Marguerite Farouk",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2024-05-23",
+    "end": null
+  },
+  {
+    "upn": "bartek.makinen@englobecorp.com",
+    "displayName": "Bartek Makinen",
+    "office": "SWO",
+    "role": "FieldUser",
+    "start": "2024-07-24",
+    "end": null
+  },
+  {
+    "upn": "zofia.jorgensen@englobecorp.com",
+    "displayName": "Zofia Jorgensen",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2024-08-24",
+    "end": null
+  },
+  {
+    "upn": "rashid.oyelaran@englobecorp.com",
+    "displayName": "Rashid Oyelaran",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2024-09-20",
+    "end": null
+  },
+  {
+    "upn": "fatima.nascimento@englobecorp.com",
+    "displayName": "Fatima Nascimento",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2025-02-07",
+    "end": null
+  },
+  {
+    "upn": "greta.thibodeau@englobecorp.com",
+    "displayName": "Greta Thibodeau",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2025-07-04",
+    "end": null
+  },
+  {
+    "upn": "renata.delacroix@englobecorp.com",
+    "displayName": "Renata Delacroix",
+    "office": "Kitchener",
+    "role": "FieldUser",
+    "start": "2025-12-03",
+    "end": null
+  },
+  {
+    "upn": "gavin.osei@englobecorp.com",
+    "displayName": "Gavin Osei",
+    "office": "Toronto",
+    "role": "OfficeAdmin",
+    "start": "2026-01-23",
+    "end": null
+  },
+  {
+    "upn": "zofia.kimathi@englobecorp.com",
+    "displayName": "Zofia Kimathi",
+    "office": "Ottawa",
+    "role": "FieldUser",
+    "start": "2026-02-23",
+    "end": null
+  },
+  {
+    "upn": "finlay.achterberg@englobecorp.com",
+    "displayName": "Finlay Achterberg",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2026-04-20",
+    "end": null
+  },
+  {
+    "upn": "fatima.sorensen@englobecorp.com",
+    "displayName": "Fatima Sorensen",
+    "office": "Sudbury",
+    "role": "FieldUser",
+    "start": "2026-05-02",
+    "end": null
+  },
+  {
+    "upn": "greta.ferreira@englobecorp.com",
+    "displayName": "Greta Ferreira",
+    "office": "Kitchener",
+    "role": "FieldUser",
+    "start": "2026-06-10",
+    "end": null
+  },
+  {
+    "upn": "anika.castellano@englobecorp.com",
+    "displayName": "Anika Castellano",
+    "office": "Waterloo",
+    "role": "OfficeAdmin",
+    "start": "2026-08-05",
+    "end": null
+  },
+  {
+    "upn": "marcus.kowalczyk@englobecorp.com",
+    "displayName": "Marcus Kowalczyk",
+    "office": "Toronto",
+    "role": "FieldUser",
+    "start": "2026-08-19",
+    "end": null
+  }
+]

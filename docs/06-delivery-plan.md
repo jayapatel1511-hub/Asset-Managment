@@ -5,7 +5,14 @@ in Dev with real migrated data — every screen should be built against actual O
 
 ## Step 0 — Human prerequisites (Jay / IT) — blocks everything
 - [ ] **Power Apps Premium licence for every END USER who runs the app** — not just makers. Code apps
-      require it to *play*, so that is all 25–45 technicians plus admins. Confirm count and SKU
+      require it to *play*, so that is all 25–45 technicians plus admins. Confirm count and SKU.
+      **Dominant cost of the programme** — see `docs/10-integration.md` § Licensing
+- [ ] **Flow licensing for `svc-ams`**: either Power Automate Premium on the account, or a Power
+      Automate Process licence per flow (our flows are solution-aware, so Process is available).
+      Dataverse is a premium connector, so one of the two is mandatory
+- [ ] **Power BI reader licensing decided**: Pro per reader, or free readers on a Fabric F64+
+      capacity. Depends on Q11 (who needs access) and on whether any Fabric capacity is permanent
+      rather than a trial
 - [ ] **Code apps enabled on both environments**: Power Platform admin center → Manage → Environments
       → *env* → Settings → Product → Features → "Power Apps code apps" → Enable → Save. Blocks
       `pa app init` entirely (docs/10-integration.md § Hosting)

@@ -1,0 +1,660 @@
+LocationName,LocationType,ParentLocationName,IsActive,Latitude,Longitude
+Ontario,Region,,TRUE,,
+Ottawa,Office,Ontario,TRUE,,
+Toronto,Office,Ontario,TRUE,,
+Sudbury,Office,Ontario,TRUE,,
+SWO,Office,Ontario,TRUE,,
+London,Office,Ontario,TRUE,,
+Kitchener,Office,Ontario,TRUE,,
+Waterloo,Office,Ontario,TRUE,,
+Stoney Creek,Office,Ontario,TRUE,,
+Mississauga,Office,Ontario,TRUE,,
+Thunder Bay,Office,Ontario,TRUE,,
+Montreal Calibration,CalLab,,TRUE,,
+Unassigned,Storage,Ontario,TRUE,,
+116 Lawrence Heights Road,Site,,TRUE,43.38443,-79.57335
+4175 Bellamy Ridge Road,Site,,TRUE,45.28113,-76.06525
+2813 Lakeshore Viaduct Road,Site,,TRUE,43.76607,-79.62351
+1551 Sheridan Mews,Site,,TRUE,43.88681,-79.52852
+75 Ironwood Crescent,Site,,TRUE,45.5452,-75.25733
+Marchmont Interchange Pier 4,Site,,TRUE,45.27345,-75.46226
+1898 Eastgate Boulevard,Site,,TRUE,43.73896,-79.7671
+Westgate LRT Shaft 2,Site,,TRUE,45.68743,-76.02014
+4625 Danforth Ridge Road,Site,,TRUE,43.67197,-79.28308
+Kanata North Substation,Site,,TRUE,45.25918,-75.68052
+4534 Copperhead Road,Site,,TRUE,45.17507,-75.35565
+Airport Corridor Guideway Segment 12,Site,,TRUE,43.64237,-79.11736
+2815 Silverbirch Parkway,Site,,TRUE,45.35247,-75.93498
+Harbourview Condominium Excavation,Site,,TRUE,43.58669,-79.16688
+Lakeshore Viaduct Pier 7,Site,,TRUE,44.10374,-79.0652
+Midtown Relief Sewer Shaft 3,Site,,TRUE,43.65334,-79.41232
+1665 Silverbirch Parkway,Site,,TRUE,44.8263,-75.82292
+1469 Lakeshore Viaduct Road,Site,,TRUE,43.39345,-79.18479
+573 Portlands Way,Site,,TRUE,43.67084,-79.00421
+4514 Nickel Belt Road,Site,,TRUE,46.59516,-81.10543
+2541 Birchmount Terrace,Site,,TRUE,43.55368,-79.23028
+640 Sheridan Mews,Site,,TRUE,43.56182,-79.77025
+Greenbelt Trunk Sewer Shaft B,Site,,TRUE,45.57141,-75.86998
+Junction Rail Underpass,Site,,TRUE,43.86025,-80.07426
+Copper Ridge Crusher Pad,Site,,TRUE,46.46858,-80.52075
+2633 Shaft Road,Site,,TRUE,46.61363,-80.93775
+Greyrock Mine Portal,Site,,TRUE,46.44574,-81.3131
+Eastgate Transit Station Box,Site,,TRUE,44.17577,-79.501
+3022 Wexford Drive,Site,,TRUE,43.32538,-79.19622
+4471 Frood Extension Road,Site,,TRUE,46.4666,-80.60335
+4101 Portlands Way,Site,,TRUE,43.49094,-79.46619
+2417 Lily Creek Drive,Site,,TRUE,46.36649,-80.30202
+4179 Old Quarry Road,Site,,TRUE,45.11622,-76.01385
+2450 Fenwick Street,Site,,TRUE,45.46676,-75.90585
+3410 Stonebridge Court,Site,,TRUE,46.06301,-75.71714
+4464 Greyrock Mine Road,Site,,TRUE,46.31018,-81.14086
+4008 Lakeshore Viaduct Road,Site,,TRUE,44.03884,-79.66445
+2546 Grist Mill Lane,Site,,TRUE,45.52438,-75.40966
+Portlands Flood Channel,Site,,TRUE,43.48543,-79.34855
+Northline Hospital Redevelopment,Site,,TRUE,44.12705,-79.60683
+2864 Birchmount Terrace,Site,,TRUE,43.69372,-78.90073
+1111 Harbourview Lane,Site,,TRUE,43.64408,-79.18503
+2847 Stonebridge Court,Site,,TRUE,45.40418,-75.61812
+1369 Grist Mill Lane,Site,,TRUE,45.62518,-75.31401
+1387 Portlands Way,Site,,TRUE,43.6428,-78.50193
+Kelly Lake Dam Spillway,Site,,TRUE,46.36944,-81.10335
+3962 Lawrence Heights Road,Site,,TRUE,43.91928,-79.54747
+2019 Humberline Court,Site,,TRUE,43.45956,-79.09592
+1556 Danforth Ridge Road,Site,,TRUE,43.39395,-79.18221
+3915 Lawrence Heights Road,Site,,TRUE,43.62033,-79.31535
+497 Fenwick Street,Site,,TRUE,45.70763,-75.94189
+2924 Larkspur Way,Site,,TRUE,45.34679,-75.65667
+4600 Bellamy Ridge Road,Site,,TRUE,45.37019,-76.07358
+223 Wexford Drive,Site,,TRUE,43.47899,-79.38984
+Fallowfield Quarry East Bench,Site,,TRUE,45.11791,-75.57677
+3430 Birchmount Terrace,Site,,TRUE,43.624,-79.3907
+1602 Danforth Ridge Road,Site,,TRUE,43.55531,-79.12476
+1894 Kettle Creek Road,Site,,TRUE,45.49029,-76.26197
+Rideau Bend Rail Grade Separation,Site,,TRUE,45.58032,-75.74135
+2236 Danforth Ridge Road,Site,,TRUE,43.35034,-79.23416
+2154 Queensway Ridge,Site,,TRUE,43.84685,-78.88783
+257 Lawrence Heights Road,Site,,TRUE,43.46976,-79.76611
+Chapel Hill Overpass,Site,,TRUE,45.43744,-75.92018
+2661 Nickel Belt Road,Site,,TRUE,46.61339,-80.78361
+1885 Nickel Belt Road,Site,,TRUE,46.33191,-80.58783
+4288 Lawrence Heights Road,Site,,TRUE,43.84045,-79.28067
+3819 Birchmount Terrace,Site,,TRUE,43.55555,-80.74692
+2997 Conestoga Parkway Extension,Site,,TRUE,42.87839,-81.39932
+2160 Stonebridge Court,Site,,TRUE,44.94184,-75.44373
+1020 Birchmount Terrace,Site,,TRUE,43.79163,-79.58373
+Boreal Pit Bench 4,Site,,TRUE,46.65491,-81.40532
+3768 Harrow Gate Drive,Site,,TRUE,45.24466,-75.48291
+4579 Conestoga Parkway Extension,Site,,TRUE,43.04529,-80.5707
+4181 Danforth Ridge Road,Site,,TRUE,43.79277,-79.26862
+1855 Lakeshore Viaduct Road,Site,,TRUE,43.60546,-79.71515
+2261 Queensway Ridge,Site,,TRUE,43.76085,-78.97913
+808 Eastgate Boulevard,Site,,TRUE,42.97667,-79.39197
+3742 Wexford Drive,Site,,TRUE,43.75411,-78.66161
+4512 Lawrence Heights Road,Site,,TRUE,43.66865,-79.55795
+2423 Eastgate Boulevard,Site,,TRUE,43.06185,-79.24714
+2695 Willowdale Crescent,Site,,TRUE,43.52007,-79.52573
+3291 Thames Valley Road,Site,,TRUE,43.11937,-81.1133
+1891 Portlands Way,Site,,TRUE,43.87278,-78.64939
+2765 Danforth Ridge Road,Site,,TRUE,43.06684,-79.06731
+Frood Extension Ventilation Raise,Site,,TRUE,46.5678,-81.06001
+4183 Eastgate Boulevard,Site,,TRUE,43.84975,-79.41647
+Grand River Bridge Pier 2,Site,,TRUE,43.36675,-80.39224
+Conestoga Interchange Abutment,Site,,TRUE,43.73529,-81.11031
+1767 Lakeshore Viaduct Road,Site,,TRUE,44.01584,-79.01002
+4611 Larkspur Way,Site,,TRUE,45.55257,-75.96874
+49 Kettle Creek Road,Site,,TRUE,45.47292,-75.50638
+2997 Harrow Gate Drive,Site,,TRUE,45.49533,-76.07264
+2759 Ashgrove Terrace,Site,,TRUE,45.60598,-75.38668
+Erie Shore Wind Farm Access,Site,,TRUE,42.93471,-80.57994
+705 Eastgate Boulevard,Site,,TRUE,43.58539,-79.54898
+4872 Harbourview Lane,Site,,TRUE,43.41533,-79.5219
+2590 Pinery Road,Site,,TRUE,43.11217,-80.89004
+3321 Kettle Creek Road,Site,,TRUE,45.52812,-75.88975
+2313 Eastgate Boulevard,Site,,TRUE,43.46432,-80.03738
+2709 Lakeshore Viaduct Road,Site,,TRUE,43.73485,-79.32257
+2071 Lawrence Heights Road,Site,,TRUE,43.58293,-79.8293
+2948 Kettle Creek Road,Site,,TRUE,45.27062,-75.09693
+2036 Thames Valley Road,Site,,TRUE,42.61947,-81.08685
+3930 Danforth Ridge Road,Site,,TRUE,43.21361,-79.78161
+2216 Fenwick Street,Site,,TRUE,45.43303,-75.7203
+1755 Thames Valley Road,Site,,TRUE,43.3255,-80.90905
+4154 Millrace Avenue,Site,,TRUE,45.48068,-76.11403
+Pinery Quarry North Face,Site,,TRUE,42.56144,-80.96331
+2750 Highbury Crossing,Site,,TRUE,43.03568,-80.70621
+4622 Bellamy Ridge Road,Site,,TRUE,45.57007,-75.73028
+670 Ironwood Crescent,Site,,TRUE,45.1008,-75.77908
+3864 Silverbirch Parkway,Site,,TRUE,45.40619,-75.16735
+836 Sheridan Mews,Site,,TRUE,44.04827,-79.23403
+943 Kelly Lake Line,Site,,TRUE,46.65881,-81.51853
+1608 Lakeshore Viaduct Road,Site,,TRUE,43.58224,-79.34407
+2840 Harbourview Lane,Site,,TRUE,43.52239,-79.7599
+1641 Stonebridge Court,Site,,TRUE,45.46532,-74.91848
+4601 Frood Extension Road,Site,,TRUE,46.71292,-80.30736
+4158 Long Lake Ridge,Site,,TRUE,46.40896,-80.62235
+4254 Lakeshore Viaduct Road,Site,,TRUE,43.58501,-79.52205
+3414 Harrow Gate Drive,Site,,TRUE,45.30545,-75.60938
+1015 Wexford Drive,Site,,TRUE,43.93818,-80.15115
+945 Queensway Ridge,Site,,TRUE,43.86573,-79.36478
+1884 Oxford Mill Lane,Site,,TRUE,42.80278,-81.44073
+951 Tamarack Line,Site,,TRUE,45.34086,-75.93976
+1189 Fenwick Street,Site,,TRUE,45.26329,-75.88863
+873 Tamarack Line,Site,,TRUE,45.40685,-75.50458
+3068 Queensway Ridge,Site,,TRUE,43.93788,-78.80579
+1902 Willowdale Crescent,Site,,TRUE,43.53795,-78.76346
+4125 Oxford Mill Lane,Site,,TRUE,43.45563,-80.81573
+Carleton Ridge Pump Station,Site,,TRUE,45.44536,-75.87004
+1845 Willowdale Crescent,Site,,TRUE,43.46957,-79.5232
+3931 Grand River Line,Site,,TRUE,43.1434,-80.81883
+4424 Frood Extension Road,Site,,TRUE,46.52028,-81.37496
+1810 Oxford Mill Lane,Site,,TRUE,42.72535,-80.71174
+3583 Queensway Ridge,Site,,TRUE,43.92627,-79.5863
+4186 Kettle Creek Road,Site,,TRUE,45.29522,-76.12917
+1771 Eastgate Boulevard,Site,,TRUE,43.75217,-79.12185
+1791 Lily Creek Drive,Site,,TRUE,46.22955,-80.37521
+815 Birchmount Terrace,Site,,TRUE,44.01394,-79.81588
+47 Tailings Access Road,Site,,TRUE,46.69421,-80.84828
+907 Willowdale Crescent,Site,,TRUE,43.54772,-79.73444
+546 Harrow Gate Drive,Site,,TRUE,45.52001,-75.344
+1837 Long Lake Ridge,Site,,TRUE,46.54632,-80.68422
+1898 Old Quarry Road,Site,,TRUE,45.37749,-75.88555
+3528 Portlands Way,Site,,TRUE,43.85619,-78.6291
+1988 Lakeshore Viaduct Road,Site,,TRUE,43.9091,-79.14521
+757 Lawrence Heights Road,Site,,TRUE,43.70972,-79.1998
+2213 Fenwick Street,Site,,TRUE,46.0044,-75.24603
+Highbury Grade Separation,Site,,TRUE,42.92956,-80.98977
+3608 Ironwood Crescent,Site,,TRUE,45.71184,-75.75593
+1582 Lawrence Heights Road,Site,,TRUE,43.20722,-78.98009
+3407 Sheridan Mews,Site,,TRUE,43.55682,-79.12294
+Nickel Belt Tailings Dam Crest,Site,,TRUE,46.5063,-80.40504
+836 Lakeshore Viaduct Road,Site,,TRUE,43.42462,-79.44153
+Long Lake Haul Road Cut,Site,,TRUE,46.14106,-81.19074
+3222 Kelly Lake Line,Site,,TRUE,45.79532,-80.89176
+3492 Thames Valley Road,Site,,TRUE,43.18007,-80.83204
+715 Ironwood Crescent,Site,,TRUE,45.5116,-75.91085
+4554 Frood Extension Road,Site,,TRUE,46.79034,-80.68043
+2874 Grand River Line,Site,,TRUE,42.90732,-80.31804
+2709 Fenwick Street,Site,,TRUE,45.62869,-75.41896
+4014 Lakeshore Viaduct Road,Site,,TRUE,43.50237,-78.91555
+4370 Long Lake Ridge,Site,,TRUE,46.98495,-80.64055
+4460 Sheridan Mews,Site,,TRUE,43.52135,-79.78151
+Thames Valley Trunk Sewer Shaft A,Site,,TRUE,43.28511,-81.17611
+3567 Thames Valley Road,Site,,TRUE,43.14534,-80.9526
+2846 Eastgate Boulevard,Site,,TRUE,43.41009,-79.66806
+1996 Frood Extension Road,Site,,TRUE,46.78501,-81.09214
+3978 Queensway Ridge,Site,,TRUE,43.36323,-79.01841
+4134 Shaft Road,Site,,TRUE,46.61778,-80.64536
+3240 Millrace Avenue,Site,,TRUE,45.46122,-76.29188
+3452 Copperhead Road,Site,,TRUE,45.26566,-76.20161
+1398 Stonebridge Court,Site,,TRUE,45.79358,-75.41529
+1290 Larkspur Way,Site,,TRUE,45.82032,-75.43902
+3103 Eastgate Boulevard,Site,,TRUE,43.70311,-79.36244
+4429 Pinery Road,Site,,TRUE,42.80669,-81.15358
+3123 Kettle Creek Road,Site,,TRUE,45.71049,-75.85166
+271 Ironwood Crescent,Site,,TRUE,45.65583,-75.39209
+1726 Grand River Line,Site,,TRUE,42.44473,-81.1388
+4720 Highbury Crossing,Site,,TRUE,43.64313,-80.96119
+1837 Queensway Ridge,Site,,TRUE,43.65744,-79.41818
+4584 Wellington Bypass,Site,,TRUE,43.43973,-81.29806
+4879 Nickel Belt Road,Site,,TRUE,46.54311,-81.27387
+23 Copperhead Road,Site,,TRUE,45.04536,-75.82037
+2141 Copperhead Road,Site,,TRUE,45.34944,-75.3139
+1039 Danforth Ridge Road,Site,,TRUE,43.42521,-80.05798
+3104 Lawrence Heights Road,Site,,TRUE,43.45101,-79.50145
+4209 Portlands Way,Site,,TRUE,43.38086,-79.07739
+4869 Grand River Line,Site,,TRUE,42.50337,-80.37125
+2424 Queensway Ridge,Site,,TRUE,43.73803,-79.26712
+3833 Highbury Crossing,Site,,TRUE,42.9708,-80.68081
+2679 Tailings Access Road,Site,,TRUE,46.77396,-81.37234
+2858 Grand River Line,Site,,TRUE,42.94504,-80.94237
+2224 Frood Extension Road,Site,,TRUE,46.3744,-80.79136
+1397 Larkspur Way,Site,,TRUE,45.5139,-75.78044
+486 Humberline Court,Site,,TRUE,43.82274,-79.23402
+1815 Shaft Road,Site,,TRUE,46.64777,-80.39847
+Lily Creek Culvert Replacement,Site,,TRUE,46.69998,-81.01294
+3701 Frood Extension Road,Site,,TRUE,46.58857,-81.00156
+216 Lily Creek Drive,Site,,TRUE,46.52969,-81.12371
+1231 Stonebridge Court,Site,,TRUE,45.83819,-75.30822
+1382 Wellington Bypass,Site,,TRUE,42.96635,-80.78784
+1461 Portlands Way,Site,,TRUE,43.78857,-79.42596
+2992 Oxford Mill Lane,Site,,TRUE,42.85191,-80.97967
+2816 Humberline Court,Site,,TRUE,43.1415,-79.47682
+1016 Larkspur Way,Site,,TRUE,45.39939,-75.14655
+3727 Ironwood Crescent,Site,,TRUE,45.41725,-75.912
+903 Stonebridge Court,Site,,TRUE,45.58171,-75.6756
+3548 Eastgate Boulevard,Site,,TRUE,43.74436,-79.61523
+2058 Thames Valley Road,Site,,TRUE,43.56547,-81.19978
+2832 Humberline Court,Site,,TRUE,44.06428,-78.9617
+235 Fanshawe Ridge,Site,,TRUE,43.21902,-81.26361
+1618 Kelly Lake Line,Site,,TRUE,46.25343,-81.03847
+2452 Shaft Road,Site,,TRUE,46.79379,-80.33788
+1468 Danforth Ridge Road,Site,,TRUE,43.34321,-79.6989
+45 Willowdale Crescent,Site,,TRUE,43.72212,-79.56199
+3926 Kelly Lake Line,Site,,TRUE,46.29321,-80.95649
+3269 Grist Mill Lane,Site,,TRUE,45.44418,-75.86346
+4712 Grist Mill Lane,Site,,TRUE,45.50814,-76.38191
+4237 Oxford Mill Lane,Site,,TRUE,43.22434,-81.15267
+1125 Harbourview Lane,Site,,TRUE,43.83915,-79.56627
+748 Sheridan Mews,Site,,TRUE,43.92315,-79.58529
+1187 Harbourview Lane,Site,,TRUE,43.68188,-79.48919
+2967 Millrace Avenue,Site,,TRUE,45.45927,-75.50719
+3544 Wellington Bypass,Site,,TRUE,43.14632,-81.22469
+1524 Fanshawe Ridge,Site,,TRUE,43.42406,-79.98713
+2683 Conestoga Parkway Extension,Site,,TRUE,42.96694,-81.23688
+2562 Greyrock Mine Road,Site,,TRUE,47.19276,-80.16007
+1572 Danforth Ridge Road,Site,,TRUE,43.46187,-80.15767
+2491 Lakeshore Viaduct Road,Site,,TRUE,43.68777,-79.33725
+3227 Harbourview Lane,Site,,TRUE,43.52215,-79.69535
+4007 Conestoga Parkway Extension,Site,,TRUE,43.33505,-81.04854
+3524 Thames Valley Road,Site,,TRUE,42.59191,-81.30818
+1849 Willowdale Crescent,Site,,TRUE,43.76721,-79.85604
+4842 Ashgrove Terrace,Site,,TRUE,45.66801,-75.93485
+293 Danforth Ridge Road,Site,,TRUE,43.887,-79.35052
+2575 Queensway Ridge,Site,,TRUE,43.2436,-79.49823
+2929 Tamarack Line,Site,,TRUE,45.60945,-75.29368
+3526 Conestoga Parkway Extension,Site,,TRUE,43.28478,-80.75462
+4110 Long Lake Ridge,Site,,TRUE,46.73298,-81.04808
+469 Wexford Drive,Site,,TRUE,43.54459,-79.35622
+3292 Portlands Way,Site,,TRUE,43.83458,-78.95017
+2584 Kelly Lake Line,Site,,TRUE,46.26633,-80.60667
+2876 Fanshawe Ridge,Site,,TRUE,42.89658,-80.78203
+2824 Lawrence Heights Road,Site,,TRUE,43.56212,-79.71441
+4751 Lawrence Heights Road,Site,,TRUE,43.84709,-79.46784
+2310 Wellington Bypass,Site,,TRUE,43.38851,-81.39344
+1231 Danforth Ridge Road,Site,,TRUE,43.21487,-79.65818
+1665 Harrow Gate Drive,Site,,TRUE,45.20355,-75.6589
+1739 Frood Extension Road,Site,,TRUE,46.14661,-81.89648
+3515 Thames Valley Road,Site,,TRUE,42.7348,-80.68109
+4417 Portlands Way,Site,,TRUE,43.37568,-79.25013
+116 Conestoga Parkway Extension,Site,,TRUE,43.44786,-80.86288
+1239 Portal Avenue,Site,,TRUE,47.04212,-81.34136
+789 Sheridan Mews,Site,,TRUE,43.51117,-79.34754
+3176 Sheridan Mews,Site,,TRUE,43.59655,-78.87116
+1772 Queensway Ridge,Site,,TRUE,43.57814,-79.53305
+1164 Greyrock Mine Road,Site,,TRUE,46.23351,-80.79387
+4225 Humberline Court,Site,,TRUE,43.45265,-78.32759
+485 Lily Creek Drive,Site,,TRUE,46.6122,-81.36706
+60 Harrow Gate Drive,Site,,TRUE,45.54779,-75.68703
+1433 Wexford Drive,Site,,TRUE,43.54425,-79.5503
+2029 Portlands Way,Site,,TRUE,43.81213,-78.85515
+154 Grist Mill Lane,Site,,TRUE,45.90516,-75.90169
+2729 Grand River Line,Site,,TRUE,43.10978,-80.70873
+1722 Tailings Access Road,Site,,TRUE,46.57461,-80.84262
+2360 Kettle Creek Road,Site,,TRUE,45.9592,-75.73791
+2595 Birchmount Terrace,Site,,TRUE,43.75387,-79.6895
+3924 Portlands Way,Site,,TRUE,43.76145,-80.11248
+2435 Harrow Gate Drive,Site,,TRUE,45.36813,-76.08398
+241 Bellamy Ridge Road,Site,,TRUE,45.37648,-75.46934
+3079 Fanshawe Ridge,Site,,TRUE,42.69547,-81.56103
+2943 Stonebridge Court,Site,,TRUE,45.56578,-75.39326
+1701 Highbury Crossing,Site,,TRUE,43.62587,-80.45609
+3209 Sheridan Mews,Site,,TRUE,43.84158,-79.71836
+3326 Thames Valley Road,Site,,TRUE,42.93089,-80.72401
+4457 Willowdale Crescent,Site,,TRUE,43.06562,-79.60122
+1054 Grand River Line,Site,,TRUE,43.22577,-80.78171
+3312 Danforth Ridge Road,Site,,TRUE,44.1988,-79.45362
+3880 Wexford Drive,Site,,TRUE,43.66083,-79.27006
+2413 Lawrence Heights Road,Site,,TRUE,43.47283,-79.1252
+1376 Kelly Lake Line,Site,,TRUE,46.49142,-81.02738
+4635 Danforth Ridge Road,Site,,TRUE,43.75501,-79.15136
+2135 Fenwick Street,Site,,TRUE,45.60704,-75.59351
+3814 Lily Creek Drive,Site,,TRUE,47.10156,-80.37501
+753 Old Quarry Road,Site,,TRUE,45.35872,-75.22149
+1766 Lakeshore Viaduct Road,Site,,TRUE,43.2615,-80.08882
+4511 Ironwood Crescent,Site,,TRUE,45.42998,-75.40157
+555 Kelly Lake Line,Site,,TRUE,46.34743,-81.09558
+3939 Long Lake Ridge,Site,,TRUE,46.0627,-81.36187
+44 Boreal Pit Road,Site,,TRUE,46.61103,-80.7663
+198 Pinery Road,Site,,TRUE,43.10475,-81.17645
+2851 Thames Valley Road,Site,,TRUE,43.52757,-80.14685
+3690 Kettle Creek Road,Site,,TRUE,45.67924,-75.40226
+4848 Highbury Crossing,Site,,TRUE,43.16875,-80.87124
+3525 Birchmount Terrace,Site,,TRUE,43.35156,-79.55172
+2996 Stonebridge Court,Site,,TRUE,45.09725,-75.84599
+2924 Birchmount Terrace,Site,,TRUE,43.63941,-79.38026
+2401 Portlands Way,Site,,TRUE,43.7758,-79.44682
+4691 Ashgrove Terrace,Site,,TRUE,45.17641,-75.22551
+4365 Danforth Ridge Road,Site,,TRUE,43.43287,-79.43207
+3398 Eastgate Boulevard,Site,,TRUE,43.29242,-78.55194
+1743 Danforth Ridge Road,Site,,TRUE,43.65501,-79.39622
+4664 Eastgate Boulevard,Site,,TRUE,43.53453,-79.48189
+2366 Lakeshore Viaduct Road,Site,,TRUE,43.34932,-79.26008
+4104 Grand River Line,Site,,TRUE,43.10876,-81.5364
+196 Grand River Line,Site,,TRUE,43.01845,-80.95109
+233 Wexford Drive,Site,,TRUE,43.45479,-79.39082
+3103 Humberline Court,Site,,TRUE,43.8796,-79.76741
+2871 Tamarack Line,Site,,TRUE,45.30619,-75.34621
+3864 Boreal Pit Road,Site,,TRUE,46.29796,-81.01107
+4582 Silverbirch Parkway,Site,,TRUE,45.27754,-75.62591
+2485 Grand River Line,Site,,TRUE,43.0057,-81.07465
+4736 Larkspur Way,Site,,TRUE,45.172,-76.30035
+160 Nickel Belt Road,Site,,TRUE,46.21516,-80.96296
+4688 Birchmount Terrace,Site,,TRUE,43.50942,-79.13976
+4596 Harbourview Lane,Site,,TRUE,43.45335,-79.68895
+4517 Fanshawe Ridge,Site,,TRUE,43.05822,-81.3389
+3110 Ironwood Crescent,Site,,TRUE,45.7847,-75.49815
+712 Willowdale Crescent,Site,,TRUE,43.57335,-79.09297
+4435 Harrow Gate Drive,Site,,TRUE,45.55619,-75.84615
+1231 Lakeshore Viaduct Road,Site,,TRUE,43.61014,-79.47964
+2033 Humberline Court,Site,,TRUE,43.27818,-79.23795
+4422 Portal Avenue,Site,,TRUE,46.34047,-80.87434
+2446 Birchmount Terrace,Site,,TRUE,43.43268,-79.73652
+3697 Kettle Creek Road,Site,,TRUE,44.74603,-76.01188
+1384 Danforth Ridge Road,Site,,TRUE,43.93874,-79.57516
+4880 Nickel Belt Road,Site,,TRUE,46.37872,-80.328
+2295 Ironwood Crescent,Site,,TRUE,45.4502,-76.16887
+658 Stonebridge Court,Site,,TRUE,45.36908,-75.75039
+172 Birchmount Terrace,Site,,TRUE,43.39269,-78.94527
+3454 Lily Creek Drive,Site,,TRUE,47.05637,-80.96741
+2529 Pinery Road,Site,,TRUE,43.47009,-80.02845
+4475 Grand River Line,Site,,TRUE,43.16322,-80.74653
+172 Bellamy Ridge Road,Site,,TRUE,45.56484,-75.5889
+3068 Humberline Court,Site,,TRUE,43.74308,-79.10059
+2036 Bellamy Ridge Road,Site,,TRUE,45.50842,-75.72935
+2566 Greyrock Mine Road,Site,,TRUE,46.31734,-81.16416
+4643 Oxford Mill Lane,Site,,TRUE,43.24016,-80.92573
+55 Danforth Ridge Road,Site,,TRUE,43.83871,-79.10923
+3895 Bluewater Road,Site,,TRUE,43.05638,-80.6601
+4863 Kelly Lake Line,Site,,TRUE,47.04949,-80.81759
+3183 Danforth Ridge Road,Site,,TRUE,43.36071,-79.20728
+4242 Thames Valley Road,Site,,TRUE,43.02675,-81.61343
+4516 Pinery Road,Site,,TRUE,43.24249,-81.55126
+2468 Silverbirch Parkway,Site,,TRUE,45.19924,-76.29376
+1696 Thames Valley Road,Site,,TRUE,43.49566,-80.88793
+485 Millrace Avenue,Site,,TRUE,45.37676,-75.61762
+4061 Bellamy Ridge Road,Site,,TRUE,45.3514,-75.89695
+2770 Greyrock Mine Road,Site,,TRUE,46.23953,-80.87764
+1563 Larkspur Way,Site,,TRUE,45.37407,-75.39162
+2389 Ironwood Crescent,Site,,TRUE,45.38495,-75.61075
+2847 Silverbirch Parkway,Site,,TRUE,44.91571,-74.99003
+1789 Fanshawe Ridge,Site,,TRUE,43.32243,-80.9489
+1680 Grand River Line,Site,,TRUE,43.25186,-81.28519
+3063 Wellington Bypass,Site,,TRUE,42.95437,-81.30922
+3870 Oxford Mill Lane,Site,,TRUE,43.04078,-80.99841
+3425 Willowdale Crescent,Site,,TRUE,43.53888,-79.42742
+4569 Fanshawe Ridge,Site,,TRUE,42.82695,-81.03642
+3354 Grist Mill Lane,Site,,TRUE,45.57194,-75.43871
+3591 Sheridan Mews,Site,,TRUE,43.95241,-79.04311
+1958 Pinery Road,Site,,TRUE,43.08524,-80.15697
+882 Highbury Crossing,Site,,TRUE,42.99548,-81.22245
+3160 Bluewater Road,Site,,TRUE,43.77527,-80.66328
+2569 Nickel Belt Road,Site,,TRUE,46.68369,-81.53224
+3734 Lakeshore Viaduct Road,Site,,TRUE,43.57397,-79.17398
+2807 Stonebridge Court,Site,,TRUE,45.25237,-76.03261
+143 Eastgate Boulevard,Site,,TRUE,43.12599,-79.48754
+4858 Lakeshore Viaduct Road,Site,,TRUE,43.64032,-79.82914
+2302 Kettle Creek Road,Site,,TRUE,45.32156,-75.1865
+3565 Boreal Pit Road,Site,,TRUE,46.42464,-81.21662
+4380 Wexford Drive,Site,,TRUE,43.45231,-79.204
+3634 Greyrock Mine Road,Site,,TRUE,46.27668,-81.04301
+3204 Erie Shore Drive,Site,,TRUE,43.51209,-80.92947
+4093 Erie Shore Drive,Site,,TRUE,43.14548,-80.93004
+1591 Willowdale Crescent,Site,,TRUE,43.472,-79.43731
+333 Fenwick Street,Site,,TRUE,45.63331,-75.77363
+2028 Millrace Avenue,Site,,TRUE,45.7011,-75.50875
+995 Sheridan Mews,Site,,TRUE,43.29334,-79.47368
+4369 Erie Shore Drive,Site,,TRUE,43.03503,-81.07209
+3323 Conestoga Parkway Extension,Site,,TRUE,42.53345,-80.80892
+3710 Lakeshore Viaduct Road,Site,,TRUE,43.42056,-79.47795
+2640 Eastgate Boulevard,Site,,TRUE,43.49003,-79.26915
+4854 Erie Shore Drive,Site,,TRUE,42.95018,-80.43808
+1996 Old Quarry Road,Site,,TRUE,45.48973,-75.90165
+1614 Silverbirch Parkway,Site,,TRUE,45.18195,-75.12599
+3665 Grand River Line,Site,,TRUE,42.79396,-80.84082
+400 Humberline Court,Site,,TRUE,43.80704,-80.18975
+2980 Grist Mill Lane,Site,,TRUE,45.76256,-75.85687
+3075 Highbury Crossing,Site,,TRUE,43.25155,-81.46387
+4337 Thames Valley Road,Site,,TRUE,42.80625,-81.09667
+684 Larkspur Way,Site,,TRUE,45.79515,-75.99754
+3404 Erie Shore Drive,Site,,TRUE,43.21082,-81.64053
+3849 Old Quarry Road,Site,,TRUE,45.36463,-75.18583
+2749 Wellington Bypass,Site,,TRUE,42.72411,-81.12721
+1995 Stonebridge Court,Site,,TRUE,45.16501,-75.93536
+550 Thames Valley Road,Site,,TRUE,43.23204,-80.48243
+2804 Frood Extension Road,Site,,TRUE,45.86498,-81.07923
+4208 Ashgrove Terrace,Site,,TRUE,45.14603,-75.59786
+2081 Harrow Gate Drive,Site,,TRUE,44.89306,-75.58674
+4797 Conestoga Parkway Extension,Site,,TRUE,42.8192,-80.59929
+2919 Millrace Avenue,Site,,TRUE,45.26774,-74.94345
+1216 Silverbirch Parkway,Site,,TRUE,45.27485,-75.18086
+1714 Fenwick Street,Site,,TRUE,45.32365,-75.79299
+4635 Sheridan Mews,Site,,TRUE,43.62272,-79.92119
+217 Sheridan Mews,Site,,TRUE,43.63609,-79.31176
+4240 Stonebridge Court,Site,,TRUE,45.403,-75.23442
+4473 Harrow Gate Drive,Site,,TRUE,45.00076,-75.73011
+612 Queensway Ridge,Site,,TRUE,43.72933,-80.39144
+2661 Grist Mill Lane,Site,,TRUE,45.09897,-75.30846
+3739 Willowdale Crescent,Site,,TRUE,43.77931,-78.83185
+3920 Lawrence Heights Road,Site,,TRUE,43.4098,-80.08122
+1708 Portal Avenue,Site,,TRUE,46.11544,-80.42834
+1431 Millrace Avenue,Site,,TRUE,45.25936,-75.68187
+2175 Bluewater Road,Site,,TRUE,43.02075,-81.19089
+21 Wellington Bypass,Site,,TRUE,43.20387,-81.25093
+1667 Nickel Belt Road,Site,,TRUE,46.30001,-81.32774
+630 Wexford Drive,Site,,TRUE,43.86839,-79.78436
+3009 Bluewater Road,Site,,TRUE,43.33463,-80.45655
+3711 Millrace Avenue,Site,,TRUE,45.13094,-75.24773
+2599 Eastgate Boulevard,Site,,TRUE,43.77033,-79.66966
+3394 Copperhead Road,Site,,TRUE,45.71803,-75.28016
+1928 Tailings Access Road,Site,,TRUE,46.35237,-81.17562
+4812 Oxford Mill Lane,Site,,TRUE,43.13111,-80.91166
+3506 Harrow Gate Drive,Site,,TRUE,45.68501,-75.54124
+4657 Harbourview Lane,Site,,TRUE,43.50332,-79.34702
+4500 Wexford Drive,Site,,TRUE,43.95084,-79.73624
+389 Harbourview Lane,Site,,TRUE,43.56896,-78.85405
+2902 Pinery Road,Site,,TRUE,43.1749,-80.9255
+4420 Lily Creek Drive,Site,,TRUE,46.14877,-81.23224
+4304 Bluewater Road,Site,,TRUE,43.1975,-80.5442
+2611 Grand River Line,Site,,TRUE,43.49789,-81.33339
+1902 Thames Valley Road,Site,,TRUE,43.15331,-81.43995
+3328 Wexford Drive,Site,,TRUE,43.63017,-79.25106
+1498 Bluewater Road,Site,,TRUE,43.20969,-80.69679
+3354 Copperhead Road,Site,,TRUE,45.33537,-76.15402
+2353 Lakeshore Viaduct Road,Site,,TRUE,43.39637,-79.20817
+4695 Harrow Gate Drive,Site,,TRUE,45.34532,-75.45079
+4362 Stonebridge Court,Site,,TRUE,45.61673,-75.79352
+2726 Bluewater Road,Site,,TRUE,43.0479,-80.63126
+1922 Fanshawe Ridge,Site,,TRUE,43.03649,-81.23701
+128 Stonebridge Court,Site,,TRUE,45.12613,-75.81413
+2460 Birchmount Terrace,Site,,TRUE,43.56687,-79.03206
+2801 Portal Avenue,Site,,TRUE,46.58596,-80.80011
+159 Bellamy Ridge Road,Site,,TRUE,45.68816,-76.03889
+2624 Fanshawe Ridge,Site,,TRUE,43.528,-81.33073
+472 Shaft Road,Site,,TRUE,46.59029,-80.43718
+4726 Grand River Line,Site,,TRUE,42.92769,-81.48645
+2390 Grist Mill Lane,Site,,TRUE,45.34791,-75.63837
+3260 Harrow Gate Drive,Site,,TRUE,45.20397,-75.85049
+1465 Willowdale Crescent,Site,,TRUE,43.87024,-78.60173
+604 Pinery Road,Site,,TRUE,43.31877,-80.53311
+1068 Boreal Pit Road,Site,,TRUE,46.43586,-80.96923
+578 Portal Avenue,Site,,TRUE,46.73546,-81.34287
+995 Boreal Pit Road,Site,,TRUE,46.6696,-81.38031
+1475 Old Quarry Road,Site,,TRUE,45.0953,-75.46632
+4553 Old Quarry Road,Site,,TRUE,45.13168,-76.18414
+1768 Wexford Drive,Site,,TRUE,43.53141,-79.06291
+433 Larkspur Way,Site,,TRUE,45.43405,-75.24428
+1027 Thames Valley Road,Site,,TRUE,42.6728,-80.98026
+1994 Grand River Line,Site,,TRUE,42.95182,-81.43784
+3120 Millrace Avenue,Site,,TRUE,45.32094,-75.66138
+1870 Fanshawe Ridge,Site,,TRUE,43.48891,-80.51818
+682 Danforth Ridge Road,Site,,TRUE,43.29168,-79.71352
+71 Harbourview Lane,Site,,TRUE,43.02868,-79.00623
+1555 Millrace Avenue,Site,,TRUE,45.48264,-75.6837
+237 Lakeshore Viaduct Road,Site,,TRUE,43.3841,-79.76767
+626 Frood Extension Road,Site,,TRUE,46.34225,-80.5282
+4844 Birchmount Terrace,Site,,TRUE,44.1323,-79.52508
+1936 Grist Mill Lane,Site,,TRUE,45.64082,-75.40288
+364 Tailings Access Road,Site,,TRUE,46.28181,-81.58142
+3620 Highbury Crossing,Site,,TRUE,42.99591,-81.49068
+615 Harbourview Lane,Site,,TRUE,43.88246,-79.38375
+2712 Ashgrove Terrace,Site,,TRUE,44.9735,-76.10398
+2261 Pinery Road,Site,,TRUE,43.43967,-80.83202
+3295 Queensway Ridge,Site,,TRUE,43.45725,-79.13084
+614 Fenwick Street,Site,,TRUE,45.85698,-75.74975
+3128 Humberline Court,Site,,TRUE,43.84511,-79.12188
+3245 Eastgate Boulevard,Site,,TRUE,43.14204,-79.70988
+100 Danforth Ridge Road,Site,,TRUE,43.8618,-79.24429
+2482 Humberline Court,Site,,TRUE,43.74918,-79.56655
+2658 Harrow Gate Drive,Site,,TRUE,45.1197,-76.02273
+703 Humberline Court,Site,,TRUE,43.43271,-79.2196
+2926 Fenwick Street,Site,,TRUE,45.91338,-76.19888
+37 Portlands Way,Site,,TRUE,43.67114,-80.06337
+4419 Fanshawe Ridge,Site,,TRUE,42.99756,-80.85852
+934 Fanshawe Ridge,Site,,TRUE,42.81506,-81.02543
+137 Danforth Ridge Road,Site,,TRUE,43.77425,-79.50362
+4158 Harrow Gate Drive,Site,,TRUE,45.63637,-75.844
+1102 Long Lake Ridge,Site,,TRUE,46.83513,-81.07761
+735 Tailings Access Road,Site,,TRUE,46.52264,-81.15728
+1948 Pinery Road,Site,,TRUE,43.13026,-81.46302
+4820 Lawrence Heights Road,Site,,TRUE,43.27956,-79.68464
+3945 Harbourview Lane,Site,,TRUE,43.66324,-79.5665
+1461 Larkspur Way,Site,,TRUE,45.51078,-75.85842
+2240 Wellington Bypass,Site,,TRUE,42.98386,-80.50573
+2575 Copperhead Road,Site,,TRUE,45.02741,-75.41107
+2716 Millrace Avenue,Site,,TRUE,45.54214,-75.82857
+73 Harbourview Lane,Site,,TRUE,43.55502,-78.89689
+1561 Greyrock Mine Road,Site,,TRUE,46.42899,-81.45595
+3818 Kelly Lake Line,Site,,TRUE,46.19951,-80.73992
+367 Lakeshore Viaduct Road,Site,,TRUE,43.67273,-79.1093
+387 Queensway Ridge,Site,,TRUE,43.48168,-79.31409
+2449 Portlands Way,Site,,TRUE,43.95498,-79.70071
+4269 Eastgate Boulevard,Site,,TRUE,43.78317,-79.23209
+1268 Old Quarry Road,Site,,TRUE,45.28139,-75.64235
+1016 Harbourview Lane,Site,,TRUE,44.08879,-79.44891
+1490 Kettle Creek Road,Site,,TRUE,45.64233,-75.75992
+3068 Thames Valley Road,Site,,TRUE,43.42696,-79.92787
+4851 Queensway Ridge,Site,,TRUE,43.86193,-79.17731
+2914 Greyrock Mine Road,Site,,TRUE,46.48074,-80.82092
+1666 Grand River Line,Site,,TRUE,43.22542,-80.70108
+1671 Larkspur Way,Site,,TRUE,45.87235,-75.79249
+1660 Kelly Lake Line,Site,,TRUE,46.05928,-80.49312
+4824 Fanshawe Ridge,Site,,TRUE,42.54373,-80.70941
+345 Wexford Drive,Site,,TRUE,43.47258,-79.80423
+3684 Harrow Gate Drive,Site,,TRUE,45.45376,-75.28074
+1468 Conestoga Parkway Extension,Site,,TRUE,43.62766,-81.03494
+1556 Wexford Drive,Site,,TRUE,43.85865,-79.46338
+747 Conestoga Parkway Extension,Site,,TRUE,43.13764,-81.03659
+3858 Lakeshore Viaduct Road,Site,,TRUE,43.53666,-79.51186
+3267 Silverbirch Parkway,Site,,TRUE,45.41272,-75.66753
+2360 Frood Extension Road,Site,,TRUE,46.63816,-80.77826
+1494 Ashgrove Terrace,Site,,TRUE,45.51193,-75.41231
+2846 Bluewater Road,Site,,TRUE,43.02083,-81.95415
+2234 Millrace Avenue,Site,,TRUE,45.50669,-76.1699
+2763 Portal Avenue,Site,,TRUE,46.54637,-80.89889
+4287 Ashgrove Terrace,Site,,TRUE,45.29389,-75.86763
+4274 Grist Mill Lane,Site,,TRUE,45.26753,-75.19287
+289 Lawrence Heights Road,Site,,TRUE,43.83271,-79.66475
+1998 Lawrence Heights Road,Site,,TRUE,43.66756,-79.48312
+4680 Oxford Mill Lane,Site,,TRUE,43.12314,-81.25175
+4217 Danforth Ridge Road,Site,,TRUE,44.0554,-79.53347
+3062 Sheridan Mews,Site,,TRUE,43.7954,-79.12239
+1341 Boreal Pit Road,Site,,TRUE,46.2083,-80.64601
+17 Silverbirch Parkway,Site,,TRUE,45.15244,-76.12398
+784 Danforth Ridge Road,Site,,TRUE,43.21413,-79.58325
+2468 Bellamy Ridge Road,Site,,TRUE,45.18641,-75.87459
+3443 Birchmount Terrace,Site,,TRUE,43.89299,-79.2327
+638 Grist Mill Lane,Site,,TRUE,45.24361,-75.97853
+1693 Eastgate Boulevard,Site,,TRUE,44.33702,-78.99856
+1148 Stonebridge Court,Site,,TRUE,45.34553,-75.52394
+1871 Lawrence Heights Road,Site,,TRUE,43.40029,-79.716
+3384 Lawrence Heights Road,Site,,TRUE,43.30123,-79.34644
+296 Tailings Access Road,Site,,TRUE,46.52431,-80.91717
+1988 Millrace Avenue,Site,,TRUE,45.23529,-75.00203
+4166 Stonebridge Court,Site,,TRUE,45.38845,-75.65214
+4757 Erie Shore Drive,Site,,TRUE,43.2529,-80.67493
+3847 Willowdale Crescent,Site,,TRUE,43.60638,-79.47064
+4756 Harbourview Lane,Site,,TRUE,43.637,-79.13447
+2709 Larkspur Way,Site,,TRUE,45.58796,-75.32866
+1891 Queensway Ridge,Site,,TRUE,43.25058,-79.77407
+4878 Birchmount Terrace,Site,,TRUE,43.89532,-79.00572
+1531 Grist Mill Lane,Site,,TRUE,45.6693,-75.45572
+4190 Fenwick Street,Site,,TRUE,45.39306,-75.431
+2949 Grist Mill Lane,Site,,TRUE,45.2956,-75.48811
+2068 Wexford Drive,Site,,TRUE,43.68819,-79.2468
+1806 Humberline Court,Site,,TRUE,43.89335,-78.42594
+3890 Wellington Bypass,Site,,TRUE,43.20586,-80.49948
+1249 Wellington Bypass,Site,,TRUE,43.06789,-81.1407
+3862 Copperhead Road,Site,,TRUE,45.99535,-75.6259
+2523 Conestoga Parkway Extension,Site,,TRUE,43.60136,-81.00031
+1654 Harbourview Lane,Site,,TRUE,43.39614,-79.34936
+2679 Pinery Road,Site,,TRUE,43.75742,-80.64822
+4849 Highbury Crossing,Site,,TRUE,43.48082,-80.53984
+1494 Frood Extension Road,Site,,TRUE,46.30979,-81.28943
+192 Sheridan Mews,Site,,TRUE,43.77419,-79.61962
+2817 Bluewater Road,Site,,TRUE,43.33617,-80.95939
+3309 Millrace Avenue,Site,,TRUE,45.40318,-75.34672
+4386 Stonebridge Court,Site,,TRUE,45.18367,-76.2951
+971 Thames Valley Road,Site,,TRUE,42.98505,-80.71721
+3800 Millrace Avenue,Site,,TRUE,45.75149,-76.13752
+1779 Sheridan Mews,Site,,TRUE,43.31195,-79.97202
+1307 Lily Creek Drive,Site,,TRUE,46.55104,-80.99174
+899 Millrace Avenue,Site,,TRUE,45.45268,-75.35765
+828 Bluewater Road,Site,,TRUE,43.0331,-81.25005
+159 Long Lake Ridge,Site,,TRUE,46.0336,-81.01831
+3402 Lakeshore Viaduct Road,Site,,TRUE,43.63289,-80.05993
+3428 Conestoga Parkway Extension,Site,,TRUE,43.29092,-80.64521
+1295 Portal Avenue,Site,,TRUE,46.87467,-81.28413
+3675 Portlands Way,Site,,TRUE,43.596,-79.21366
+331 Wexford Drive,Site,,TRUE,43.15085,-79.59484
+1297 Greyrock Mine Road,Site,,TRUE,47.01796,-80.65416
+2537 Eastgate Boulevard,Site,,TRUE,43.31507,-79.10705
+4095 Frood Extension Road,Site,,TRUE,46.24008,-81.3862
+444 Greyrock Mine Road,Site,,TRUE,46.3456,-81.17907
+4415 Willowdale Crescent,Site,,TRUE,43.76328,-79.32609
+1091 Copperhead Road,Site,,TRUE,45.44183,-75.83794
+1579 Grist Mill Lane,Site,,TRUE,45.55105,-75.01107
+4160 Ironwood Crescent,Site,,TRUE,45.81685,-75.39151
+2633 Kettle Creek Road,Site,,TRUE,45.12338,-74.99828
+4403 Humberline Court,Site,,TRUE,43.65661,-79.14938
+1398 Humberline Court,Site,,TRUE,43.61845,-79.2588
+2309 Kelly Lake Line,Site,,TRUE,46.51867,-80.88351
+1086 Pinery Road,Site,,TRUE,43.30288,-81.11821
+2137 Greyrock Mine Road,Site,,TRUE,46.1204,-81.10599
+958 Long Lake Ridge,Site,,TRUE,46.53245,-80.47087
+2238 Bluewater Road,Site,,TRUE,43.00536,-81.19908
+3376 Harbourview Lane,Site,,TRUE,43.55511,-79.3175
+2903 Wexford Drive,Site,,TRUE,43.99726,-79.8285
+2256 Ashgrove Terrace,Site,,TRUE,45.3653,-75.95427
+4036 Bellamy Ridge Road,Site,,TRUE,45.1217,-76.06658
+3952 Copperhead Road,Site,,TRUE,45.58429,-75.2625
+2189 Long Lake Ridge,Site,,TRUE,46.46251,-81.18128
+3746 Humberline Court,Site,,TRUE,43.68531,-78.82067
+1484 Larkspur Way,Site,,TRUE,44.97332,-75.8279
+3682 Highbury Crossing,Site,,TRUE,43.1763,-80.95931
+4557 Lakeshore Viaduct Road,Site,,TRUE,43.85675,-79.26737
+2333 Birchmount Terrace,Site,,TRUE,43.48507,-79.33744
+1486 Fenwick Street,Site,,TRUE,45.41417,-75.66404
+1475 Queensway Ridge,Site,,TRUE,43.54373,-78.77635
+253 Fenwick Street,Site,,TRUE,45.60366,-75.1355
+3672 Lakeshore Viaduct Road,Site,,TRUE,43.72032,-79.28972
+40 Larkspur Way,Site,,TRUE,45.42694,-76.06659
+472 Fanshawe Ridge,Site,,TRUE,43.83259,-80.06731
+2217 Fanshawe Ridge,Site,,TRUE,43.31217,-81.66381
+199 Old Quarry Road,Site,,TRUE,45.01058,-75.63832
+500 Lakeshore Viaduct Road,Site,,TRUE,43.59926,-79.81042
+3250 Humberline Court,Site,,TRUE,43.40147,-79.4575
+801 Humberline Court,Site,,TRUE,43.80101,-79.46339
+480 Silverbirch Parkway,Site,,TRUE,45.07695,-75.48475
+3665 Danforth Ridge Road,Site,,TRUE,43.61084,-78.76263
+3440 Wellington Bypass,Site,,TRUE,43.03348,-80.88992
+4841 Fanshawe Ridge,Site,,TRUE,43.1939,-81.58776
+4255 Shaft Road,Site,,TRUE,47.03551,-81.14597
+3235 Long Lake Ridge,Site,,TRUE,46.87713,-80.98566
+505 Larkspur Way,Site,,TRUE,45.09476,-75.80037
+3062 Eastgate Boulevard,Site,,TRUE,43.7706,-79.26747
+2278 Sheridan Mews,Site,,TRUE,43.58299,-79.89415
+143 Portlands Way,Site,,TRUE,43.56123,-79.06894
+3317 Harbourview Lane,Site,,TRUE,43.42611,-79.4833
+2024 Queensway Ridge,Site,,TRUE,43.73354,-79.04094
+1558 Fanshawe Ridge,Site,,TRUE,43.35322,-81.17108
+3502 Kettle Creek Road,Site,,TRUE,45.68906,-75.59506
+3676 Frood Extension Road,Site,,TRUE,45.92075,-80.9647
+1596 Wexford Drive,Site,,TRUE,43.82089,-79.27911
+2970 Queensway Ridge,Site,,TRUE,43.35756,-79.75655
+3079 Erie Shore Drive,Site,,TRUE,43.76177,-81.3182
+192 Ironwood Crescent,Site,,TRUE,45.48905,-75.98965
+644 Queensway Ridge,Site,,TRUE,43.74954,-79.40889
+4176 Silverbirch Parkway,Site,,TRUE,45.45299,-75.08929
+2164 Tamarack Line,Site,,TRUE,45.42285,-75.25786
+2116 Shaft Road,Site,,TRUE,46.59472,-80.65258
+182 Pinery Road,Site,,TRUE,42.86684,-80.90238
+1359 Grand River Line,Site,,TRUE,42.66472,-80.88962

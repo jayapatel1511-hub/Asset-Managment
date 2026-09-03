@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-02
 
-**Status**: Draft — Phase 2. 1 blocking clarification open (site-coordinate scope, FR-006). Q7 resolved 2026-09-02; see `docs/08-decisions.md`
+**Status**: Draft — built 2026-09-02 (WS-A). Site-coordinate scope (FR-006) proceeded on: hand-entered with optional device capture, marked `// ASSUMPTION`. Q7 resolved. Two new tables (`eng_installation`, `eng_installationcomponent`) requested beyond `docs/01-data-model.md`, pending Jay — see `docs/08-decisions.md` and this feature's plan.md Complexity Tracking
 
 **Input**: `IM30 - Asset Managment via M365.docx` § What We Need → Asset Transactions (Assignment, Transfer), § Future Enhancements; `Asset AMS - SharePoint.xlsx` sheets *Assets - Current Deployment* (16 defined columns) and *Start Here* (Deployment Form draft, Configuration form draft, checkout→deployment→transfer→return→retirement flow, coordinate fields)
 

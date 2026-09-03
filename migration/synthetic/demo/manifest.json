@@ -1,0 +1,189 @@
+{
+  "dataset": "synthetic",
+  "generatorVersion": "0.1.0",
+  "seed": "englobe-ams-007",
+  "profile": "demo",
+  "params": {
+    "seed": "englobe-ams-007",
+    "asOf": "2026-09-02",
+    "historyYears": 20,
+    "detailYears": 5,
+    "deepRate": 0.4,
+    "scale": 0.25,
+    "profile": "demo"
+  },
+  "asOf": "2026-09-02",
+  "generatedAt": "2026-09-03T00:17:41.687Z",
+  "inputsHash": "4676d3426fcd4cb9",
+  "verified": false,
+  "counts": {
+    "assets": 371,
+    "activeAssets": 301,
+    "transactions": 13677,
+    "transactionLines": 18792,
+    "relationships": 1184,
+    "installations": 1879,
+    "installationComponents": 3027,
+    "calibrationRecords": 1730,
+    "projects": 249,
+    "sites": 646,
+    "roster": 123
+  },
+  "catalogueExtensions": [
+    {
+      "manufacturer": "Sierra Wireless",
+      "model": "AirLink RV50X",
+      "equipmenttype": "Modem"
+    }
+  ],
+  "markers": {
+    "asset": "migrationsource starts with \"SYNTHETIC seed=englobe-ams-007\"",
+    "transaction": "notes start with \"[SYNTHETIC s=englobe-ams-007]\"",
+    "projectNumberPrefix": "09",
+    "certificatePrefix": "SYN-",
+    "siteNote": "note starts with \"SYNTHETIC seed=englobe-ams-007\""
+  },
+  "probeDates": [
+    "2016-09-02",
+    "2021-09-02",
+    "2025-09-02",
+    "2026-09-02"
+  ],
+  "planted": [
+    {
+      "key": "temporary-tag",
+      "description": "Temporary-tagged asset never completed (feature 006 FR-011)",
+      "identifiers": {
+        "assetId": "TMP-5001"
+      }
+    },
+    {
+      "key": "third-party-owned",
+      "description": "Asset whose notes record third-party ownership (feature 006 FR-012)",
+      "identifiers": {
+        "assetId": "DL-BE-30025"
+      }
+    },
+    {
+      "key": "overdue-calibration-per-office",
+      "description": "An overdue calibration at every active office (feature 004 US1)",
+      "identifiers": {
+        "assetIds": [
+          "GEO-SE-30000",
+          "GEO-SE-30001",
+          "SLM-S50-500000",
+          "GEO-BG-30026",
+          "GEO-C22-450004"
+        ]
+      }
+    },
+    {
+      "key": "failed-calibration-then-repair",
+      "description": "A Failed calibration (next-due not advanced, feature 004 FR-016) followed by repair and a passing re-calibration",
+      "identifiers": {
+        "assetId": "GEO-SE-30000"
+      }
+    },
+    {
+      "key": "expected-return-overdue",
+      "description": "A checkout whose expected return is more than 90 days past (flow F4's case)",
+      "identifiers": {
+        "assetId": "AC-5002",
+        "custodian": "fergus.jorgensen@englobecorp.com",
+        "expectedReturn": "2026-03-16"
+      }
+    },
+    {
+      "key": "deployed-and-overdue",
+      "description": "A deployed asset that is overdue for calibration (feature 004 FR-030)",
+      "identifiers": {
+        "loggerId": "DL-D10-350000",
+        "site": "253 Fenwick Street"
+      }
+    },
+    {
+      "key": "retired-after-15-years",
+      "description": "An asset retired after at least fifteen years, with its full history (feature 006 FR-022/FR-029)",
+      "identifiers": {
+        "assetId": "GEO-SE-30000",
+        "acquired": "2011-05-03"
+      }
+    },
+    {
+      "key": "partial-recovery",
+      "description": "An installation partially recovered — sensors back, logger still on site (feature 005 FR-015)",
+      "identifiers": {
+        "loggerId": "DL-UM-40028",
+        "site": "1231 Stonebridge Court"
+      }
+    },
+    {
+      "key": "missing",
+      "description": "An asset currently Missing (feature 003 US6)",
+      "identifiers": {
+        "assetId": "CAM-7000001"
+      }
+    },
+    {
+      "key": "closed-project-with-station",
+      "description": "A project closed while a station remained deployed on it (feature 006 edge case)",
+      "identifiers": {
+        "project": "09000016",
+        "installationId": "fda854b1-778c-58ce-a1aa-3c572ced2e61",
+        "site": "4036 Bellamy Ridge Road"
+      }
+    },
+    {
+      "key": "site-on-two-projects",
+      "description": "A site with installations on two different projects (feature 005 FR-019)",
+      "identifiers": {
+        "site": "100 Danforth Ridge Road",
+        "projects": [
+          "09000188",
+          "09000243"
+        ]
+      }
+    },
+    {
+      "key": "at-foreign-office",
+      "description": "An asset currently at an office other than its home office (feature 006 edge case)",
+      "identifiers": {
+        "assetId": "CAM-7100000",
+        "homeOffice": "Ottawa",
+        "currentLocation": "Toronto"
+      }
+    },
+    {
+      "key": "shared-serial-pair-apart",
+      "description": "A logger and its same-serial geophone currently at different locations (Principle III)",
+      "identifiers": {
+        "loggerId": "DL-UM-40023",
+        "geophoneId": "GEO-UM-40023",
+        "site": "472 Fanshawe Ridge"
+      }
+    },
+    {
+      "key": "office-without-admin",
+      "description": "An office with no administrator assigned (feature 004 FR-027a)",
+      "identifiers": {
+        "office": "Thunder Bay"
+      }
+    }
+  ],
+  "files": [
+    "assets.json",
+    "locations.json",
+    "equipment_models.json",
+    "projects.json",
+    "transactions.json",
+    "transactionlines.json",
+    "assetrelationships.json",
+    "calibrationrecords.json",
+    "idsequence.json",
+    "installations.json",
+    "installationcomponents.json",
+    "officeadminassignments.json",
+    "answer_key.json",
+    "manifest.json"
+  ]
+}

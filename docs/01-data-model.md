@@ -20,7 +20,10 @@ Column types use Dataverse names. "Req" = business required. `[auto]` = written 
 | eng_defaultcalintervalmonths | Whole number | | null = no calibration |
 | eng_manualurl | URL | | |
 
-Alternate key: `eng_manufacturer + eng_model`.
+Alternate key: `eng_manufacturer + eng_model + eng_equipmenttype`. *(Corrected 2026-09-02 — manufacturer + model
+alone silently merges three real catalogue rows in which one product is classified under different equipment
+types; `eng_name` carries the type in parentheses where needed to stay distinct. See `docs/08-decisions.md` and
+feature 001 FR-010.)*
 Seed: `data/reference/equipment_models.csv` (derived draft in `equipment_models_draft.csv` — needs Jay's cleanup, see open questions).
 
 ## eng_location — Location (reference, hierarchical)
