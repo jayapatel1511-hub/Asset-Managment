@@ -2,9 +2,9 @@
 
 ## Current direction
 
-> **The production target is now a conventional Azure-hosted web application.**
+> **The production target is now a conventional Azure-hosted web application with an explicit Data Management & Stewardship capability.**
 
-The existing React/TypeScript/Vite application, migration pipeline, domain rules, tests, synthetic data and feature specifications remain the foundation. Power Apps Code App, Dataverse and Power Automate are no longer the planned primary runtime.
+The existing React/TypeScript/Vite application, migration pipeline, domain rules, tests, synthetic data and business feature specifications remain the foundation. Power Apps Code App, Dataverse and Power Automate are no longer the planned primary runtime.
 
 ### Target platform
 
@@ -17,11 +17,12 @@ The existing React/TypeScript/Vite application, migration pipeline, domain rules
 | Documents | Private Azure Blob Storage |
 | Offline | Service worker + IndexedDB queue/cache/conflict handling |
 | Background work | Transactional outbox + worker/scheduled jobs |
+| Data management | Governed reference/master data, corrections, imports, quality, duplicates, lineage, exports and retention |
 | Hosting | Azure Container Apps in an approved Canadian region |
 | Reporting | Read-only web reports; Power BI optional |
 | Delivery | GitHub Actions + infrastructure-as-code + immutable revisions |
 
-Microsoft 365 remains available for integrations such as Teams, email, SharePoint exports and Power BI. Core asset operation does not depend on those integrations.
+Microsoft 365 remains available for integrations such as Teams, email, SharePoint exports and Power BI. Core asset and data-management operation does not depend on those integrations.
 
 ## Status
 
@@ -33,13 +34,14 @@ Microsoft 365 remains available for integrations such as Teams, email, SharePoin
 | Synthetic data | In progress / locally testable |
 | Azure web architecture | Specified in draft and constitutionally recorded |
 | PostgreSQL physical schema | Proposed; review required before migration creation |
+| Data Management & Stewardship | Spec Draft; no implementation yet |
 | Production API | Not implemented |
 | Entra integration | Not implemented or tenant-verified |
 | PWA cold-start offline behavior | Not implemented or device-verified |
 | Azure infrastructure | Not implemented |
 | Ottawa pilot | Not approved |
 
-The local prototype proves useful interface and domain behavior. It does not yet prove the production API, database, identity, offline, document, security or recovery boundaries.
+The local prototype proves useful interface and domain behavior. It does not yet prove the production API, database, identity, offline, document, data-management, security or recovery boundaries.
 
 ## Read order
 
@@ -47,12 +49,14 @@ The local prototype proves useful interface and domain behavior. It does not yet
 2. [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — governing principles, version 2.0.0
 3. [`docs/00-brief.md`](docs/00-brief.md) — problem, scope and seven acceptance questions
 4. [`docs/14-webapp-architecture.md`](docs/14-webapp-architecture.md) — selected web architecture
-5. [`docs/15-postgres-data-model.md`](docs/15-postgres-data-model.md) — proposed canonical schema
-6. [`docs/13-production-readiness-review.md`](docs/13-production-readiness-review.md) — risks and approval gates
-7. [`specs/010-web-application-platform/spec.md`](specs/010-web-application-platform/spec.md) — executable web-platform requirements
-8. [`specs/009-production-readiness/spec.md`](specs/009-production-readiness/spec.md) — cross-cutting production proof
-9. [`docs/06-delivery-plan.md`](docs/06-delivery-plan.md) — implementation sequence
-10. [`docs/09-build-report.md`](docs/09-build-report.md) — what the existing local implementation actually proved
+5. [`docs/15-postgres-data-model.md`](docs/15-postgres-data-model.md) — proposed core schema
+6. [`docs/16-data-management.md`](docs/16-data-management.md) — data-management operating model and schema additions
+7. [`docs/13-production-readiness-review.md`](docs/13-production-readiness-review.md) — risks and approval gates
+8. [`specs/010-web-application-platform/spec.md`](specs/010-web-application-platform/spec.md) — executable web-platform requirements
+9. [`specs/011-data-management/spec.md`](specs/011-data-management/spec.md) — executable data-management requirements
+10. [`specs/009-production-readiness/spec.md`](specs/009-production-readiness/spec.md) — cross-cutting production proof
+11. [`docs/06-delivery-plan.md`](docs/06-delivery-plan.md) — implementation sequence
+12. [`docs/09-build-report.md`](docs/09-build-report.md) — what the existing local implementation actually proved
 
 ## Repository map
 
@@ -74,11 +78,13 @@ docs/10-integration.md                 legacy M365 integration research
 docs/12-ui-spec.md                     detailed mobile UI specification
 docs/13-production-readiness-review.md architecture and production review
 docs/14-webapp-architecture.md          active Azure web architecture
-docs/15-postgres-data-model.md          proposed physical PostgreSQL schema
+docs/15-postgres-data-model.md          proposed core PostgreSQL schema
+docs/16-data-management.md              stewardship, jobs, quality, lineage and retention model
 
 specs/001-* ... 008-*                  business feature specifications
 specs/009-production-readiness/        cross-cutting integrity and verification gates
 specs/010-web-application-platform/    web platform, API, PWA, storage and operations
+specs/011-data-management/             governed data administration and lifecycle
 
 app/                                    existing React/Vite interface and mock backend
 server/                                 planned TypeScript API and worker; add when implementation starts
@@ -90,6 +96,28 @@ data/source/                            frozen legacy exports
 data/reference/                         curated mappings and domain inputs
 solution/                               legacy Power Platform and Power BI artifacts; not the production path
 ```
+
+## Data management scope
+
+The earlier specifications had useful fragments—reference tables, migration reports, audit, backup and retention—but no complete post-go-live data-management feature.
+
+Feature 011 now covers:
+
+- named Data Owner and Data Steward responsibilities;
+- a Data Management Centre with owned quality issues;
+- field dictionary, source authority and classification;
+- reference and master-data administration;
+- controlled static corrections without direct state/history edits;
+- dry-run imports, bulk updates and row-level outcomes;
+- human-reviewed duplicate resolution without automatic serial-based merges;
+- permanent redirects that preserve both histories;
+- external source reconciliation;
+- lineage and “Why does the system say this?” explanations;
+- approved, redacted, private and expiring exports;
+- retention register, legal holds and controlled purge;
+- auditable, idempotent data jobs.
+
+It is explicitly **not** a generic database editor.
 
 ## What is preserved
 
@@ -114,6 +142,7 @@ solution/                               legacy Power Platform and Power BI artif
 - Entra sign-in and API authorization replace Dataverse roles as the runtime access boundary.
 - Outbox workers replace F1–F5 as production automation.
 - Managers use read-only web reporting; Power BI becomes optional.
+- Data management becomes a governed product feature rather than a collection of admin scripts.
 
 ## First implementation proof
 
@@ -121,7 +150,7 @@ Do not begin with additional screens.
 
 > Implement one real five-asset checkout through a TypeScript API and PostgreSQL. The command must authenticate the user, enforce office scope, claim an idempotency key, lock all affected assets in deterministic order, validate every line, create immutable history, update all derived state and relationships, write outbox events, and commit all-or-nothing. Run a deliberate race and a deliberate mid-transaction failure.
 
-That proof must pass before the remaining write workflows are moved from the mock backend.
+After the canonical schema and authorization model are stable, the first Data Management increment is a **read-only data dictionary plus quality dashboard and issue queue**. Bulk writes, merges, exports and purge controls wait for the atomic command, job, approval and audit infrastructure.
 
 ## Local prototype
 
@@ -139,12 +168,15 @@ The mock remains useful for interface development. A release build must never bu
 
 Before an Ottawa pilot:
 
-- canonical PostgreSQL schema approved;
-- product decisions affecting state and authorization closed;
+- canonical PostgreSQL schema, including data-management additions, approved;
+- product, ownership, stewardship and retention decisions closed;
+- 100% field-level data-dictionary coverage achieved;
 - atomic transaction and idempotency proof passed;
 - Entra and office-scope security tested through direct API calls;
 - PWA cold start and queued replay passed on supported managed devices;
 - private certificate upload/download and failure recovery passed;
+- data-quality dashboard and critical issue ownership active;
+- governed correction/import/export paths verified;
 - migration rehearsal and sign-offs completed;
 - database and document restore exercised;
 - alerts, owners and rollback procedures active.
