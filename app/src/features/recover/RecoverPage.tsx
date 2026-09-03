@@ -139,14 +139,14 @@ export function RecoverPage() {
           {r.included && (
             <div style={{ display: "flex", gap: 8 }}>
               <Field label={t("recover.disposition")}>
-                <Select value={r.disposition} onChange={(_, d) => updateRow(r.assetId, { disposition: d.value as Row["disposition"] })}>
+                <Select style={{ minWidth: 0, width: "100%" }} value={r.disposition} onChange={(_, d) => updateRow(r.assetId, { disposition: d.value as Row["disposition"] })}>
                   <option value="Recovered">{t("recover.disposition.recovered")}</option>
                   <option value="Missing">{t("recover.disposition.missing")}</option>
                 </Select>
               </Field>
               {r.disposition === "Recovered" && (
                 <Field label={t("recover.condition")}>
-                  <Select value={r.condition} onChange={(_, d) => updateRow(r.assetId, { condition: d.value as Condition })}>
+                  <Select style={{ minWidth: 0, width: "100%" }} value={r.condition} onChange={(_, d) => updateRow(r.assetId, { condition: d.value as Condition })}>
                     <option value="Good">{t("return.condition.good")}</option>
                     <option value="Damaged">{t("return.condition.damaged")}</option>
                     <option value="NeedsService">{t("return.condition.needsService")}</option>

@@ -195,7 +195,7 @@ export function CheckoutPage() {
       </div>
 
       <Field label={t("checkout.project")} required>
-        <Select value={project} onChange={(_, d) => setProject(d.value)}>
+        <Select style={{ minWidth: 0, width: "100%" }} value={project} onChange={(_, d) => setProject(d.value)}>
           <option value="" disabled>
             —
           </option>

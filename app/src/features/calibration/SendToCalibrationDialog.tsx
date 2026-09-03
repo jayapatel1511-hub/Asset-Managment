@@ -59,7 +59,7 @@ export function SendToCalibrationDialog({ asset, onClose, onDone }: { asset: Ass
               </MessageBar>
             )}
             <Field label={t("calibration.record.lab")} required>
-              <Select value={lab} onChange={(_, d) => setLab(d.value)}>
+              <Select style={{ minWidth: 0, width: "100%" }} value={lab} onChange={(_, d) => setLab(d.value)}>
                 <option value="" disabled>
                   —
                 </option>

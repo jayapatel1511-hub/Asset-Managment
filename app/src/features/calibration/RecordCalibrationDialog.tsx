@@ -79,7 +79,7 @@ export function RecordCalibrationDialog({ asset, onClose, onDone }: { asset: Ass
               <Input value={cost} onChange={(_, d) => setCost(d.value)} />
             </Field>
             <Field label={t("calibration.record.result")}>
-              <Select value={result} onChange={(_, d) => setResult(d.value as CalibrationResult | "")}>
+              <Select style={{ minWidth: 0, width: "100%" }} value={result} onChange={(_, d) => setResult(d.value as CalibrationResult | "")}>
                 <option value="">—</option>
                 <option value="Pass">Pass</option>
                 <option value="Fail">Fail</option>

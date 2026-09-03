@@ -148,7 +148,7 @@ export function SwapDialog({ installation, onClose, onDone }: { installation: In
             {mode === "swap" && (
               <>
                 <Field label={t("swap.outgoing")} required>
-                  <Select value={outgoingAssetId} onChange={(_, d) => setOutgoingAssetId(d.value)}>
+                  <Select style={{ minWidth: 0, width: "100%" }} value={outgoingAssetId} onChange={(_, d) => setOutgoingAssetId(d.value)}>
                     <option value="" disabled>
                       —
                     </option>
@@ -164,7 +164,7 @@ export function SwapDialog({ installation, onClose, onDone }: { installation: In
                 </Field>
                 {requiresOrientation(kitRole) && (
                   <Field label={t("deploy.orientation")} required>
-                    <Select value={orientation} onChange={(_, d) => setOrientation(d.value as Orientation)}>
+                    <Select style={{ minWidth: 0, width: "100%" }} value={orientation} onChange={(_, d) => setOrientation(d.value as Orientation)}>
                       <option value="" disabled>
                         —
                       </option>
@@ -188,7 +188,7 @@ export function SwapDialog({ installation, onClose, onDone }: { installation: In
             {mode === "config" && (
               <>
                 <Field label={t("config.powerSourceChange")}>
-                  <Select value={powersource} onChange={(_, d) => setPowersource(d.value as PowerSource)}>
+                  <Select style={{ minWidth: 0, width: "100%" }} value={powersource} onChange={(_, d) => setPowersource(d.value as PowerSource)}>
                     <option value="">—</option>
                     {POWER_SOURCES.map((p) => (
                       <option key={p} value={p}>
@@ -201,7 +201,7 @@ export function SwapDialog({ installation, onClose, onDone }: { installation: In
                   <Input value={position} onChange={(_, d) => setPosition(d.value)} />
                 </Field>
                 <Field label={t("config.projectChange")}>
-                  <Select value={toproject} onChange={(_, d) => setToproject(d.value)}>
+                  <Select style={{ minWidth: 0, width: "100%" }} value={toproject} onChange={(_, d) => setToproject(d.value)}>
                     <option value="">—</option>
                     {projects.map((p) => (
                       <option key={p.id} value={p.projectnumber}>

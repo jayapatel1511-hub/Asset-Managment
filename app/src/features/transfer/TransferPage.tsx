@@ -127,7 +127,7 @@ export function TransferPage() {
         <Input value={touser} onChange={(_, d) => setTouser(d.value)} placeholder="name@englobecorp.com" />
       </Field>
       <Field label={t("transfer.newLocation")}>
-        <Select value={tolocation} onChange={(_, d) => setTolocation(d.value)}>
+        <Select style={{ minWidth: 0, width: "100%" }} value={tolocation} onChange={(_, d) => setTolocation(d.value)}>
           <option value="">—</option>
           {locations.map((l) => (
             <option key={l.id} value={l.name}>
@@ -137,7 +137,7 @@ export function TransferPage() {
         </Select>
       </Field>
       <Field label={t("transfer.newProject")}>
-        <Select value={toproject} onChange={(_, d) => setToproject(d.value)}>
+        <Select style={{ minWidth: 0, width: "100%" }} value={toproject} onChange={(_, d) => setToproject(d.value)}>
           <option value="">—</option>
           {projects.map((p) => (
             <option key={p.id} value={p.projectnumber}>

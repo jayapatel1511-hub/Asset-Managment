@@ -80,7 +80,7 @@ export function SiteFields({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <Field label={t("deploy.site")} required>
-        <Select value={isNewSite ? NEW_SITE_VALUE : value.site} onChange={(_, d) => pickSite(d.value)}>
+        <Select style={{ minWidth: 0, width: "100%" }} value={isNewSite ? NEW_SITE_VALUE : value.site} onChange={(_, d) => pickSite(d.value)}>
           <option value={NEW_SITE_VALUE}>{t("deploy.siteNew")}</option>
           {existingSites.map((s) => (
             <option key={s.id} value={s.name}>
@@ -96,7 +96,7 @@ export function SiteFields({
       )}
 
       <Field label={t("deploy.locationType")} required>
-        <Select value={value.locationtype} onChange={(_, d) => set("locationtype", d.value as LocationType)}>
+        <Select style={{ minWidth: 0, width: "100%" }} value={value.locationtype} onChange={(_, d) => set("locationtype", d.value as LocationType)}>
           {LOCATION_TYPES.map((lt) => (
             <option key={lt} value={lt}>
               {lt}
@@ -113,15 +113,18 @@ export function SiteFields({
         <Input value={value.position} onChange={(_, d) => set("position", d.value)} placeholder="POR-403, Pier 3, …" />
       </Field>
 
+      {/* minWidth: 0 on each half — a flex item defaults to min-width: auto, so a Fluent Input
+          cannot shrink below its own min-content width and the pair overflowed a 390px
+          viewport (measured: right edge 402px). */}
       <div style={{ display: "flex", gap: 8 }}>
-        <Field label={t("deploy.latitude")} style={{ flex: 1 }}>
+        <Field label={t("deploy.latitude")} style={{ flex: 1, minWidth: 0 }}>
           <Input
             value={value.latitude}
             onChange={(_, d) => onChange({ ...value, latitude: d.value, coordinatesource: "Manual" })}
             type="number"
           />
         </Field>
-        <Field label={t("deploy.longitude")} style={{ flex: 1 }}>
+        <Field label={t("deploy.longitude")} style={{ flex: 1, minWidth: 0 }}>
           <Input
             value={value.longitude}
             onChange={(_, d) => onChange({ ...value, longitude: d.value, coordinatesource: "Manual" })}
@@ -139,7 +142,7 @@ export function SiteFields({
       )}
 
       <Field label={t("deploy.powerSource")} required>
-        <Select value={value.powersource} onChange={(_, d) => set("powersource", d.value as PowerSource)}>
+        <Select style={{ minWidth: 0, width: "100%" }} value={value.powersource} onChange={(_, d) => set("powersource", d.value as PowerSource)}>
           <option value="" disabled>
             —
           </option>

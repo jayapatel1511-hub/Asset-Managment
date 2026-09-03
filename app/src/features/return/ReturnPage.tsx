@@ -113,7 +113,7 @@ export function ReturnPage() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Field label={t("return.condition")}>
-              <Select value={line.condition} onChange={(_, d) => setCondition(line.asset.assetid, d.value as Condition)}>
+              <Select style={{ minWidth: 0, width: "100%" }} value={line.condition} onChange={(_, d) => setCondition(line.asset.assetid, d.value as Condition)}>
                 <option value="Good">{t("return.condition.good")}</option>
                 <option value="Damaged">{t("return.condition.damaged")}</option>
                 <option value="NeedsService">{t("return.condition.needsService")}</option>

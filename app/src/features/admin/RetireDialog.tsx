@@ -52,7 +52,7 @@ export function RetireDialog({ asset, onClose, onDone }: { asset: Asset; onClose
               </MessageBar>
             )}
             <Field label={t("admin.retire.reason")} required>
-              <Select value={reason} onChange={(_, d) => setReason(d.value as RetirementReason)}>
+              <Select style={{ minWidth: 0, width: "100%" }} value={reason} onChange={(_, d) => setReason(d.value as RetirementReason)}>
                 <option value="" disabled>
                   —
                 </option>

@@ -41,7 +41,10 @@ export function CalibrationDuePage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {/* flexWrap: Fluent's Dropdown root carries min-width: 250px, which a nowrap row cannot
+          shrink — at 390px the control was cut off at the right edge (measured: right edge 413px
+          in a 390px viewport). Wrapping drops it onto its own line, where 250px fits. */}
+      <div style={{ padding: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
         <Title2>{t("calibration.title")}</Title2>
         <Dropdown
           size="small"

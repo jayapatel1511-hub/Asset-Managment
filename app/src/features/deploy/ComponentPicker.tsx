@@ -105,7 +105,7 @@ export function ComponentPicker({
             </Text>
           </div>
           <Field label={t("deploy.kitRole")}>
-            <Select value={c.kitRole} onChange={(_, d) => setRole(c.asset.assetid, d.value as KitRole)}>
+            <Select style={{ minWidth: 0, width: "100%" }} value={c.kitRole} onChange={(_, d) => setRole(c.asset.assetid, d.value as KitRole)}>
               {COMPONENT_ROLES.map((r) => (
                 <option key={r} value={r}>
                   {r}
@@ -115,7 +115,7 @@ export function ComponentPicker({
           </Field>
           {requiresOrientation(c.kitRole) && (
             <Field label={t("deploy.orientation")} required>
-              <Select value={c.orientation ?? ""} onChange={(_, d) => setOrientation(c.asset.assetid, d.value as Orientation)}>
+              <Select style={{ minWidth: 0, width: "100%" }} value={c.orientation ?? ""} onChange={(_, d) => setOrientation(c.asset.assetid, d.value as Orientation)}>
                 <option value="" disabled>
                   —
                 </option>
