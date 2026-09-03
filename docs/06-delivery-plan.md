@@ -1,277 +1,680 @@
-# 06 — Delivery plan
+# 06 — Web Application Delivery Plan
 
 ## Current programme status
 
-The product specification, migration pipeline, responsive application and mock-backed journeys are
-substantially implemented. That is **Mock Implemented**, not production-built.
+The business specification, source-data analysis, migration cleaning pipeline, mobile React user experience, domain tests and mock-backed workflows are substantial.
 
-Work in the order below. `docs/13-production-readiness-review.md` and feature 009 govern the path from
-mock to tenant. Do not create the production schema from `docs/01-data-model.md` until Steps 0 and 1
-are complete.
+The production platform has changed. The active target is the Azure web architecture in `docs/14-webapp-architecture.md`, governed by constitution version 2.0.0 and features 009–010.
+
+Current maturity:
+
+```text
+Business specification          substantial
+Local user experience           Mock Implemented
+Azure web architecture          specified
+Canonical PostgreSQL schema     proposed, not approved
+Production API                  not implemented
+Entra integration               not implemented
+PWA offline behavior            not implemented or device-verified
+Azure infrastructure            not implemented
+Production migration            not rehearsed
+Ottawa pilot                    not approved
+```
+
+Do not add more mock-only screens until the atomic transaction proof is complete.
 
 ---
 
-## Step 0 — Product, licensing and environment prerequisites — blocks everything after local work
+## Stage 0 — Decisions, ownership and enterprise prerequisites
 
-### Jay decisions and sign-offs
+### System Owner decisions
 
 - [ ] Q6 server/configuration treatment confirmed
-- [ ] Q8 expected return confirmed
-- [ ] Q9 backdating rule decided
-- [ ] Q10 project master/source decided
-- [ ] Q11 report audience and distribution decided
-- [ ] Q18 permanent-component calibration decided
-- [ ] administrators approved as global or data-layer-enforced by office
-- [ ] permanent asset rehome workflow decided
-- [ ] calibration failure and physical-receipt workflow decided
-- [ ] `migration/reports/03_models_review.md` signed off
-- [ ] `migration/reports/02_conflicts.md` signed off before any production load
+- [ ] Q8 expected-return rule confirmed
+- [ ] Q9 backdating window and conflict rule decided
+- [ ] Q10 project-master source decided
+- [ ] Q11 reporting audience confirmed
+- [ ] Q18 permanent-component calibration dispatch decided
+- [ ] administrator scope decided: global or data-layer-enforced by office
+- [ ] permanent asset rehome workflow approved
+- [ ] calibration failure and physical-lab-return workflow approved
+- [ ] ownership categories approved
+- [ ] supported offline workflows approved
+- [ ] supported device/browser matrix approved
 
-### IT and licensing
+### Enterprise platform decisions
 
-- [ ] Power Apps entitlement confirmed in writing for every pilot app user
-- [ ] Flow licensing selected for the automation identity or processes
-- [ ] Power BI reader model and licensing confirmed
-- [ ] Development and production environments created in Canada
-- [ ] Code Apps enabled in each environment
-- [ ] Dedicated least-privilege automation identity and Entra groups created
-- [ ] Build machine authenticated with the supported Power Platform CLI
-- [ ] Alert destination created with a named owner and monitored membership
+- [ ] Azure subscription and resource owner named
+- [ ] approved Canadian production region selected
+- [ ] internet-reachable behind Entra versus private-network-only access decided
+- [ ] application/data classification completed
+- [ ] Dev, UAT and Prod environment ownership agreed
+- [ ] Entra app-registration ownership agreed
+- [ ] GitHub-to-Azure workload identity approved
+- [ ] DNS and TLS ownership agreed
+- [ ] RTO, RPO, backup retention and production HA budget approved
+- [ ] alert destinations and on-call/support owners named
+- [ ] certificate malware-scanning approach approved
+- [ ] Azure cost centre and budget alert owner named
 
-**DoD:** decisions and sign-offs are recorded in `docs/08-decisions.md`; external prerequisites have
-named owners and evidence.
+### Existing migration sign-offs
 
----
+- [ ] `migration/reports/03_models_review.md` reviewed and signed
+- [ ] `migration/reports/02_conflicts.md` reviewed and signed before production load
 
-## Step 1 — Production architecture proof — blocks schema creation
-
-### 1A. State and identity model
-
-- [ ] Replace the catch-all status design with an approved model that independently represents
-      lifecycle, physical disposition, serviceability and calibration currency
-- [ ] Define complete paths for transit, missing/found, fault/repair and lab movement
-- [ ] Add a canonical Asset Identifier/Alias model so temporary and legacy tags do not require the
-      canonical Asset ID to change
-- [ ] Define permanent-component exceptions, including calibration, damage, missing, replacement and
-      retirement
-
-### 1B. Authoritative transaction command
-
-Design and prove one synchronous authoritative server operation for every state-changing event. Begin
-with checkout and demonstrate:
-
-- [ ] server reload and validation of every affected asset and relationship
-- [ ] server-computed before/after snapshots and side effects
-- [ ] one transaction header plus immutable lines
-- [ ] derived asset and relationship changes in the same commit
-- [ ] complete rollback on a deliberate mid-operation exception
-- [ ] concurrency arbitration from two devices
-- [ ] exactly-once retry using a client submission identifier
-- [ ] recorded time distinct from effective business time
-- [ ] compensating-event correction rather than header/line edits
-
-The recommended implementation for the selected stack is a synchronous Dataverse Custom API backed by
-transactional server logic. Any alternative must prove the same behavior.
-
-### 1C. Server-side registration
-
-- [ ] sequence allocation and asset creation occur in one server operation
-- [ ] the browser holds no service-account credential or impersonation authority
-- [ ] 100 concurrent registrations under one prefix produce 100 unique IDs
-
-**DoD:** feature 009 SC-001 to SC-005 pass against a development data platform. The existing F1 flow is
-reclassified as reconciliation/repair, not the ordinary mechanism that partially applies accepted
-transactions.
+**Definition of done:** Every decision has an owner and evidence. Architecture blockers are recorded in `docs/08-decisions.md`. No production resource or material cloud cost is created without enterprise approval.
 
 ---
 
-## Step 2 — Canonical schema, roles and solution
+## Stage 1 — Canonical architecture and schema approval
 
-Create one versioned schema covering all features rather than creating the original nine tables and
-adding untracked exceptions later.
+### 1A. Approve the web platform
 
-Required entities include:
+Review and approve:
 
-- Asset and Asset Identifier/Alias
-- Equipment Model
-- Location and Office Administrator Assignment
-- Project
-- Transaction and Transaction Line, including whole-event result and idempotency fields
-- Asset Relationship
-- Calibration Record
-- Installation and Installation Component
-- ID Sequence
-- notification state/history where repeat suppression requires it
-- synthetic run/provenance where tenant loading is permitted
+- [ ] `docs/14-webapp-architecture.md`
+- [ ] `specs/010-web-application-platform/spec.md`
+- [ ] `specs/010-web-application-platform/checklists/requirements.md`
+- [ ] continued applicability of `specs/009-production-readiness/spec.md`
 
-For every column record purpose, type, requiredness, defaults, keys, indexes, relationships, delete
-behavior, auditing, field security, cache behavior, migration rule and retention.
+### 1B. Approve the state model
 
-Also add structured ownership and an explicit permanent home-office transfer/rehome mechanism.
+- [ ] lifecycle separated from physical disposition
+- [ ] serviceability separated from disposition
+- [ ] calibration currency derived independently
+- [ ] Report Fault preserves custody/location/project/deployment
+- [ ] Repair Complete does not invent a return
+- [ ] Found requires an explicit resulting physical state
+- [ ] Retire resolves open custody, relationships and installations
+- [ ] compatibility display status remains presentation only
 
-- [ ] solution and publisher created
-- [ ] schema, choices, keys, indexes and relationships created
-- [ ] Field User, Administrator, Owner and least-privilege automation roles created
-- [ ] secured SIM/network field profile created
-- [ ] relationship constraints and authoritative command deployed
-- [ ] application user and connection references configured without embedded secrets
+### 1C. Approve the PostgreSQL model
 
-**DoD:** solution export succeeds; a fresh-environment import succeeds; forbidden direct API writes fail
-for every role in the security matrix.
+Review `docs/15-postgres-data-model.md` and close its open schema decisions.
 
----
+Required entities:
 
-## Step 3 — Migration rehearsal in Development
+- application user, role and office scope
+- equipment model
+- location hierarchy
+- project
+- asset and asset identifier/alias
+- transaction and immutable transaction line
+- command idempotency
+- asset relationship
+- calibration record
+- document and calibration-document association
+- installation and installation component
+- asset-ID sequence
+- transactional outbox
+- audit event
+- approved reporting views
 
-Use the existing cleaning and reporting pipeline, but add the real-target writer and cutover controls.
+For every table record:
 
-- [ ] use the corrected calibration export
-- [ ] load reference data, assets, inventory events and calibration evidence through supported APIs
-- [ ] keep ambiguous calibration evidence unmatched until a person confirms it
-- [ ] replace the temporary custodian allowlist with real directory resolution
-- [ ] write source/staged/target reconciliation counts and identifiers
-- [ ] run the full load twice and verify no duplicate business records
-- [ ] rehearse a changed-source delta after the first load
-- [ ] prove sequence state is isolated by environment
+- column purpose and type;
+- requiredness and defaults;
+- keys and indexes;
+- constraints;
+- relationship and delete behavior;
+- audit and retention behavior;
+- sensitive/offline behavior;
+- migration source;
+- ownership and write authority.
 
-**DoD:** feature 002 acceptance criteria pass against real Development rows; every source record is
-loaded or reported; the second run produces no duplicates; the delta rehearsal accounts for every
-change.
-
----
-
-## Step 4 — Real backend and hosted Code App
-
-- [ ] implement the real backend behind `AmsBackend`
-- [ ] route every write through the authoritative server operation
-- [ ] remove development role switching and mock-only controls from release builds
-- [ ] publish with the release-data guard and real backend selected
-- [ ] confirm hosted identity, deep links and 390 px layout
-- [ ] connect the production barcode/QR scanning capability
-- [ ] display whole-event pending/applied/rejected status rather than relying only on line processing
-
-**DoD:** features 001–005 are Tenant Implemented in Development; no screen writes derived fields
-directly; a five-asset transaction is atomic and exactly-once.
+**Definition of done:** Constitution check passes; no unresolved load-bearing schema conflict remains; the canonical schema is signed off before migrations are authored.
 
 ---
 
-## Step 5 — Automation and document integration
+## Stage 2 — Repository and local engineering foundation
 
-Build scheduled and asynchronous work only after the authoritative write path is complete.
+### 2A. Preserve the existing frontend
 
-- [ ] reconciliation/reprocess flow for genuinely incomplete system work
-- [ ] calibration recalculation on create, correction, reassociation, replacement and void
-- [ ] calibration reminders with approved cadence and bounded message size
+- [ ] retain `app/` as the PWA client
+- [ ] keep current screens and tests passing
+- [ ] mark Power Platform-specific adapters and release instructions as `LEGACY-POWER-PLATFORM`
+- [ ] do not delete legacy logic until replacement coverage exists
+
+### 2B. Add implementation structure when first needed
+
+Target structure:
+
+```text
+server/                 TypeScript API and worker
+packages/contracts/     shared validated API schemas
+packages/domain/        shared pure rules where safe
+db/migrations/          PostgreSQL schema migrations
+db/views/               reviewed reporting views
+infra/                   Bicep and environment parameters
+```
+
+- [ ] one root package/workspace command runs client, API and worker locally
+- [ ] formatting, lint, typecheck and tests are consistent across packages
+- [ ] local PostgreSQL is reproducible through an approved container/dev setup
+- [ ] test database is isolated and resettable
+- [ ] shared contracts generate or publish OpenAPI
+- [ ] secrets remain outside source
+
+### 2C. Baseline continuous integration
+
+PR CI must run:
+
+- [ ] install with lockfile enforcement
+- [ ] formatting/lint
+- [ ] TypeScript typecheck
+- [ ] existing frontend tests
+- [ ] API/unit tests
+- [ ] database migration validation
+- [ ] API contract tests
+- [ ] dependency and secret scanning
+- [ ] release bundle data scan
+- [ ] production container build
+
+**Definition of done:** A clean checkout can run the existing client plus a minimal API/database locally. CI is green and does not require a developer’s personal cloud credentials.
+
+---
+
+## Stage 3 — Identity, sessions and read-only API
+
+### 3A. Entra sign-in
+
+- [ ] tenant-scoped application registration
+- [ ] supported OIDC Authorization Code flow with PKCE
+- [ ] server-side session or approved Backend-for-Frontend design
+- [ ] secure, HttpOnly, same-site cookie policy
+- [ ] CSRF protection
+- [ ] state, nonce, redirect and logout validation
+- [ ] stable identity keyed by tenant ID + Entra object ID
+- [ ] UPN changes do not create duplicate users
+
+### 3B. Roles and office scope
+
+- [ ] Field User
+- [ ] Office Admin
+- [ ] System Owner
+- [ ] Report Reader
+- [ ] Entra role/group claims mapped deliberately
+- [ ] office scope stored and enforced by API
+- [ ] disabled/inactive user handling
+- [ ] direct API tests for cross-role and cross-office access
+
+### 3C. Read paths
+
+Implement approved HTTP endpoints for:
+
+- [ ] current user/session
+- [ ] asset search
+- [ ] asset detail
+- [ ] asset history
+- [ ] calibration due
+- [ ] locations/offices
+- [ ] equipment models
+- [ ] active projects
+- [ ] current installations
+- [ ] basic report views
+
+Responses are role-specific projections. Sensitive identifiers do not appear in general DTOs.
+
+**Definition of done:** Authorized users can sign in and read permitted data from PostgreSQL on desktop and mobile. Unauthorized, cross-office and direct-endpoint attempts are refused and tested.
+
+---
+
+## Stage 4 — Atomic transaction service: first production proof
+
+This stage blocks migration of all write screens.
+
+### 4A. Command contract
+
+Implement:
+
+```http
+POST /api/transactions
+Idempotency-Key: <UUID>
+```
+
+The browser submits intent and line membership. It does not submit authoritative before/after state, role, sequence value or previous ownership.
+
+### 4B. Database transaction behavior
+
+Within one PostgreSQL transaction:
+
+- [ ] authenticate and authorize caller
+- [ ] canonicalize request and calculate request hash
+- [ ] claim unique idempotency key
+- [ ] load affected assets in deterministic UUID order using row locks
+- [ ] validate every asset, project, relationship, component and required field
+- [ ] refuse complete command if any line fails
+- [ ] create one immutable transaction header
+- [ ] create one immutable line per affected asset
+- [ ] compute and update all derived state
+- [ ] open/close relationship and installation spans
+- [ ] write audit/outbox records
+- [ ] commit once
+- [ ] return transaction ID and all resulting states
+
+### 4C. Required first test
+
+Run a five-asset checkout test with:
+
+- [ ] two users racing for one overlapping asset
+- [ ] request retry after an accepted response is deliberately lost
+- [ ] same idempotency key with changed payload
+- [ ] injected exception after each material write step
+- [ ] reversed input order to test deterministic locking
+- [ ] invalid fifth asset to test complete rollback
+
+Expected result:
+
+- one winner;
+- one structured conflict;
+- one transaction for repeated accepted request;
+- zero partial commands;
+- zero browser-authored state;
+- immutable history.
+
+### 4D. Registration and Asset ID
+
+- [ ] sequence allocation occurs inside server registration transaction
+- [ ] temporary tags remain aliases
+- [ ] canonical ID is immutable
+- [ ] 100 concurrent same-prefix registrations produce 100 unique IDs
+
+**Definition of done:** Feature 009 and 010 atomicity/idempotency criteria pass against the real TypeScript/PostgreSQL boundary. No additional write workflow is called production-capable before this proof passes.
+
+---
+
+## Stage 5 — Move business workflows to HTTP
+
+Implement the production `AmsBackend` HTTP adapter and migrate workflows in this order:
+
+1. [ ] Checkout
+2. [ ] Return
+3. [ ] Transfer
+4. [ ] New asset / temporary-tag completion
+5. [ ] Report fault / repair complete
+6. [ ] Mark missing / found
+7. [ ] Send to calibration / physical return
+8. [ ] Record/correct calibration
+9. [ ] Retire
+10. [ ] Rehome asset
+11. [ ] Attach/detach permanent component
+12. [ ] Deploy
+13. [ ] Recover partially or fully
+14. [ ] Swap component / change live installation configuration
+15. [ ] Audit/stocktake
+
+For every workflow:
+
+- [ ] browser validates for fast feedback
+- [ ] API independently validates
+- [ ] role/office scope enforced
+- [ ] accepted event is atomic and idempotent
+- [ ] error codes map to understandable UI copy
+- [ ] history and current state reconcile
+- [ ] integration tests include race and invalid-state paths
+
+**Definition of done:** Features 001–005 are API Implemented in Dev. Mock and production adapters pass a shared contract suite where their behavior should match.
+
+---
+
+## Stage 6 — Progressive Web App and offline operation
+
+### 6A. PWA shell
+
+- [ ] web manifest
+- [ ] installability
+- [ ] service worker registration and update flow
+- [ ] offline application shell
+- [ ] safe update while drafts/commands exist
+- [ ] version compatibility between cached client and API
+
+### 6B. IndexedDB model
+
+Partition by:
+
+```text
+tenant ID + environment ID + user object ID
+```
+
+Store only approved projections:
+
+- [ ] active asset cache
+- [ ] reference data
+- [ ] limited history where approved
+- [ ] drafts
+- [ ] pending commands
+- [ ] conflict/Needs-attention records
+- [ ] schema version
+- [ ] cache age and last sync
+- [ ] originating identity
+- [ ] asset row versions
+- [ ] command hash and replay attempts
+
+Never store Field User restricted SIM/network values or certificate bytes.
+
+### 6C. Replay
+
+- [ ] replay when active application regains connectivity
+- [ ] manual retry
+- [ ] ordered dependency handling
+- [ ] exactly-once server result through idempotency
+- [ ] structured 409 conflict handling
+- [ ] no silent discard or force-apply
+- [ ] no replay under different identity
+- [ ] sign-out behavior for pending work
+
+Optional browser background-sync APIs may improve replay but cannot be the only mechanism.
+
+### 6D. Device verification
+
+For every approved iOS/Android browser/device class:
+
+- [ ] install and initial online sync
+- [ ] close app
+- [ ] reboot device
+- [ ] airplane-mode cold start
+- [ ] offline search
+- [ ] offline draft and queued command
+- [ ] conflict created from another device
+- [ ] reconnect and replay
+- [ ] expired session/token
+- [ ] same-device user switch
+- [ ] storage eviction behavior
+- [ ] service-worker update with queued commands
+- [ ] camera permission allowed/denied/interrupted
+- [ ] restricted fields absent from local store
+
+**Definition of done:** The supported offline scope is evidenced, not assumed. Unsupported behavior is removed from pilot acceptance or triggers a separate native-wrapper decision.
+
+---
+
+## Stage 7 — Documents and calibration correctness
+
+### 7A. Private Blob Storage
+
+- [ ] private container
+- [ ] anonymous access disabled
+- [ ] server/managed-identity access
+- [ ] no storage account key in browser or repository
+- [ ] collision-safe path and file naming
+- [ ] allowed content types
+- [ ] maximum size
+- [ ] SHA-256 integrity hash
+- [ ] malware-scan/quarantine state
+- [ ] replacement history
+- [ ] retention beyond retirement
+
+### 7B. Calibration transaction rules
+
+- [ ] Pass advances qualifying summaries
+- [ ] accepted Adjusted result advances qualifying summaries
+- [ ] Fail does not advance successful summaries
+- [ ] Fail does not return asset to service
+- [ ] older historical entry does not replace a newer qualifying record
+- [ ] correction/supersession/void recalculates summaries
+- [ ] upload failure preserves calibration fact
+- [ ] later attach does not require recreating calibration
+- [ ] physical return from lab is an explicit event
+- [ ] component calibration rule follows approved Q18 decision
+
+### 7C. Recovery consistency
+
+- [ ] database restore procedure
+- [ ] Blob document recovery procedure
+- [ ] reconciliation between calibration metadata and object existence/hash
+- [ ] orphan document and missing object reports
+
+**Definition of done:** Certificate and calibration workflows pass success, failure, correction, replacement, retirement and recovery tests.
+
+---
+
+## Stage 8 — Outbox, workers, notifications and reconciliation
+
+### Transactional outbox
+
+- [ ] outbox event committed with business event
+- [ ] worker lease/claim behavior
+- [ ] bounded retries
+- [ ] dead-letter or failed-state handling
+- [ ] idempotent consumers
+- [ ] backlog-age metric and alert
+
+### Scheduled/background capabilities
+
+- [ ] calibration reminders
 - [ ] overdue-return reminders
-- [ ] Teams/email delivery as best-effort with logged failures
-- [ ] SharePoint certificate upload with attach-later behavior, unique naming, approved type/size limit,
-      attribution and retention beyond retirement
-- [ ] each flow has a README covering trigger, reads, writes, identity, retries and terminal failure
+- [ ] unprocessed/consistency reconciliation
+- [ ] certificate scan/status follow-up
+- [ ] optional Teams/email delivery
+- [ ] office-to-admin resolution from live data
+- [ ] bounded notification size
+- [ ] approved reminder cadence
 
-**DoD:** automation failure produces an owned alert; failed notification does not corrupt business
-state; certificate and record failure modes are independently recoverable.
+Notification failure is logged and alerted according to policy but never rolls back or changes accepted asset state.
 
----
-
-## Step 6 — Power BI reporting
-
-The in-app Reports section remains useful for licensed app users but does not satisfy feature 006's
-manager-access requirement.
-
-- [ ] choose and document per-viewer or shared-model authorization
-- [ ] remove ICCID, phone number and static IP from the ordinary manager semantic model
-- [ ] implement Fleet, Where/Who, Availability, Calibration, By Project, Timeline and Utilisation pages
-- [ ] state data currency on every page
-- [ ] reconcile every figure to operational queries
-- [ ] test the report as every recipient role
-- [ ] confirm reader licensing and distribution
-
-**DoD:** managers can answer the seven acceptance questions without opening the Code App; no recipient
-sees a prohibited record or field.
+**Definition of done:** Workers can fail and recover without duplicate business effects. A terminal failure reaches a named monitored owner.
 
 ---
 
-## Step 7 — Security, device and recovery verification
+## Stage 9 — Reporting
 
-Complete `specs/009-production-readiness/checklists/requirements.md`.
+### In-app read-only reporting
+
+Implement:
+
+- [ ] Fleet
+- [ ] Where / Who
+- [ ] Availability by office
+- [ ] Calibration due / overdue / unknown
+- [ ] By project
+- [ ] Asset timeline
+- [ ] Site/installation timeline
+- [ ] Utilisation with acquisition/go-live boundary protection
+
+### Access and export
+
+- [ ] Report Reader role
+- [ ] no operational write privileges
+- [ ] secured fields absent from manager responses and exports
+- [ ] data currency stated on every view
+- [ ] export authorization tested
+- [ ] queries reconciled to operational records
+
+### Optional Power BI
+
+Power BI is added only if needed after the web reports are accepted.
+
+- [ ] approved read-only SQL views only
+- [ ] identity/RLS model documented
+- [ ] no unrestricted table connection
+- [ ] secured fields excluded from general semantic model
+- [ ] reader licensing/capacity decision recorded
+
+**Definition of done:** An authorized manager can answer all seven programme questions from the web application without a Power Apps runtime licence and without seeing restricted fields.
+
+---
+
+## Stage 10 — Azure infrastructure and deployment
+
+### Infrastructure-as-code
+
+- [ ] Container Apps environment
+- [ ] web/API container app
+- [ ] worker or scheduled job
+- [ ] Azure Container Registry
+- [ ] PostgreSQL Flexible Server
+- [ ] private networking / private access as approved
+- [ ] Blob Storage
+- [ ] Key Vault where needed
+- [ ] Log Analytics / Application Insights
+- [ ] DNS and managed/approved certificates
+- [ ] managed identities and least-privilege RBAC
+- [ ] environment parameters for Dev/UAT/Prod
+- [ ] budget alerts
+
+### Delivery
+
+- [ ] GitHub Actions OIDC/workload identity
+- [ ] image build and vulnerability scan
+- [ ] migration compatibility check
+- [ ] deploy immutable revision
+- [ ] health and smoke verification
+- [ ] controlled traffic promotion
+- [ ] recorded source commit, image digest, schema version and actor
+- [ ] application rollback procedure
+- [ ] schema forward-recovery/compatibility procedure
+
+**Definition of done:** A fresh non-production environment is deployable from repository artifacts plus documented enterprise prerequisites. No long-lived Azure deployment secret is stored in GitHub.
+
+---
+
+## Stage 11 — Migration rehearsal and cutover
+
+### Preserve existing migration strengths
+
+- [ ] frozen source profile
+- [ ] corrected calibration export
+- [ ] curated equipment model mapping
+- [ ] one-to-one source office mapping
+- [ ] duplicate/conflict reports
+- [ ] temporary-tag completion queue
+- [ ] unknown-custodian sweep
+- [ ] row-level source traceability
+- [ ] idempotent outputs
+
+### PostgreSQL loader
+
+- [ ] reference data
+- [ ] users needed for attribution
+- [ ] assets and aliases
+- [ ] inventory events
+- [ ] calibration evidence
+- [ ] supported component relationships
+- [ ] derived summary recalculation
+- [ ] outbox disabled or controlled during bulk load
+- [ ] reconciliation reports
+
+### Cutover rehearsal
+
+- [ ] initial UAT snapshot
+- [ ] source change/delta after rehearsal
+- [ ] freeze date and time
+- [ ] final delta extraction
+- [ ] final load
+- [ ] source/staged/target reconciliation
+- [ ] second-run empty business diff
+- [ ] performance timing
+- [ ] rollback criteria and procedure
+- [ ] physical Ottawa sample verification
+
+Ambiguous calibration evidence remains unmatched until a person confirms the target.
+
+**Definition of done:** Every source record is loaded or explained. Both hard sign-offs exist. The cutover fits the approved window and can be reversed according to the approved criteria.
+
+---
+
+## Stage 12 — Security, load and recovery verification
 
 ### Security
 
-- [ ] direct API, export and report role matrix passes
-- [ ] office scope is enforced or the administrator role is explicitly global
-- [ ] relationship invariants cannot be bypassed
-- [ ] automation identity is least privilege
+- [ ] authentication and session tests
+- [ ] direct API role matrix
+- [ ] direct API office-scope matrix
+- [ ] insecure direct object reference tests
+- [ ] CSRF and redirect tests
+- [ ] document authorization tests
+- [ ] export tests
+- [ ] sensitive-field network/cache tests
+- [ ] dependency/container/IaC scans
+- [ ] audit and incident evidence
 
-### Hosted mobile and offline
+### Load
 
-Test published iOS and Android behavior for:
+At minimum:
 
-- [ ] online-to-offline use
-- [ ] cold close/reopen while offline
-- [ ] device restart
-- [ ] queued checkout/return/transfer
-- [ ] conflict created from another device
-- [ ] expired authentication token
-- [ ] signed-in user change on the same device
-- [ ] scanner permission denied/granted/interrupted
-- [ ] secured data absent from Field User local storage
-
-Any failed capability is removed from pilot acceptance or explicitly marked unsupported.
+- [ ] 5,000 active assets
+- [ ] 100,000+ transaction lines
+- [ ] concurrent search/read load
+- [ ] simultaneous overlapping transactions
+- [ ] long asset timeline
+- [ ] report queries
+- [ ] migration throughput
+- [ ] outbox backlog recovery
 
 ### Recovery
 
-- [ ] previous app release restored
-- [ ] platform/solution recovery rehearsed separately
-- [ ] business-data restore rehearsed separately
-- [ ] certificate documents and links recovered
-- [ ] RPO, RTO, backup owner and restore-test frequency approved
+- [ ] PostgreSQL point-in-time restore to isolated environment
+- [ ] Blob recovery or version/backup restore according to approved design
+- [ ] metadata/object/hash reconciliation
+- [ ] measured RTO and RPO
+- [ ] previous compatible application revision restored
+- [ ] alert and escalation rehearsal
 
-**DoD:** features can be marked Security Verified and Device Verified with dated evidence.
+**Definition of done:** Feature 009 and 010 security, device, scale and recovery criteria have dated evidence.
 
 ---
 
-## Step 8 — Ottawa pilot
+## Stage 13 — Ottawa pilot
 
-- [ ] freeze Ottawa's legacy source and load the final delta
-- [ ] keep other offices on the legacy source read-only within their own rollout boundary
-- [ ] complete the unknown-custodian return sweep
+### Entry criteria
+
+- atomic transaction proof passed;
+- production workflows use HTTP/API rather than mock/Dataverse;
+- Entra and office scope verified;
+- supported offline matrix passed;
+- document/calibration failure behavior passed;
+- migration rehearsal and sign-offs complete;
+- restore exercise complete;
+- alerts and support ownership active.
+
+### Pilot work
+
+- [ ] freeze and load Ottawa final delta
+- [ ] conduct unknown-custodian return sweep
 - [ ] perform at least 20 real checkout/return cycles
-- [ ] track rejected conflicts, partial-event count, support incidents and unprocessed work
-- [ ] physically verify a sample of available stock and calibration status
-- [ ] answer all seven acceptance questions from tenant data
+- [ ] deliberately exercise double-booking refusal
+- [ ] exercise supported offline queue/conflict path
+- [ ] record calibration and certificate
+- [ ] physically verify available stock sample
+- [ ] answer all seven acceptance questions
+- [ ] track support incidents, conflicts, latency, worker failures and corrections
 
-Pilot acceptance requires:
+### Exit criteria
 
-- zero partial multi-asset actions;
+- zero partial multi-asset commands;
+- zero duplicate accepted retries;
 - zero direct user writes to derived state;
-- every deliberate double-booking refused;
-- zero silently lost queued submissions within the supported offline scope;
-- no unauthorized secured-field exposure; and
-- owned monitoring and recovery procedures.
+- every deliberate double booking refused;
+- zero silently lost queued commands in the supported scope;
+- zero unauthorized sensitive-field exposure;
+- report results reconcile;
+- support and recovery procedures are usable by a successor.
 
 ---
 
-## Step 9 — Production rollout by office
+## Stage 14 — Production rollout by office
 
 - [ ] review pilot findings and amend specs/decisions
-- [ ] repeat rehearsal, freeze, delta and reconciliation per office
-- [ ] re-parent locations and assign administrators through approved workflows
-- [ ] load remaining offices in controlled waves
-- [ ] retire the legacy write paths after reconciliation
-- [ ] conduct post-rollout restore and alert tests
+- [ ] repeat rehearsal/freeze/delta/reconciliation per rollout wave
+- [ ] establish office scope and administrators
+- [ ] load remaining offices
+- [ ] retain rollback window
+- [ ] retire legacy write paths only after reconciliation
+- [ ] repeat post-release alert and recovery checks
 
 ---
 
-## Definition of done — whole programme
+## Whole-programme definition of done
 
-- All seven acceptance questions are answered live from production tenant data.
-- Features are marked Production Accepted only after Spec Approved, Tenant Implemented, Security
-  Verified, Device Verified and Pilot Accepted evidence exists.
-- Multi-asset events are atomic, server-authoritative and exactly-once.
-- Current state is derived without a direct user write path.
-- The solution imports cleanly into a fresh environment with no undocumented manual step.
+- All seven acceptance questions are answered live from production data.
+- Every complete business event is atomic, server-authoritative and idempotent.
+- Current state is derived from immutable accepted history.
+- Canonical Asset IDs are immutable and legacy/temporary tags remain searchable aliases.
+- Role and office authorization hold through direct API and document access.
+- Supported offline behavior is verified on real managed devices.
+- Calibration and certificate failure paths preserve truthful compliance records.
+- Core operation continues without optional Teams, SharePoint or Power BI integrations.
 - Migration and final deltas account for every source record.
-- Report and cache paths expose no secured fields to unauthorized users.
-- App rollback, platform recovery and data restore are separate, rehearsed procedures.
-- `docs/` and `specs/` match the approved production behavior; every deviation is recorded in
-  `docs/08-decisions.md`.
+- The system deploys into a fresh environment from repository artifacts and documented prerequisites.
+- Application rollback, schema compatibility, database restore and document recovery are separate, tested procedures.
+- A successor can deploy, verify, observe, restore and support the system without undocumented author knowledge.
