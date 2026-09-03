@@ -91,15 +91,31 @@ export function CheckoutPage() {
       return;
     }
     setSubmitting(true);
-    // FR-023: re-verify every asset's status at submission before committing
+    // FR-023: re-verify every asset's status at submission before committing.
+    //
+    // Best-effort, and it has to be: this is a freshness check, not a security boundary — the
+    // backend refuses an invalid transition independently (Principle V), which the local API was
+    // observed doing for this exact case. So a re-check that CANNOT BE PERFORMED must not stop
+    // the submission, or FR-036's whole point is lost: with no connectivity the read throws, and
+    // an unguarded `await` here left the button on "Submitting…" for ever and never reached the
+    // offline queue that exists precisely for this moment. Found against the local API by
+    // stopping it mid-submit; impossible to hit with the mock, whose reads cannot fail.
+    let reachable = true;
     for (const item of cart) {
-      const fresh = await backend.getAsset(item.asset.assetid);
+      let fresh: Asset | null;
+      try {
+        fresh = await backend.getAsset(item.asset.assetid);
+      } catch {
+        reachable = false; // offline — skip the rest of the re-check and let the queue take it
+        break;
+      }
       if (!fresh || fresh.status !== "Available") {
         setSubmitting(false);
         setSubmitError(t("cart.changedSinceAdded", { assetId: item.asset.assetid }));
         return;
       }
     }
+    void reachable;
     // FR-036: routed through the offline queue rather than calling backend.submitCheckout
     // directly — if the transport call throws (no connectivity), the queue accepts it, persists
     // it, and replays it in order on reconnect (FR-037/FR-038); it is never silently lost.
@@ -142,7 +158,7 @@ export function CheckoutPage() {
             setQueued(false);
           }}
         >
-          {t("checkout.title")} — {t("common.back")}
+          {t("common.back")}
         </Button>
       </div>
     );

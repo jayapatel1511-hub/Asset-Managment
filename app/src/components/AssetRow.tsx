@@ -1,7 +1,9 @@
-import { Text, tokens } from "@fluentui/react-components";
+import { Badge, Text, tokens } from "@fluentui/react-components";
 import { useNavigate } from "react-router-dom";
 import type { Asset } from "../api/types";
 import { isIncompleteAssetId } from "../domain/assetId";
+import { usePendingSync } from "../hooks/usePendingSync";
+import { t } from "../i18n";
 import { StatusPill } from "./StatusPill";
 import { CalendarClockRegular, WarningRegular } from "@fluentui/react-icons";
 
@@ -13,6 +15,8 @@ function isOverdue(asset: Asset): boolean {
 export function AssetRow({ asset, overdueDetail }: { asset: Asset; overdueDetail?: string }) {
   const navigate = useNavigate();
   const overdue = isOverdue(asset);
+  // FR-040 / UI spec C10: a submission touching this asset has not been confirmed yet.
+  const pending = usePendingSync(asset.assetid);
 
   return (
     <div
@@ -36,7 +40,10 @@ export function AssetRow({ asset, overdueDetail }: { asset: Asset; overdueDetail
             <WarningRegular fontSize={14} style={{ marginLeft: 6, color: tokens.colorPaletteMarigoldForeground1, verticalAlign: "text-bottom" }} />
           )}
         </Text>
-        <StatusPill status={asset.status} />
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          {pending && <Badge color="warning" size="small">{t("offline.pendingBadge")}</Badge>}
+          <StatusPill status={asset.status} />
+        </div>
       </div>
       <Text size={200}>
         {asset.equipmentmodel.manufacturer} {asset.equipmentmodel.model}
@@ -47,7 +54,7 @@ export function AssetRow({ asset, overdueDetail }: { asset: Asset; overdueDetail
       </div>
       {overdue && (
         <Text size={200} style={{ color: tokens.colorPaletteRedForeground1, display: "flex", alignItems: "center", gap: 4 }}>
-          <CalendarClockRegular fontSize={14} /> {overdueDetail ?? "Calibration overdue"}
+          <CalendarClockRegular fontSize={14} /> {overdueDetail ?? t("asset.calOverdue")}
         </Text>
       )}
     </div>

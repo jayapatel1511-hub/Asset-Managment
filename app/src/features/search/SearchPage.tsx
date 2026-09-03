@@ -16,6 +16,7 @@ import type { Asset } from "../../api/types";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { AssetRow } from "../../components/AssetRow";
 import { t } from "../../i18n";
+import { equipmentTypeLabel } from "../../i18n/humanise";
 // Feature 008 T012: the typed-code stand-in for the SDK camera is excluded from a release
 // bundle by src/devStandins.tsx's build-time gate.
 import { DevScanDialog, MOCK_STANDINS_INCLUDED } from "../../devStandins";
@@ -24,6 +25,9 @@ type QuickFilter = "mine" | "availableHere" | "calDue30" | null;
 
 export function SearchPage() {
   const [query, setQuery] = useState("");
+  // G-10: true only when a scan resolved to several assets sharing one serial, so the pick
+  // list can explain itself. Cleared as soon as the query changes — it describes THAT result.
+  const [disambiguating, setDisambiguating] = useState(false);
   const [results, setResults] = useState<Asset[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<QuickFilter>(null);
@@ -105,6 +109,9 @@ export function SearchPage() {
       navigate(`/asset/${encodeURIComponent(bySerial[0].assetid)}`);
     } else if (bySerial.length > 1) {
       setResults(bySerial); // FR-021: present a choice rather than a guess
+      // UI spec G-10: say WHY there are two, rather than showing an unexplained pair of rows.
+      // This is Principle III's own worked example (DL-UM-16984 / GEO-UM-16984) on screen.
+      setDisambiguating(true);
       setQuery(code);
     } else {
       setQuery(code); // unknown tag — fall back to a prefilled search, per FR-021 / US6 scenario 3
@@ -127,6 +134,7 @@ export function SearchPage() {
           onChange={(_, data) => {
             setQuery(data.value);
             setFilter(null);
+            setDisambiguating(false);
           }}
         />
         {/* The button goes with the dialog: in a release bundle there is no scanner behind it
@@ -178,13 +186,19 @@ export function SearchPage() {
         </div>
       )}
 
+      {disambiguating && results && results.length > 1 && (
+        <MessageBar intent="warning" style={{ margin: "0 12px 8px" }}>
+          <MessageBarBody>{t("asset.disambiguate")}</MessageBarBody>
+        </MessageBar>
+      )}
+
       {!loading && grouped && results && results.length > 0 && (
         <div>
           {[...grouped.entries()].map(([type, assets]) => (
             <div key={type}>
               <div style={{ padding: "6px 12px", background: tokens.colorNeutralBackground3, display: "flex", justifyContent: "space-between" }}>
                 <Text weight="semibold" size={200}>
-                  {type}
+                  {equipmentTypeLabel(type)}
                 </Text>
                 <Text size={200}>{assets.length}</Text>
               </div>

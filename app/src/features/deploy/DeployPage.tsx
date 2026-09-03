@@ -228,7 +228,7 @@ export function DeployPage() {
               onKeyDown={(e) => e.key === "Enter" && pickPrimary()}
             />
             <Button appearance="primary" onClick={pickPrimary}>
-              {t("deploy.addComponent")}
+              {t("deploy.addPrimary")}
             </Button>
           </div>
         )}

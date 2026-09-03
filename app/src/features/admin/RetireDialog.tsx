@@ -23,10 +23,19 @@ export function RetireDialog({ asset, onClose, onDone }: { asset: Asset; onClose
   const [reason, setReason] = useState<RetirementReason | "">("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // UI spec G-15: retirement is the one action here with no undo in the app (only a
+  // compensating transaction by a System Owner), and it was one tap from a dropdown. The
+  // `admin.retire.confirm` string already existed for this and was unused.
+  const [confirming, setConfirming] = useState(false);
 
   async function submit() {
     if (!reason) {
       setError(t("admin.retire.reasonRequired"));
+      return;
+    }
+    if (!confirming) {
+      setError(null);
+      setConfirming(true);
       return;
     }
     setBusy(true);
@@ -51,8 +60,16 @@ export function RetireDialog({ asset, onClose, onDone }: { asset: Asset; onClose
                 <MessageBarBody>{error}</MessageBarBody>
               </MessageBar>
             )}
+            {confirming && (
+              <MessageBar intent="warning">
+                <MessageBarBody>{t("admin.retire.confirm", { assetId: asset.assetid })}</MessageBarBody>
+              </MessageBar>
+            )}
             <Field label={t("admin.retire.reason")} required>
-              <Select style={{ minWidth: 0, width: "100%" }} value={reason} onChange={(_, d) => setReason(d.value as RetirementReason)}>
+              <Select style={{ minWidth: 0, width: "100%" }} value={reason} onChange={(_, d) => {
+                  setReason(d.value as RetirementReason);
+                  setConfirming(false); // a changed reason is a changed decision — confirm it again
+                }}>
                 <option value="" disabled>
                   —
                 </option>
@@ -69,7 +86,7 @@ export function RetireDialog({ asset, onClose, onDone }: { asset: Asset; onClose
               <Button appearance="secondary">{t("common.cancel")}</Button>
             </DialogTrigger>
             <Button appearance="primary" disabled={busy} onClick={submit}>
-              {t("asset.actions.retire")}
+              {confirming ? t("common.confirm") : t("asset.actions.retire")}
             </Button>
           </DialogActions>
         </DialogBody>

@@ -170,7 +170,7 @@ export function RecoverPage() {
         </MessageBar>
       )}
 
-      <Field label={t("deploy.deploymentDate")} required>
+      <Field label={t("recover.date")} required>
         <Input type="date" value={recoveryDate} onChange={(_, d) => setRecoveryDate(d.value)} />
       </Field>
       <Field label={t("deploy.notes")}>

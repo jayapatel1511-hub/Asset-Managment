@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   Badge,
   Button,
+  MessageBar,
+  MessageBarBody,
   Spinner,
   Tab,
   TabList,
@@ -12,12 +14,14 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { backend } from "../../api";
-import type { Asset, CalibrationRecord, HistoryEntry, Installation, KitRole, Orientation } from "../../api/types";
+import type { Asset, AssetRelationship, CalibrationRecord, HistoryEntry, Installation, KitRole, Orientation } from "../../api/types";
 import { STATE_MACHINE, type TransactionType } from "../../domain/stateMachine";
 import { isIncompleteAssetId } from "../../domain/assetId";
 import { StatusPill } from "../../components/StatusPill";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { usePendingSync } from "../../hooks/usePendingSync";
 import { t } from "../../i18n";
+import { equipmentTypeLabel, statusLabel } from "../../i18n/humanise";
 import { RecordCalibrationDialog } from "../calibration/RecordCalibrationDialog";
 import { RetireDialog } from "../admin/RetireDialog";
 import { SendToCalibrationDialog } from "../calibration/SendToCalibrationDialog";
@@ -46,6 +50,7 @@ export function AssetDetailPage() {
   const { assetId = "" } = useParams();
   const navigate = useNavigate();
   const { admin } = useCurrentUser();
+  const pendingSync = usePendingSync(assetId);
   const [asset, setAsset] = useState<Asset | null | undefined>(undefined);
   const [tab, setTab] = useState<"history" | "calibration">("history");
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -56,6 +61,11 @@ export function AssetDetailPage() {
   // report recommended.
   const [deployments, setDeployments] = useState<Array<{ installation: Installation; kitrole: KitRole | null; orientation: Orientation | null }>>([]);
   const [dialog, setDialog] = useState<null | "calibration" | "retire" | "sendToCal" | "fault" | "missing">(null);
+  // UI spec G-11: the asset's own open Component/Kit children, listed as "Attached items".
+  const [children, setChildren] = useState<AssetRelationship[]>([]);
+  // G-13: a refusal from one of the one-tap actions used to be a browser alert(), which on a
+  // phone is a modal nobody can copy text out of. It is an inline error MessageBar now.
+  const [actionError, setActionError] = useState<string | null>(null);
 
   async function refresh() {
     const a = await backend.getAsset(assetId);
@@ -72,6 +82,8 @@ export function AssetDetailPage() {
         })
       );
       setDeployments(withRole);
+      const relationships = await backend.getAssetRelationships(a.assetid);
+      setChildren(relationships.filter((r) => r.parentasset === a.assetid && r.end === null));
     }
   }
 
@@ -81,9 +93,23 @@ export function AssetDetailPage() {
   }, [assetId]);
 
   async function runSimpleAction(fn: () => Promise<{ ok: boolean; reason?: string }>) {
-    const result = await fn();
-    if (!result.ok) alert(result.reason ?? "That didn't work.");
-    await refresh();
+    setActionError(null);
+    try {
+      const result = await fn();
+      if (!result.ok) setActionError(result.reason ?? t("common.actionFailed"));
+    } catch (err) {
+      // A REFUSAL arrives as { ok: false } and is handled above; landing here means the request
+      // never completed — the http backend throws on a transport failure, by contract, so the
+      // offline queue can tell the two apart. Without this catch the rejection was unhandled: no
+      // message, no reset, and the user tapped again. These one-tap actions do not go through
+      // the queue (only Checkout/Return/Transfer do), so telling them plainly is all we can do.
+      setActionError(err instanceof Error ? err.message : t("common.actionFailed"));
+    }
+    try {
+      await refresh();
+    } catch {
+      // The action may well have succeeded; only the re-read failed. Leave what is on screen.
+    }
   }
 
   if (asset === undefined) return <Spinner style={{ margin: 24 }} label={t("common.loading")} />;
@@ -103,11 +129,12 @@ export function AssetDetailPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <Title2 style={{ fontFamily: tokens.fontFamilyMonospace }}>{asset.assetid}</Title2>
           <StatusPill status={asset.status} />
+          {pendingSync && <Badge color="warning">{t("offline.pendingBadge")}</Badge>}
           {asset.lifecycle === "Retired" && <Badge color="subtle">{t("asset.retired")}</Badge>}
           {isIncompleteAssetId(asset.assetid) && <Badge color="warning">{t("asset.temporaryTag")}</Badge>}
         </div>
         <Text size={300}>
-          {asset.equipmentmodel.manufacturer} {asset.equipmentmodel.model} · {asset.equipmentmodel.equipmenttype}
+          {asset.equipmentmodel.manufacturer} {asset.equipmentmodel.model} · {equipmentTypeLabel(asset.equipmentmodel.equipmenttype)}
         </Text>
       </div>
 
@@ -122,9 +149,17 @@ export function AssetDetailPage() {
           value={asset.nextcaldue ?? t("common.unknown")}
           danger={isOverdue(asset)}
         />
+        {/* UI spec G-11: specified for the Now card and not rendered until now. */}
+        <Field label={t("asset.lastCalDate")} value={asset.lastcaldate ?? "—"} />
       </section>
 
       {isOverdue(asset) && <Badge color="danger">{t("asset.overdue")}</Badge>}
+
+      {actionError && (
+        <MessageBar intent="error">
+          <MessageBarBody>{actionError}</MessageBarBody>
+        </MessageBar>
+      )}
 
       {/* docs/12-ui-spec.md G-11: the SIM fields, specified for Office Admin and above and not
           rendered until now. There is deliberately NO role check here — FR-030 is enforced in the
@@ -150,6 +185,35 @@ export function AssetDetailPage() {
           {asset.identifiervalue && <Field label={t("asset.sim.iccid")} value={asset.identifiervalue} />}
           {asset.phonenumber && <Field label={t("asset.sim.phone")} value={asset.phonenumber} />}
           {asset.staticip && <Field label={t("asset.sim.staticIp")} value={asset.staticip} />}
+        </section>
+      )}
+
+      {/* UI spec G-11: an asset's open Component and Kit children — the SLM's pre-amp and
+          element, a modem's SIM, or whatever is checked out under this logger right now.
+          A permanent Component carries no transaction line of its own, so without this list
+          there was nowhere on screen showing what travels with the asset. */}
+      {children.length > 0 && (
+        <section>
+          <Text weight="semibold" size={200} style={{ display: "block", marginBottom: 4 }}>
+            {t("asset.children")}
+          </Text>
+          {children.map((rel) => (
+            <div
+              key={rel.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/asset/${encodeURIComponent(rel.childasset)}`)}
+              onKeyDown={(e) => e.key === "Enter" && navigate(`/asset/${encodeURIComponent(rel.childasset)}`)}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}`, cursor: "pointer" }}
+            >
+              <Text font="monospace" weight="semibold" size={200}>
+                {rel.childasset}
+              </Text>
+              <Badge color={rel.relationshiptype === "Component" ? "informative" : "subtle"}>
+                {rel.relationshiptype}
+              </Badge>
+            </div>
+          ))}
         </section>
       )}
 
@@ -239,7 +303,7 @@ export function AssetDetailPage() {
               </Text>
               <br />
               <Text size={200}>
-                {h.statusbefore} → {h.statusafter}
+                {statusLabel(h.statusbefore)} → {statusLabel(h.statusafter)}
                 {h.touser ? ` · to ${h.touser}` : ""}
                 {h.tolocation ? ` · to ${h.tolocation}` : ""}
                 {h.toproject ? ` · project ${h.toproject}` : ""}

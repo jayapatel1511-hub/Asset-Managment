@@ -20,6 +20,7 @@ import type { Asset, FleetCounts, Location, Project } from "../../api/types";
 import type { AssetFilter } from "../../api/AmsBackend";
 import { AssetRow } from "../../components/AssetRow";
 import { t } from "../../i18n";
+import { humaniseEnum } from "../../i18n/humanise";
 
 const ALL = "";
 
@@ -30,7 +31,7 @@ function BreakdownList({ counts }: { counts: Record<string, number> }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {entries.map(([key, count]) => (
         <div key={key || "—"} style={{ display: "flex", justifyContent: "space-between" }}>
-          <Text size={200}>{key || t("common.unknown")}</Text>
+          <Text size={200}>{key ? humaniseEnum(key) : t("common.unknown")}</Text>
           <Text size={200} weight="semibold">
             {count}
           </Text>

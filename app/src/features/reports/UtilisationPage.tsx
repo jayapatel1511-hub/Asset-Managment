@@ -183,13 +183,13 @@ export function UtilisationPage() {
         </div>
         <Dropdown
           size="small"
-          value={period === 30 ? t("calibration.horizon30") : period === 90 ? t("calibration.horizon90") : "365"}
+          value={period === 30 ? t("calibration.horizon30") : period === 90 ? t("calibration.horizon90") : t("reports.utilisation.period365")}
           selectedOptions={[String(period)]}
           onOptionSelect={(_, d) => setPeriod(Number(d.optionValue) as PeriodDays)}
         >
           <Option value="30">{t("calibration.horizon30")}</Option>
           <Option value="90">{t("calibration.horizon90")}</Option>
-          <Option value="365">365</Option>
+          <Option value="365">{t("reports.utilisation.period365")}</Option>
         </Dropdown>
       </div>
 

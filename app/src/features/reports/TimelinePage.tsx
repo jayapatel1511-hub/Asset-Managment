@@ -12,6 +12,7 @@ import type { Asset, AssetRelationship, HistoryEntry } from "../../api/types";
 import { buildTimeline, stateAsOf, type TimelineEvent } from "../../domain/pointInTime";
 import { StatusPill } from "../../components/StatusPill";
 import { t } from "../../i18n";
+import { statusLabel } from "../../i18n/humanise";
 
 function csvCell(value: string): string {
   return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
@@ -170,7 +171,7 @@ function TimelineRow({ event }: { event: TimelineEvent }) {
         {new Date(h.transactiondate).toLocaleString()} — {h.transactiontype}
       </Text>
       <Text size={200} style={{ display: "block" }}>
-        {h.statusbefore} → {h.statusafter}
+        {statusLabel(h.statusbefore)} → {statusLabel(h.statusafter)}
         {h.tolocation ? ` · ${h.tolocation}` : ""}
         {h.touser ? ` · ${h.touser}` : ""}
         {h.toproject ? ` · ${h.toproject}` : ""}

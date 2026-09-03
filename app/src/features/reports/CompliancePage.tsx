@@ -104,7 +104,7 @@ export function CompliancePage() {
       </div>
 
       <Card style={{ padding: 12 }}>
-        <Title3>{t("reports.title")}</Title3>
+        <Title3>{t("reports.compliance.byOffice")}</Title3>
         {!counts && <Spinner size="tiny" style={{ marginTop: 8 }} />}
         {counts && (
           <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
