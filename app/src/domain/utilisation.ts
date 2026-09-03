@@ -11,6 +11,19 @@
  * a period; `computeUtilisation` goes one step further and makes it structurally impossible for a
  * second consumer to forget to check — its return type forces the caller to handle the
  * insufficient-history case before it can reach the spans at all.
+ *
+ * FR-028 DEFECT FIXED (recorded in docs/08-decisions.md): the first implementation used *each
+ * asset's own first transaction* as the boundary. FR-028 as clarified 2026-09-02 says the boundary
+ * is the date the FLEET's records began, and that a period starting before an asset's own
+ * **acquisition** is a different case entirely — the asset did not yet exist, so it must be
+ * clipped to its acquisition date or excluded, never reported as insufficient history. The two
+ * coincide in the migrated data, where every asset's first line is dated the migration day, which
+ * is why the conflation was invisible until feature 007 supplied a fleet acquired across twenty
+ * years — and why it would have mattered for every asset bought after go-live: a logger bought
+ * last month made a 90-day report refuse rather than report its five weeks of service.
+ *
+ * So the boundary is now an explicit argument. A function that infers it from the one history in
+ * front of it cannot tell the two facts apart; the caller has to say which one it means.
  */
 import type { AssetStatus } from "./stateMachine";
 import type { HistoryEntry } from "../api/types";
@@ -90,20 +103,73 @@ function makeSpan(status: AssetStatus, start: string, end: string): StatusSpan {
   return { status, start, end, durationMs: new Date(end).getTime() - new Date(start).getTime() };
 }
 
-/**
- * FR-027/FR-028: false when `from` precedes this asset's first recorded transaction — the
- * migration-boundary guard. An asset with no history at all (shouldn't happen for a real asset,
- * every one has at least an AddToInventory line) is also insufficient.
- */
-export function hasSufficientHistory(history: HistoryEntry[], from: string): boolean {
-  if (history.length === 0) return false;
-  const earliest = history.reduce((min, e) => (e.transactiondate < min ? e.transactiondate : min), history[0].transactiondate);
-  return earliest <= from;
+/** ISO date of the earliest transaction in a history, or null for an empty one. */
+function earliestDate(history: HistoryEntry[]): string | null {
+  if (history.length === 0) return null;
+  return history.reduce((min, e) => (e.transactiondate < min ? e.transactiondate : min), history[0].transactiondate);
 }
 
+/**
+ * FR-028's actual boundary: the date the FLEET's records began — the earliest transaction across
+ * every asset considered, not any one asset's first line. Computed once by the caller and passed
+ * to `computeUtilisation` for each asset.
+ *
+ * Against the real migrated data every line is dated the migration day, so this is that day and a
+ * period reaching further back is still refused — the behaviour that was right all along. With
+ * feature 007's twenty-year synthetic history it is 2006, so periods inside those twenty years
+ * compute instead of refusing.
+ */
+export function recordsBeganAt(histories: Iterable<HistoryEntry[]>): string | null {
+  let earliest: string | null = null;
+  for (const history of histories) {
+    const candidate = earliestDate(history);
+    if (candidate !== null && (earliest === null || candidate < earliest)) earliest = candidate;
+  }
+  return earliest;
+}
+
+/**
+ * When this asset entered the register: the earliest `AddToInventory` line. Distinct from its
+ * earliest line of any kind — for a migrated asset they are the same date, but for an asset that
+ * arrived later this is what separates "our records do not go back that far" from "it was not
+ * ours yet". Null when acquisition was never recorded, in which case there is nothing to clip to.
+ */
+export function acquisitionDate(history: HistoryEntry[]): string | null {
+  return earliestDate(history.filter((e) => e.transactiontype === "AddToInventory"));
+}
+
+/**
+ * FR-027/FR-028: false when `from` precedes the date the fleet's records began — when no amount
+ * of stored history could answer the question, so presenting a figure would be a claim about a
+ * period the system knows nothing about.
+ *
+ * `recordsBegan` is required rather than inferred, and `null` (an unknown boundary) falls back to
+ * this asset's own earliest line — the conservative reading, which refuses more rather than
+ * inventing a figure. This deliberately does NOT consider the asset's acquisition: an asset
+ * bought inside the period has sufficient history, just a shorter window, which
+ * `computeUtilisation` clips.
+ */
+export function hasSufficientHistory(history: HistoryEntry[], from: string, recordsBegan: string | null): boolean {
+  if (history.length === 0) return false;
+  const boundary = recordsBegan ?? earliestDate(history);
+  return boundary !== null && boundary <= from;
+}
+
+/** Why no proportion figure is available for an asset. `notYetAcquired` is not a shortcoming of
+ * the records — the asset was not owned during the window at all, so it is excluded from the
+ * aggregate rather than counted as a gap in what we know. */
+export type InsufficientReason = "noHistory" | "beforeRecords" | "notYetAcquired";
+
 export type UtilisationResult =
-  | { sufficient: true; spans: StatusSpan[] }
-  | { sufficient: false };
+  | {
+      sufficient: true;
+      spans: StatusSpan[];
+      /** The window actually measured — `from`, or the acquisition date if that is later. */
+      effectiveFrom: string;
+      /** True when the window was shortened because the asset was acquired inside the period. */
+      clippedToAcquisition: boolean;
+    }
+  | { sufficient: false; reason: InsufficientReason };
 
 /**
  * FR-027/FR-028, enforced structurally: a caller can only reach `spans` after checking
@@ -111,10 +177,31 @@ export type UtilisationResult =
  * different (and stronger) contract than calling `hasSufficientHistory` and `statusSpans`
  * separately — a second consumer of this module cannot reach a number for a period it hasn't
  * earned, even by forgetting a check, because there is no code path to `spans` that skips it.
+ *
+ * Three outcomes, per FR-028 as clarified:
+ *   before the fleet's records began   refused  — nothing could answer it
+ *   acquired at or after the window end excluded — it was not ours during the period
+ *   acquired inside the window          COMPUTED, clipped to the acquisition date
  */
-export function computeUtilisation(history: HistoryEntry[], from: string, to: string): UtilisationResult {
-  if (!hasSufficientHistory(history, from)) return { sufficient: false };
-  return { sufficient: true, spans: statusSpans(history, from, to) };
+export function computeUtilisation(
+  history: HistoryEntry[],
+  from: string,
+  to: string,
+  options: { recordsBegan: string | null }
+): UtilisationResult {
+  if (history.length === 0) return { sufficient: false, reason: "noHistory" };
+  if (!hasSufficientHistory(history, from, options.recordsBegan)) return { sufficient: false, reason: "beforeRecords" };
+
+  const acquired = acquisitionDate(history);
+  if (acquired !== null && acquired >= to) return { sufficient: false, reason: "notYetAcquired" };
+
+  const effectiveFrom = acquired !== null && acquired > from ? acquired : from;
+  return {
+    sufficient: true,
+    spans: statusSpans(history, effectiveFrom, to),
+    effectiveFrom,
+    clippedToAcquisition: effectiveFrom !== from,
+  };
 }
 
 /**

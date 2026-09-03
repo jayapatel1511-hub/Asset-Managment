@@ -14,7 +14,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Badge, Card, Dropdown, Option, Spinner, Text, Title2, Title3, tokens } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset, HistoryEntry } from "../../api/types";
-import { categorize, computeUtilisation, isIdleSince, type UtilisationCategory } from "../../domain/utilisation";
+import {
+  categorize,
+  computeUtilisation,
+  isIdleSince,
+  recordsBeganAt,
+  type InsufficientReason,
+  type UtilisationCategory,
+} from "../../domain/utilisation";
 import { AssetRow } from "../../components/AssetRow";
 import { t } from "../../i18n";
 
@@ -24,6 +31,11 @@ interface AssetUtilisation {
   asset: Asset;
   history: HistoryEntry[];
   sufficient: boolean;
+  /** Set only when `sufficient` is false — why this asset carries no figure (FR-028). */
+  reason?: InsufficientReason;
+  /** True when the asset was acquired inside the period, so its window was shortened rather
+   * than the figure refused (FR-028 as clarified). */
+  clipped: boolean;
   byCategory: Record<UtilisationCategory, number>; // ms, only when sufficient
 }
 
@@ -82,16 +94,24 @@ export function UtilisationPage() {
       const assets = await backend.listAssets({ includeRetired: true }); // FR-029: historical view includes retired
       const from = periodStartIso(period);
       const to = loadedAt.toISOString();
-      const computed = await Promise.all(
-        assets.map(async (asset): Promise<AssetUtilisation> => {
-          const history = await backend.getAssetHistory(asset.assetid);
-          const result = computeUtilisation(history, from, to);
-          if (!result.sufficient) return { asset, history, sufficient: false, byCategory: emptyCategoryTotals() };
-          const byCategory = emptyCategoryTotals();
-          for (const span of result.spans) byCategory[categorize(span.status)] += span.durationMs;
-          return { asset, history, sufficient: true, byCategory };
-        })
+
+      // Two passes, and it has to be two: FR-028's boundary is the date the FLEET's records
+      // began, which is not knowable from one asset's history. Every history is read once and
+      // reused for both passes, so this costs no extra backend calls.
+      const histories = await Promise.all(
+        assets.map(async (asset) => ({ asset, history: await backend.getAssetHistory(asset.assetid) }))
       );
+      const recordsBegan = recordsBeganAt(histories.map((h) => h.history));
+
+      const computed = histories.map(({ asset, history }): AssetUtilisation => {
+        const result = computeUtilisation(history, from, to, { recordsBegan });
+        if (!result.sufficient) {
+          return { asset, history, sufficient: false, reason: result.reason, clipped: false, byCategory: emptyCategoryTotals() };
+        }
+        const byCategory = emptyCategoryTotals();
+        for (const span of result.spans) byCategory[categorize(span.status)] += span.durationMs;
+        return { asset, history, sufficient: true, clipped: result.clippedToAcquisition, byCategory };
+      });
       setRows(computed);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     })();
@@ -99,6 +119,11 @@ export function UtilisationPage() {
 
   const sufficientRows = rows?.filter((r) => r.sufficient) ?? [];
   const anySufficient = sufficientRows.length > 0;
+  // Said out loud rather than folded into the totals silently: how many assets contributed a
+  // shortened window because they were bought inside the period, and how many were left out
+  // because they were not owned during it at all (FR-028, FR-027).
+  const clippedCount = sufficientRows.filter((r) => r.clipped).length;
+  const notYetOwnedCount = rows?.filter((r) => r.reason === "notYetAcquired").length ?? 0;
 
   const byType = useMemo(() => {
     const map = new Map<string, Record<UtilisationCategory, number>>();
@@ -173,6 +198,17 @@ export function UtilisationPage() {
       {rows && !anySufficient && (
         <Card style={{ padding: 12 }}>
           <Text>{t("reports.utilisation.insufficientHistory")}</Text>
+        </Card>
+      )}
+
+      {rows && anySufficient && (clippedCount > 0 || notYetOwnedCount > 0) && (
+        <Card style={{ padding: 12 }}>
+          <Text size={200} style={{ display: "block" }}>
+            {clippedCount > 0 && t("reports.utilisation.clippedToAcquisition", { count: clippedCount })}
+          </Text>
+          <Text size={200} style={{ display: "block" }}>
+            {notYetOwnedCount > 0 && t("reports.utilisation.notYetOwned", { count: notYetOwnedCount })}
+          </Text>
         </Card>
       )}
 

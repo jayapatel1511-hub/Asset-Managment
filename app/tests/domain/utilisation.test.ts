@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { categorize, computeUtilisation, hasSufficientHistory, isIdleSince, lastActivityDate, statusSpans } from "@/domain/utilisation";
+import {
+  acquisitionDate,
+  categorize,
+  computeUtilisation,
+  hasSufficientHistory,
+  isIdleSince,
+  lastActivityDate,
+  recordsBeganAt,
+  statusSpans,
+} from "@/domain/utilisation";
 import type { HistoryEntry } from "@/api/types";
 
 function entry(overrides: Partial<HistoryEntry> & Pick<HistoryEntry, "transaction" | "transactiondate" | "transactiontype" | "statusbefore" | "statusafter">): HistoryEntry {
@@ -62,31 +71,126 @@ describe("statusSpans — FR-023, T026", () => {
   });
 });
 
-describe("hasSufficientHistory — FR-027/FR-028, T027", () => {
-  it("is true when `from` is at or after the asset's first line", () => {
-    expect(hasSufficientHistory(history, T1)).toBe(true);
-    expect(hasSufficientHistory(history, T2)).toBe(true);
+// A second asset, acquired well after the fleet's records began — the case FR-028's clarification
+// is about, and the one the first implementation got wrong. The real migrated data cannot express
+// it (every asset's first line is dated the migration day), which is exactly why it went unnoticed.
+const T0 = "2025-06-01T00:00:00.000Z"; // the fleet's records begin here, on the older asset
+const olderAsset: HistoryEntry[] = [
+  entry({ transaction: "o1", transactiondate: T0, transactiontype: "AddToInventory", statusbefore: "Available", statusafter: "Available" }),
+];
+const RECORDS_BEGAN = T0;
+
+describe("recordsBeganAt — FR-028's boundary is fleet-wide, not per asset", () => {
+  it("is the earliest transaction across every history given", () => {
+    expect(recordsBeganAt([history, olderAsset])).toBe(T0);
+    expect(recordsBeganAt([history])).toBe(T1);
   });
 
-  it("is false when `from` precedes the asset's first line — the migration-boundary guard", () => {
-    expect(hasSufficientHistory(history, "2025-06-01T00:00:00.000Z")).toBe(false);
+  it("is null when there is no history to go on", () => {
+    expect(recordsBeganAt([])).toBeNull();
+    expect(recordsBeganAt([[], []])).toBeNull();
+  });
+});
+
+describe("acquisitionDate — when the asset became ours", () => {
+  it("is the earliest AddToInventory line, not merely the earliest line", () => {
+    const withLaterAcquisition = [
+      entry({ transaction: "x1", transactiondate: T2, transactiontype: "Audit", statusbefore: "Available", statusafter: "Available" }),
+      entry({ transaction: "x2", transactiondate: T1, transactiontype: "AddToInventory", statusbefore: "Available", statusafter: "Available" }),
+    ];
+    expect(acquisitionDate(withLaterAcquisition)).toBe(T1);
+  });
+
+  it("is null when acquisition was never recorded — there is nothing to clip to", () => {
+    const noAcquisition = [
+      entry({ transaction: "y1", transactiondate: T2, transactiontype: "Checkout", statusbefore: "Available", statusafter: "CheckedOut" }),
+    ];
+    expect(acquisitionDate(noAcquisition)).toBeNull();
+    expect(acquisitionDate([])).toBeNull();
+  });
+});
+
+describe("hasSufficientHistory — FR-027/FR-028, T027", () => {
+  it("is true when `from` is at or after the date the fleet's records began", () => {
+    expect(hasSufficientHistory(history, T1, RECORDS_BEGAN)).toBe(true);
+    expect(hasSufficientHistory(history, T2, RECORDS_BEGAN)).toBe(true);
+  });
+
+  it("is false when `from` precedes the fleet's records — the migration-boundary guard", () => {
+    expect(hasSufficientHistory(history, "2025-01-01T00:00:00.000Z", RECORDS_BEGAN)).toBe(false);
+  });
+
+  it("is TRUE for an asset acquired after `from`, so long as the fleet's records reach back that far", () => {
+    // THE FIX. `from` = T0 precedes this asset's own first line (T1) but not the fleet's records,
+    // so the answer is "yes, with a shorter window" — not "we cannot say". Under the previous
+    // implementation this returned false and the asset vanished from the report.
+    expect(hasSufficientHistory(history, T0, RECORDS_BEGAN)).toBe(true);
+  });
+
+  it("falls back to the asset's own first line when the boundary is unknown — the conservative reading", () => {
+    expect(hasSufficientHistory(history, T0, null)).toBe(false);
+    expect(hasSufficientHistory(history, T1, null)).toBe(true);
   });
 
   it("is false for an asset with no history at all", () => {
-    expect(hasSufficientHistory([], "2026-01-01")).toBe(false);
+    expect(hasSufficientHistory([], "2026-01-01", RECORDS_BEGAN)).toBe(false);
   });
 });
 
 describe("computeUtilisation — the guard enforced structurally so a second consumer can't skip it (FR-027/FR-028)", () => {
   it("refuses to compute a figure across the migration boundary, returning sufficient: false", () => {
-    const result = computeUtilisation(history, "2025-01-01T00:00:00.000Z", T4);
-    expect(result.sufficient).toBe(false);
+    const result = computeUtilisation(history, "2025-01-01T00:00:00.000Z", T4, { recordsBegan: RECORDS_BEGAN });
+    expect(result).toEqual({ sufficient: false, reason: "beforeRecords" });
     expect("spans" in result).toBe(false); // the insufficient branch carries no spans at all — nothing to accidentally read
   });
 
   it("computes spans once there is enough history, identically to calling statusSpans directly", () => {
-    const result = computeUtilisation(history, T1, T4);
-    expect(result).toEqual({ sufficient: true, spans: statusSpans(history, T1, T4) });
+    const result = computeUtilisation(history, T1, T4, { recordsBegan: RECORDS_BEGAN });
+    expect(result).toEqual({
+      sufficient: true,
+      spans: statusSpans(history, T1, T4),
+      effectiveFrom: T1,
+      clippedToAcquisition: false,
+    });
+  });
+
+  it("clips to the acquisition date instead of refusing, for an asset bought inside the period", () => {
+    // FR-028 as clarified: before-acquisition is not before-records. The figure covers T1→T4,
+    // the time this asset was actually owned, and says so.
+    const result = computeUtilisation(history, T0, T4, { recordsBegan: RECORDS_BEGAN });
+    expect(result.sufficient).toBe(true);
+    if (!result.sufficient) return;
+    expect(result.effectiveFrom).toBe(T1);
+    expect(result.clippedToAcquisition).toBe(true);
+    expect(result.spans).toEqual(statusSpans(history, T1, T4));
+    // And the clipped window is not padded with phantom idleness: the total measured time is the
+    // ownership window, not the requested one.
+    const measured = result.spans.reduce((n, s) => n + s.durationMs, 0);
+    expect(measured).toBe(new Date(T4).getTime() - new Date(T1).getTime());
+  });
+
+  it("excludes an asset acquired at or after the window ends, rather than calling it a gap", () => {
+    const to = T1; // the window ends exactly when this asset was acquired
+    const result = computeUtilisation(history, T0, to, { recordsBegan: RECORDS_BEGAN });
+    expect(result).toEqual({ sufficient: false, reason: "notYetAcquired" });
+  });
+
+  it("distinguishes no history at all from a period before the records began", () => {
+    expect(computeUtilisation([], T1, T4, { recordsBegan: RECORDS_BEGAN })).toEqual({
+      sufficient: false,
+      reason: "noHistory",
+    });
+  });
+
+  it("computes without clipping for an asset whose acquisition was never recorded", () => {
+    const noAcquisition = [
+      entry({ transaction: "z1", transactiondate: T2, transactiontype: "Checkout", statusbefore: "Available", statusafter: "CheckedOut" }),
+    ];
+    const result = computeUtilisation(noAcquisition, T1, T4, { recordsBegan: RECORDS_BEGAN });
+    expect(result.sufficient).toBe(true);
+    if (!result.sufficient) return;
+    expect(result.effectiveFrom).toBe(T1);
+    expect(result.clippedToAcquisition).toBe(false);
   });
 });
 

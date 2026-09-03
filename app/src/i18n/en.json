@@ -227,6 +227,8 @@
   "reports.timeline.rangeStart": "State at range start",
   "reports.utilisation.title": "Utilisation",
   "reports.utilisation.insufficientHistory": "Not enough history yet for a reliable figure.",
+  "reports.utilisation.clippedToAcquisition": "{count} asset(s) were acquired inside this period; their figures cover only the time since they were acquired.",
+  "reports.utilisation.notYetOwned": "{count} asset(s) were not owned during this period and are excluded.",
   "reports.utilisation.idle": "Idle",
   "reports.utilisation.lowestAvailability": "Lowest availability",
   "reports.notPublished": "This is the in-app interim, not the licence-free deliverable — see solution/powerbi/.",
