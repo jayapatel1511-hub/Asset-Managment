@@ -64,21 +64,100 @@ surface:
 | What we need | What Zite exposes |
 |---|---|
 | Apply `server/src/db/schema.sql` | **Not possible.** `execute_sql` is documented as "a single SELECT statement", read-only. There is no DDL path. Tables and columns are created through `create_table` / `create_field` with a fixed set of field types |
-| Transactions — constitution rule 2, *"one business event is one atomic database commit"* | **No transaction primitive** in the record API. `bulk_create_records` writes many rows in one call but says nothing about atomicity, and a five-asset checkout also writes a transaction header, N lines, N asset state changes and relationship rows across tables |
+| Transactions — constitution rule 2, *"one business event is one atomic database commit"* | **No transaction primitive, confirmed by test (§ 2b).** The atomic unit is at most one `bulkCreate`: one table, ≤100 records. A five-asset checkout spans several tables and cannot be one commit |
 | `FOR UPDATE` row-lock ordering (`server/README.md` swap step 3) | Not expressible |
 | `ON CONFLICT` sequence increment for Asset ID minting | Not expressible. Minting would race, and Asset ID uniqueness is rule 6 |
 | CHECK constraints, enums, unique indexes | `single_select` approximates an enum. No unique constraint is exposed, so `(manufacturer, model, category)` and Asset ID uniqueness become application conventions |
 | Append-only transaction lines — rule 5 | Convention only. `update_record` and `delete_record` are available on every table; there is no per-table privilege model to withhold them |
 
-Two things soften this. Records carry a `deleted_at` and deletion is soft by default, which actually
-suits the deactivate-never-delete rule. And `run_one_off_script` runs TypeScript against the live
-database importing `zitejs/db` — **if that exposes a real transaction API, most of the table above
-changes.** That is the single highest-value thing to verify, and it needs a sandbox (see § 9).
+One thing softens this. Records carry a `deleted_at` and deletion is soft by default, which actually
+suits the deactivate-never-delete rule.
+
+The other hope was `run_one_off_script`, which runs TypeScript against the live database importing
+`zitejs/db` — *if that exposed a real transaction API, most of the table above would change.* **It
+does not. That was tested against the live runtime on 2026-09-03; see § 2b for the evidence.**
 
 **Revised conclusion.** Zite is credible as a **test and demo environment**, and as a **read model**
-for reporting. On this evidence it is *not* credible as the authoritative store for a system whose
-first architectural rule is atomic multi-row commits — unless `zitejs/db` provides transactions.
-That is a narrower and more useful question than "can we host on Zite".
+for reporting. It is **not** credible as the authoritative store for a system whose first
+architectural rule is atomic multi-row commits. This is no longer a matter of inference from the
+documentation — the failing multi-write was run, and the earlier writes survived.
+
+
+## 2b. Answered — `zitejs/db` has no transaction, and a failing multi-write does not roll back *(tested 2026-09-03)*
+
+§ 2a called this "the single highest-value thing to verify". It was verified against the live
+runtime through `run_one_off_script`, in the same isolated worker that serves app endpoints. Three
+probes, in order of how much they prove.
+
+**1. The client surface — no transaction exists, under any spelling.**
+`zitejs/db` exports exactly one symbol, `zite`, whose own keys are:
+
+```
+["assets", "auth", "categories", "equipmentModels", "locations", "projects", "sql"]
+```
+
+Its prototype adds nothing but `Object.prototype`. Every plausible entry point was probed by name
+and each returned `undefined`: `transaction`, `tx`, `begin`, `beginTransaction`, `withTransaction`,
+`batch`, `atomic`, `runInTransaction`, `unitOfWork`, `pool`, `client`, `connect`.
+
+**2. The SQL channel refuses transaction control.**
+
+| Statement | Result |
+|---|---|
+| `BEGIN` | `REFUSED — Only SELECT statements are supported (read-only)` |
+| `START TRANSACTION` | `REFUSED — Only SELECT statements are supported (read-only)` |
+| `COMMIT` | `REFUSED — Only SELECT statements are supported (read-only)` |
+| `SELECT 1 AS ok` | accepted |
+
+So a transaction cannot be opened through the escape hatch either. `zite.sql()` is read-only by
+design, and writes must go through `.create` / `.update` / `.delete` / `.bulkCreate`.
+
+**3. The decisive test — successive writes, where the last one fails.**
+
+A scratch table (`Tx Probe`, since deleted) was given a `linked_record` field. The forced failure is
+a **well-formed but non-existent** UUID, so the rejection is referential rather than a cheap
+string-format complaint. Three writes were issued in the shape rule 2 governs — a header, a line,
+then a state change:
+
+```
+create { label: 'B1-header' }  ->  COMMITTED  id=461f7506-32a7-4006-be93-3fe97d4c2515
+create { label: 'B2-line'   }  ->  COMMITTED  id=fc5834d0-b5a2-4278-a2e5-c874320034d6
+create { label: 'B3-state', ref: [<ghost uuid>] }
+                               ->  THREW  "Invalid linked record IDs in field(s) [Ref]"
+```
+
+Re-querying the table afterwards returned **both earlier rows still present**:
+
+```
+SELECT "label","ordinal" FROM "TxProbe" ORDER BY "ordinal"
+  ->  [ { label: "B1-header", ordinal: 11 }, { label: "B2-line", ordinal: 12 } ]
+```
+
+`rowCount` went 0 → 0 → **2**. Nothing rolled back. **A five-asset checkout on Zite's record API can
+half-succeed**, leaving a transaction header and some lines committed with the asset state changes
+missing — precisely the outcome `CLAUDE.md` rule 2 exists to make impossible.
+
+**A narrower finding, stated carefully.** A *single* `bulkCreate` of three records, whose middle
+record carried the ghost UUID, wrote **nothing** (`rowCount` stayed 0). That is real, but it is
+weaker evidence than it looks: the batch was rejected by validation *before* any row was written, so
+it demonstrates pre-flight validation, not a proven transactional rollback. Zite exposes no unique
+constraints or CHECK constraints, so there is no way from this interface to force a failure that
+only surfaces mid-write and settle the question. **What can be said is: the largest unit that is
+known not to write partially is one `bulkCreate` — one table, at most 100 records.** A business
+event that spans two tables has no atomic unit at all.
+
+### What this settles
+
+| Question | Answer |
+|---|---|
+| Can Zite be the authoritative store for AMS? | **No.** Rule 2 is unsatisfiable on this interface |
+| Can Zite be a test and demo environment? | **Yes** — and it now is; see § 7a |
+| Can Zite be a read model for reporting? | **Yes.** `zite.sql()` is a capable read-only SELECT surface |
+| Would an application-level compensating-write layer fix it? | It would have to reimplement rollback over a store with no transaction, no unique constraint and no row lock. That is the kind of thing `server/` already gets from PostgreSQL for free (`server/README.md` § Three invariants) |
+
+This also settles § 8's question 5 — "would Zite be the store, or the builder?" — against Zite as
+the store. Its own app builder can sit on it perfectly well for a test environment, which is what
+was built.
 
 ---
 
