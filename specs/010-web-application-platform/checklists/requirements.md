@@ -1,18 +1,26 @@
 # Requirements Checklist — Feature 010 Web Application Platform
 
 **Feature:** `010-web-application-platform`  
-**Review status:** Open  
+**Review status:** Open — **5 of 112 reviewed** (CHK001–CHK005, *Platform decision*, 2026-09-03). The other 107 are unreviewed and are Jay's gate, not Claude's.  
 **Rule:** A checked item means the requirement is explicit, internally consistent, testable, and assigned to a delivery stage. It does not mean the implementation exists.
 
 ---
 
 ## Platform decision
 
-- [ ] CHK001 The repository states unambiguously that the production target is a conventional web application.
-- [ ] CHK002 Power Apps Code App, Dataverse, and Power Automate are identified as superseded primary-runtime choices rather than silently left as parallel production paths.
-- [ ] CHK003 Microsoft Entra ID, Teams, SharePoint, and Power BI are described as independent integrations with explicit necessity/optionality.
-- [ ] CHK004 The platform pivot preserves features 001–008 as business requirements unless a recorded conflict changes one.
-- [ ] CHK005 The constitution amendment records the architecture change, rationale, migration consequence, and System Owner approval.
+*Reviewed 2026-09-03, after the Power Platform and Zite tracks were parked. Each item below names the
+evidence that closes it, so the review can be re-checked rather than trusted.*
+
+- [x] CHK001 The repository states unambiguously that the production target is a conventional web application.
+  <br>*Evidence:* `README.md` title and § Current direction; `CLAUDE.md` § Stack; `docs/14-webapp-architecture.md`; constitution § Hosting. No competing statement remains — both alternative tracks are marked parked.
+- [x] CHK002 Power Apps Code App, Dataverse, and Power Automate are identified as superseded primary-runtime choices rather than silently left as parallel production paths.
+  <br>*Evidence:* closed 2026-09-03, and **it was genuinely open until then** — the parallel path was not merely documented, it was wired in: `app/src/api/index.ts` imported the Dataverse adapter and `@microsoft/power-apps` was an installed dependency. Now the adapter is unimported, `VITE_AMS_BACKEND=dataverse` throws, both packages are removed from `app/package.json`, and `docs/01`, `02`, `03`, `05`, `10` plus `solution/` carry `LEGACY-POWER-PLATFORM` banners. `CLAUDE.md` § *Parked — Power Platform* lists the whole set. See `docs/08-decisions.md`, 2026-09-03.
+- [x] CHK003 Microsoft Entra ID, Teams, SharePoint, and Power BI are described as independent integrations with explicit necessity/optionality.
+  <br>*Evidence:* `CLAUDE.md` § Stack — Entra is **required** (identity layer); "Microsoft 365 is an integration surface, not the runtime boundary. Teams, email, SharePoint and Power BI may be used, but core asset and data-management operation cannot depend on them." Constitution § 168 states the same. Necessity and optionality are stated separately, which is what this item asks.
+- [x] CHK004 The platform pivot preserves features 001–008 as business requirements unless a recorded conflict changes one.
+  <br>*Evidence:* `CLAUDE.md` § Reuse lists "features 001–008 as business requirements". One conflict has arisen and is recorded rather than silent: feature 008 FR-001's release guard was rebound from `dataverse` to `http` (`docs/08-decisions.md`, 2026-09-03). FR-001's own wording — "the real data platform" — was already platform-neutral, so the requirement did not change.
+- [x] CHK005 The constitution amendment records the architecture change, rationale, migration consequence, and System Owner approval.
+  <br>*Evidence:* `.specify/memory/constitution.md` § Amendment record, Version 2.0.0 — 2026-09-03, carrying all four: **Changed**, **Reason**, **Migration consequence**, **Approved by:** Jay Patel, System Owner.
 
 ## Identity and authorization
 

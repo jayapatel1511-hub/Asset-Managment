@@ -19,12 +19,16 @@ The previous workstream map optimized local feature construction and then a Data
 ## Current status
 
 - Features 001–006: **Mock Implemented**
-- Feature 007: in progress; verify current branch/tests before relying on it
-- Feature 008 US1: release-data guard implemented locally
-- Feature 009: **Spec Draft**, still the production-readiness gate
-- Feature 010: **Spec Draft**, active platform feature
+- Feature 007: **Built 2026-09-02** — three profiles, byte-identical on regeneration; US5 blocked on Q14
+- Feature 008 US1: release-data guard implemented locally; rebound to `VITE_AMS_BACKEND=http` on 2026-09-03
+- Feature 009: **Spec Draft**, still the production-readiness gate — no plan or tasks
+- Feature 010: **Spec Draft**, active platform feature — no plan, tasks, data-model or contracts
+- Feature 011: **Spec Draft** — no plan, tasks or contracts
 - Constitution: **2.0.0**, web pivot recorded
-- React/Vite client: existing and reusable
+- React/Vite client: existing and reusable; 318 tests green
+- Local API POC (`server/`): Fastify over in-process PGlite, 64 tests green — **single-connection**
+- Power Platform: **parked 2026-09-03**; the Dataverse adapter is no longer imported
+- Zite: **parked 2026-09-03**
 - Production HTTP API: not implemented
 - PostgreSQL schema/migrations: not implemented
 - Entra sign-in: not implemented
@@ -32,7 +36,73 @@ The previous workstream map optimized local feature construction and then a Data
 - Blob document path: not implemented
 - Azure infrastructure: not implemented
 - PostgreSQL migration rehearsal: not completed
+- Shared contracts (`packages/`), migrations (`db/`), IaC (`infra/`) and CI (`.github/`): **no directory exists**
 - Pilot: not approved
+
+### Environment change — 2026-09-03
+
+Development moved from the locked-down Windows corporate machine to macOS with **Docker 29.7.2 and
+Colima**. This is a capability change, not a preference: `server/` uses PGlite (PostgreSQL compiled
+to WASM, in-process) precisely because a real database daemon was not available, and
+`server/README.md` is explicit that PGlite "is single-connection, so `db.transaction()` serialises
+the command path **for free**".
+
+Everything concurrent in the design is therefore currently *asserted and unexercised* — the
+`SELECT … FOR UPDATE` ordering and the `ON CONFLICT` sequence increment are, in that README's own
+words, "documenting intent". A real PostgreSQL container makes them do work.
+
+This unblocks **WS-W1**'s "reproducible local PostgreSQL" and, with it, the parts of **WS-W4** that
+PGlite structurally cannot prove: the five-asset race, the concurrent-registration proof, deadlock
+ordering and serialization-failure retry. It does not change any requirement — it changes what can
+be tested before Azure exists, and therefore how much of WS-W4 can be closed without spend.
+
+---
+
+## Readiness — what is missing before development starts
+
+*Written 2026-09-03, after both alternative tracks were parked. The gate below (G0.1–G0.5) is the
+authority; this section is a triage of it, separating what genuinely blocks the first line of code
+from what blocks the pilot. Everything here is already required somewhere in this file — nothing
+new is being introduced.*
+
+### 1. Decisions — the real blockers
+
+| # | Missing | Blocks | Owner |
+|---|---|---|---|
+| **R1** | **The three-axis state model is still PROPOSED.** `docs/15` § lifecycle / disposition / serviceability / calibration currency, recorded PROPOSED in `docs/08-decisions.md` 2026-09-03. `server/` deliberately implements the *old* single `status` column instead | **Everything.** It defines the `asset` table's columns and every transition rule, so schema, contracts, transaction service and migration all encode it. Writing migrations before it is decided means rewriting them | **Jay** |
+| **R2** | G0.4 atomic command contract is unfrozen — submission ID, canonical hashing, refusal codes, lock order, server-owned fields | The transaction service and every client call | Jay + Claude (draft) |
+| **R3** | G0.5 canonical schema unapproved. Note the *minimum* for the first proof is far smaller than the whole document: `asset`, `transaction`, `transaction_line`, `idempotency`, `id_sequence` | First proof needs the subset; full parallel work needs all of it | **Jay** |
+| **R4** | Q8 expected return, Q9 backdating (`recorded_at` vs `effective_at`) | The checkout command's own fields — these two land inside the first proof | **Jay** |
+| **R5** | Global vs office-scoped administrator | Authorization model, WS-W3 | **Jay** |
+| **R6** | G0.2 enterprise set — Azure subscription, Canadian region, Entra app registration owner, RTO/RPO, DNS/TLS, alert owner | Azure deployment only. **Does not block local development** | **Englobe IT**, not Jay alone |
+
+### 2. Artifacts that do not exist
+
+| Missing | Note |
+|---|---|
+| `plan.md`, `tasks.md`, `data-model.md`, `contracts/` for **009, 010 and 011** | The three active features have `spec.md` and a checklist and nothing else. Features 005, 006 and 008 have plans and tasks — the active ones do not. `/speckit.plan` and `/speckit.tasks` have not been run. **This is the largest single gap between "specified" and "startable"** |
+| `db/` | No migrations, no migration runner |
+| `packages/contracts/` | No shared request/response schemas; `app/` and `server/` currently agree by hand |
+| `infra/` | No IaC |
+| `.github/` | **No CI at all.** Nothing runs the 382 existing tests on push |
+| Local PostgreSQL | No `docker-compose.yml`. Now possible — see *Environment change* |
+
+### 3. Review gates not started
+
+- Feature 010 checklist: **5 of 112 reviewed**. The 107 remaining are a specification review, not implementation.
+- Features 009 and 011 checklists: unreviewed.
+- `migration/reports/03_models_review.md` and `02_conflicts.md` sign-offs — hard production gates, still open.
+
+### 4. What is *not* blocking, and is worth saying
+
+The container change removes the largest technical excuse for waiting. The first proof —
+WS-W4's five-asset checkout race — needs **no Azure, no Entra, no subscription and no spend**. It
+needs R1–R4 and a PostgreSQL container. G0.2 gates deployment, not development, and treating it as
+a prerequisite would idle the project behind a procurement conversation.
+
+**The critical path is R1.** Nearly everything else is either downstream of it or can proceed in
+parallel once it is settled. A schema, a contract and a migration all encode the state model; none
+of them can be written twice cheaply.
 
 ---
 
@@ -142,7 +212,7 @@ Approve `docs/15-postgres-data-model.md`, including every table, constraint, ind
 - `server/` foundation
 - `packages/contracts/`
 - `packages/domain/` where approved
-- local PostgreSQL developer/test setup
+- local PostgreSQL developer/test setup — a real server in a container, not PGlite (see *Environment change* above)
 - common lint/typecheck/test commands
 - baseline CI
 
@@ -150,7 +220,7 @@ Approve `docs/15-postgres-data-model.md`, including every table, constraint, ind
 
 - [ ] current `app/` tests stay green
 - [ ] local API health endpoint
-- [ ] reproducible local PostgreSQL
+- [ ] reproducible local PostgreSQL — containerised, version-pinned to the Azure Flexible Server major
 - [ ] migration runner
 - [ ] isolated integration-test database
 - [ ] shared request/response schemas
@@ -306,7 +376,7 @@ Five-asset checkout:
 - production `AmsBackend` adapter
 - command/error mapping
 - pending/applied/conflict UI state
-- removal of runtime dependence on `api/dataverse/`
+- ~~removal of runtime dependence on `api/dataverse/`~~ — **done 2026-09-03**: no longer imported, and `VITE_AMS_BACKEND=dataverse` throws
 
 ### Migration order
 

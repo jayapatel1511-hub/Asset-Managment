@@ -11,7 +11,13 @@ The governing document is [`.specify/memory/constitution.md`](../.specify/memory
 - [feature 010 — Web Application Platform](010-web-application-platform/spec.md)
 - [feature 011 — Data Management & Stewardship](011-data-management/spec.md)
 
-> **Writing code here?** Read [`CLAUDE.md`](../CLAUDE.md), then this index, then [`REMAINING-WORK.md`](REMAINING-WORK.md), then the owning feature spec. Do not use older Power Apps/Dataverse instructions as the active implementation route.
+> **Writing code here?** Read [`CLAUDE.md`](../CLAUDE.md), then this index, then [`REMAINING-WORK.md`](REMAINING-WORK.md), then the owning feature spec.
+>
+> **Two tracks are parked (2026-09-03) and neither is an implementation route:** the Power Platform
+> (Power Apps Code App, Dataverse, Power Automate — parked, files kept and banner-marked
+> `LEGACY-POWER-PLATFORM`) and Zite (`zite/`, `specs/ZITE-BUILD-PROMPT.md` — parked; it has no
+> transaction, so constitution Principle VIII / `CLAUDE.md` rule 2 is unsatisfiable on it). The
+> Azure web application is the only live track.
 
 ---
 
@@ -35,7 +41,7 @@ The governing document is [`.specify/memory/constitution.md`](../.specify/memory
 
 Where an approved feature spec and an older narrative document disagree, the approved feature spec and constitution win. Built code does not silently become the source of truth; useful deviations are recorded and the governing requirement is updated.
 
-The older Dataverse, Power Apps, Power Automate, SharePoint-as-primary-document-store and Power Platform licensing sections are historical references after the 2026-09-03 pivot.
+The older Dataverse, Power Apps, Power Automate, SharePoint-as-primary-document-store and Power Platform licensing sections are **parked**, not merely historical: as of 2026-09-03 the Dataverse adapter is no longer imported by `app/src/api/index.ts`, the `@microsoft/power-apps` packages are removed from `app/package.json`, and `docs/01`, `02`, `03`, `05`, `10` and `solution/` carry `LEGACY-POWER-PLATFORM` banners. They remain worth reading for the business rules and logical model they carry.
 
 ---
 
@@ -69,10 +75,10 @@ The existing test suite and browser walkthroughs prove Mock Implemented behavior
 | [005](005-deployment-and-kits/spec.md) | **Deployment & Kits** | Deployment, recovery, site history, configuration changes and dated station composition | **Mock Implemented.** Installation tables are part of the proposed PostgreSQL model; atomic API application and offline device proof remain. |
 | [006](006-fleet-reporting/spec.md) | **Fleet Reporting** | Seven acceptance questions, calibration compliance, timeline and utilisation | **Mock Implemented.** Production target is read-only web reporting over approved PostgreSQL views. Power BI is optional. |
 | [007](007-synthetic-data/spec.md) | **Synthetic Fleet History** | Fictional 20-year history, five-year operational detail, answer key, planted scenarios and scale profiles | **Built 2026-09-02** (WS-G) — three profiles verified, 1,459 / 371 / 6,626 assets, byte-identical on regeneration; US5 blocked on Q14. Remaining: adapt output to PostgreSQL/API contracts. Q15, Q16 and Q18 remain relevant. Production loading stays structurally refused. |
-| [008](008-release-and-operations/spec.md) | **Release & Operations** | Safe build, publish, verify, rollback, promotion and monitoring | **US1 built** (WS-H); T012 and T016 closed 2026-09-03 (`f6a090f`) — release guard, bundle scan, mode-conditional `publicDir`, `build:release`, and the MOCK-ONLY stand-ins tree-shaken out of a release bundle. Azure container delivery, migrations, observability, restore and runbooks move under feature 010. |
-| [009](009-production-readiness/spec.md) | **Production Readiness** | Atomic authority, safe identity allocation, state correctness, security, device proof, cutover and recovery | **Spec Draft.** Still applies. Dataverse-specific recommended implementation is superseded by the TypeScript/PostgreSQL architecture. [Checklist](009-production-readiness/checklists/requirements.md). |
-| [010](010-web-application-platform/spec.md) | **Web Application Platform** | Entra-authenticated PWA, TypeScript API, PostgreSQL, private documents, offline queue, Azure operations and reporting | **Spec Draft.** Active production platform and implementation route for feature 009. [Checklist](010-web-application-platform/checklists/requirements.md). |
-| [011](011-data-management/spec.md) | **Data Management & Stewardship** | Governed reference/master data, controlled corrections, import/bulk jobs, quality issues, duplicate resolution, lineage, exports, external reconciliation, retention and legal hold | **Spec Draft.** Added because prior coverage was distributed and incomplete. Requires ownership/role, classification, approval, retention and source-authority decisions. [Checklist](011-data-management/checklists/requirements.md). |
+| [008](008-release-and-operations/spec.md) | **Release & Operations** | Safe build, publish, verify, rollback, promotion and monitoring | **US1 built** (WS-H); T012 and T016 closed 2026-09-03 (`f6a090f`) — release guard, bundle scan, mode-conditional `publicDir`, `build:release`, and the MOCK-ONLY stand-ins tree-shaken out of a release bundle. FR-001's guard now requires `VITE_AMS_BACKEND=http`, not `dataverse` (rebound 2026-09-03 when Dataverse was parked; FR-001 itself is unchanged — it says "the real data platform" and never names one). Azure container delivery, migrations, observability, restore and runbooks move under feature 010. |
+| [009](009-production-readiness/spec.md) | **Production Readiness** | Atomic authority, safe identity allocation, state correctness, security, device proof, cutover and recovery | **Spec Draft.** Still applies; **no plan, tasks or contracts exist yet**. Dataverse-specific recommended implementation is parked in favour of the TypeScript/PostgreSQL architecture. [Checklist](009-production-readiness/checklists/requirements.md). |
+| [010](010-web-application-platform/spec.md) | **Web Application Platform** | Entra-authenticated PWA, TypeScript API, PostgreSQL, private documents, offline queue, Azure operations and reporting | **Spec Draft.** Active production platform and implementation route for feature 009. **No `plan.md`, `tasks.md`, `data-model.md` or `contracts/` exist yet — `/speckit.plan` and `/speckit.tasks` have not been run.** [Checklist](010-web-application-platform/checklists/requirements.md): 112 items, 5 reviewed. |
+| [011](011-data-management/spec.md) | **Data Management & Stewardship** | Governed reference/master data, controlled corrections, import/bulk jobs, quality issues, duplicate resolution, lineage, exports, external reconciliation, retention and legal hold | **Spec Draft.** Added because prior coverage was distributed and incomplete. Requires ownership/role, classification, approval, retention and source-authority decisions. **No plan, tasks or contracts yet.** [Checklist](011-data-management/checklists/requirements.md): unreviewed. |
 
 Detailed production findings remain in [`docs/13-production-readiness-review.md`](../docs/13-production-readiness-review.md). The active platform decision is in [`docs/14-webapp-architecture.md`](../docs/14-webapp-architecture.md). The data-management model is in [`docs/16-data-management.md`](../docs/16-data-management.md). The execution order is in [`docs/06-delivery-plan.md`](../docs/06-delivery-plan.md).
 
@@ -152,7 +158,7 @@ Still requiring confirmation or decision:
 | Q14 synthetic Dev load/removal | Synthetic environment and job policy |
 | Q15 fictional identity domain | Identity/notification collision risk |
 | Q16 synthetic modem extension | Synthetic component pattern |
-| Q17 Code App entitlement | No longer a core architecture blocker; retained as historical research |
+| Q17 Code App entitlement | **Closed by the Power Platform parking.** No longer any kind of blocker; retained as licensing research only |
 | Q18 permanent-component calibration | Transaction, relationship, calibration and quality behavior |
 | inactive-project rule | Server validation and source reconciliation |
 | reminder cadence | Outbox notification state |
