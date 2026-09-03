@@ -3,7 +3,7 @@
  *
  * These tests run the real scripts as subprocesses rather than importing them, because what is
  * being relied on is the CLI contract: a non-zero exit stops `npm run build:release` before
- * `pa app push` can ever see the output. Testing the exported function would prove less.
+ * anything can be published. Testing the exported function would prove less.
  *
  * Why this matters concretely: `app/public/data/` carries 1,026 real Englobe assets including 127
  * SIM ICCIDs, 129 phone numbers and 226 static IPs — the three attributes the `AMS Sensitive`
@@ -76,21 +76,26 @@ describe("release-guard (T003-T006)", () => {
   });
 
   it("passes when the backend is the production backend", () => {
-    const r = run(GUARD, [], { VITE_AMS_BACKEND: "dataverse" });
+    const r = run(GUARD, [], { VITE_AMS_BACKEND: "http" });
     expect(r.status).toBe(0);
+  });
+
+  it("refuses the parked dataverse backend, which api/index.ts no longer has a branch for", () => {
+    const r = run(GUARD, [], { VITE_AMS_BACKEND: "dataverse" });
+    expect(r.status).not.toBe(0);
   });
 
   it("names the variable and the required value in its refusal (SC-002)", () => {
     const r = run(GUARD, [], { VITE_AMS_BACKEND: "mock" });
     const out = `${r.stdout}${r.stderr}`;
     expect(out).toContain("VITE_AMS_BACKEND");
-    expect(out).toContain("dataverse");
+    expect(out).toContain("http");
   });
 
   it("reports the value it actually saw, so a typo is diagnosable", () => {
-    const r = run(GUARD, [], { VITE_AMS_BACKEND: "datavarse" });
+    const r = run(GUARD, [], { VITE_AMS_BACKEND: "htpp" });
     expect(r.status).not.toBe(0);
-    expect(`${r.stdout}${r.stderr}`).toContain("datavarse");
+    expect(`${r.stdout}${r.stderr}`).toContain("htpp");
   });
 });
 

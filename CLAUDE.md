@@ -14,11 +14,17 @@ Read in this order:
 6. `specs/009-production-readiness/spec.md`
 7. `specs/010-web-application-platform/spec.md`
 8. `specs/011-data-management/spec.md` when work touches reference data, corrections, imports, quality, duplicates, lineage, exports, retention or synchronization
-9. `zite/HANDOFF.md` when resuming the **Zite test environment** — a loaded, working test
-   database and Field-slice app built 2026-09-03. Start there, not in the middle
-10. The owning business feature specification
+9. The owning business feature specification
 
-`docs/01-data-model.md` through `docs/10-integration.md` remain useful historical and logical references, but their Dataverse, Power Apps, Power Automate, SharePoint-as-primary-document-store, and Power Platform licensing instructions are superseded by the web-application pivot.
+`docs/01-data-model.md` through `docs/10-integration.md` remain useful historical and logical references, but their Dataverse, Power Apps, Power Automate, SharePoint-as-primary-document-store, and Power Platform licensing instructions are **parked** — see *Parked — Power Platform* below for exactly what that means and what was kept.
+
+**Parked — Zite.** Do not resume without Jay reopening it. The Zite evaluation and the test environment
+built from it (`zite/`, `specs/ZITE-BUILD-PROMPT.md`, `docs/18-hosting-alternatives.md`) are closed,
+not abandoned. The question they were asked has an answer: `zitejs/db` exposes no transaction and a
+failing multi-write does not roll back, so **rule 2 below is unsatisfiable on that interface**
+(`docs/18` § 2b, tested against the live runtime). Zite is therefore not a candidate for the
+authoritative store. The files stay as evidence. **The active direction is the Azure web application
+in the stack table below** — do not start work in `zite/`.
 
 ## Stack — decided 2026-09-03
 
@@ -114,16 +120,26 @@ Do not create the entire planned structure as empty scaffolding. Add directories
 - release bundle scanning concept;
 - features 001–008 as business requirements.
 
-### Retire from the production path
+### Parked — Power Platform *(done 2026-09-03)*
 
-- Power Apps Code App publishing;
+The Power Platform is **not** the delivery path and is no longer a second live track. Parked, not
+deleted — every file below is kept and banner-marked `LEGACY-POWER-PLATFORM`:
+
+- Power Apps Code App publishing — `app/power.config.json`, the `pac code` workflow;
 - Dataverse as system of record;
-- `api/dataverse/` as production adapter;
-- Power Automate F1–F5 as state authority;
+- `app/src/api/dataverse/` as production adapter — **no longer imported**; `VITE_AMS_BACKEND=dataverse` now throws instead of silently falling back to mock;
+- `@microsoft/power-apps` and `@microsoft/power-apps-cli` — **removed from `app/package.json`**; nothing imported them;
+- Power Automate F1–F5 as state authority — `solution/flows/`;
 - SharePoint as primary certificate store;
-- `svc-ams` as a high-privilege flow account.
+- `svc-ams` as a high-privilege flow account;
+- `docs/01`, `docs/02`, `docs/03`, `docs/05`, `docs/10` and `solution/` as platform instructions.
 
-Keep legacy files until replacement coverage exists. Mark them `LEGACY-POWER-PLATFORM` rather than deleting prematurely.
+Those documents remain useful for the **business rules and logical model** they carry — that is why
+they were kept. They are not instructions for how to build anything. Do not start work in
+`solution/` or `app/src/api/dataverse/`, and do not add a Power Platform dependency back.
+
+M365 stays available as an *integration* surface (Teams, email, SharePoint export, Power BI).
+Core asset and data-management operation must not depend on it.
 
 ## Development sequence
 

@@ -5,15 +5,19 @@
  * Refuses to let a release build proceed unless the data backend is explicitly the production one.
  *
  * Why this is a build-time refusal and not a review step: publishing is a one-way door. Compiled
- * code-app assets are served from a publicly accessible endpoint that does not support IP-based
- * restriction, and there is no recall for anything already served. A checklist item can be
- * forgotten at 5pm on a Friday; a non-zero exit code cannot.
+ * assets are served from a public endpoint, and there is no recall for anything already served.
+ * A checklist item can be forgotten at 5pm on a Friday; a non-zero exit code cannot.
  *
  * Run by `npm run build:release` before anything is compiled.
+ *
+ * REQUIRED was "dataverse" until 2026-09-03. Dataverse is parked and `api/index.ts` no longer
+ * has that branch, so the real data platform is now `http` — the API in server/, and in
+ * production the same adapter against the Azure API. FR-001 itself is unchanged: it says "the
+ * real data platform", never which one, so this is a rebinding and not a spec deviation.
  */
 
 const VAR = "VITE_AMS_BACKEND";
-const REQUIRED = "dataverse";
+const REQUIRED = "http";
 const DEV_BACKEND = "mock";
 
 /** @param {NodeJS.ProcessEnv} env */

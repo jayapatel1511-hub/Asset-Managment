@@ -9,9 +9,15 @@ real network boundary and a real database between the screens and the data?* Eve
 did in memory now crosses a wire, gets validated a second time by a server that does not trust the
 client, and commits inside a database transaction.
 
-**This is not the production architecture.** Production is Dataverse plus Power Automate flows
-(`CLAUDE.md`'s stack table). See § What maps to which Dataverse flow for how the two line up, and
-§ Swapping in networked PostgreSQL if the premium-licensing fallback is ever taken.
+**This is not the production architecture** — it is a local proof of concept: PGlite in-process,
+no identity, no TLS, every caller trusted. Production is the Azure web application in
+`docs/14-webapp-architecture.md`: the same TypeScript API shape against Azure Database for
+PostgreSQL, behind Entra. This server is the closest thing the repo has to it, which is why the
+transaction work here is worth reading. See § Swapping in networked PostgreSQL.
+
+*(Corrected 2026-09-03. This paragraph said production was "Dataverse plus Power Automate flows",
+written before the web-app pivot and left stale by it. The Power Platform is parked — `CLAUDE.md`,
+§ Parked — Power Platform.)*
 
 ---
 
@@ -217,10 +223,12 @@ Both are commented where they live, and both make the server *more* correct than
 
 ---
 
-## What maps to which Dataverse flow
+## What maps to which Dataverse flow *(LEGACY-POWER-PLATFORM — parked)*
 
-`solution/flows/` holds the specifications; this table is the correspondence, so whoever builds
-them in the Maker Portal can check agreement rather than re-deriving the logic.
+`solution/flows/` holds the flow specifications. Power Automate is parked and nothing below is
+going to be built in the Maker Portal. The table is kept because it is the clearest statement in
+the repo of *which business rule each flow encoded* — and every one of those rules still has to
+hold in the production API. Read the left column as the requirement and the right as its origin.
 
 | Here | Dataverse equivalent | Note |
 |---|---|---|

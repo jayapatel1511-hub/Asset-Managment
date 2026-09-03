@@ -1,16 +1,22 @@
 # app
 
-Power Apps Code App — see `docs/02-app.md`. Runs today as a plain Vite + React 18 + TypeScript app
-against the `mock` backend (no tenant needed); `pac code init`/`pac code push` are the remaining
-steps to actually register it as a Power Apps Code App, not done in this build (no tenant access
-— see `docs/09-build-report.md`).
+The Englobe AMS front end: Vite + React 18 + TypeScript, Fluent UI v9, mobile-first at 390px.
+Becomes the PWA client of the Azure web application — see `docs/14-webapp-architecture.md`.
+
+Runs against `mock` (bundled staged data, no server) or `http` (the TypeScript API in `server/`
+over in-process PostgreSQL).
+
+> **LEGACY-POWER-PLATFORM — parked 2026-09-03.** This was originally a Power Apps Code App.
+> Power Apps publishing, Dataverse and the `pac code` workflow are no longer the delivery path;
+> `src/api/dataverse/` is retained unimported as a record only, and `power.config.json` is kept
+> unmodified for the same reason. See `CLAUDE.md`, *Parked — Power Platform*.
 
 ## Run it
 
 ```bash
 npm install
 npm run dev       # http://localhost:3000, mock backend, phone-first at 390px
-npm test          # vitest — 163 tests
+npm test          # vitest — 317 tests
 npm run build     # type-check (tsc -b) + production build to dist/
 ```
 
@@ -24,8 +30,9 @@ never edit either of those by hand.
 src/
   api/            AmsBackend interface + two implementations
     mock/         loads migration/staged/ (via public/data/), applies deriveState on write,
-                  persists to localStorage. Default backend, zero Dataverse code paths reachable.
-    dataverse/    // DATAVERSE-ONLY stub — throws until a tenant exists to implement it against
+                  persists to localStorage. Default backend.
+    http/         talks to server/ over /api — the shape the production adapter takes
+    dataverse/    LEGACY-POWER-PLATFORM, parked and no longer imported; kept as a record
   domain/         stateMachine.ts (GENERATED), assetId.ts, deriveState.ts — the state machine
                   and ID rules, pure functions, no store access
   features/       search/ asset/ checkout/ return/ transfer/ calibration/ admin/
@@ -35,10 +42,16 @@ tests/            vitest — see tests/README.md at the repo root for the full b
 scripts/          generate-state-machine.mjs, copy-staged-data.mjs
 ```
 
-## Switching to Dataverse later
+## Choosing a backend
 
-`src/api/index.ts` picks the backend from `VITE_AMS_BACKEND` (`app/.env.local`, gitignored,
-default `mock`). Implement `src/api/dataverse/index.ts` against the same `AmsBackend` interface
-and no screen changes — see that file's header comment for what each method needs to do and, just
-as importantly, what it must NOT do (write derived `eng_asset` columns directly — that's F1's job,
-not the app's, even against a real tenant).
+`src/api/index.ts` is the only place that picks one, from `VITE_AMS_BACKEND` (`app/.env.local`,
+gitignored, default `mock`):
+
+| Value | Backend |
+|---|---|
+| `mock` *(default)* | `src/api/mock/` — staged data in memory, persisted to localStorage |
+| `http` | `src/api/http/` — the API in `server/`; `vite --mode localapi` sets it |
+| `dataverse` | **Parked.** Selecting it now throws rather than silently falling back to mock |
+
+The production adapter is the `http` one, pointed at the Azure API instead of `server/`. Screens
+never import a backend directly, so swapping the target needs no screen changes.

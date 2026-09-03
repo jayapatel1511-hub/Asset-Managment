@@ -1,5 +1,18 @@
 # 01 — Data model
 
+> ## 🗄️ LEGACY-POWER-PLATFORM — PARKED 2026-09-03
+>
+> Describes the **Dataverse** table design (thirteen `eng_` tables, publisher prefix `eng`).
+>
+> The Power Platform is **not** the delivery path: Power Apps Code App publishing, Dataverse as
+> system of record, Power Automate flows F1–F5 as state authority and SharePoint as the primary
+> certificate store are all parked. The active direction is the Azure web application —
+> `README.md`, `CLAUDE.md`, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md`.
+>
+> Kept because the *logical* model — entities, relationships, ID rules — is still sound and fed `docs/15-postgres-data-model.md`. Read it for the domain, not for the platform.
+
+---
+
 Twelve custom tables plus `eng_idsequence` (thirteen in the solution), publisher prefix `eng`. Users (custodian, performed by) are the built-in
 `systemuser` table — do **not** create a staff table.
 

@@ -1,5 +1,18 @@
 # 02 — App (Power Apps Code App)
 
+> ## 🗄️ LEGACY-POWER-PLATFORM — PARKED 2026-09-03
+>
+> Describes the app as a **Power Apps Code App** using the `@microsoft/power-apps` SDK.
+>
+> The Power Platform is **not** the delivery path: Power Apps Code App publishing, Dataverse as
+> system of record, Power Automate flows F1–F5 as state authority and SharePoint as the primary
+> certificate store are all parked. The active direction is the Azure web application —
+> `README.md`, `CLAUDE.md`, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md`.
+>
+> Kept because the screen and workflow descriptions still match `app/`. The SDK, Code App packaging and Dataverse calls do not. `docs/12-ui-spec.md` is the current UI authority.
+
+---
+
 React 18 + TypeScript + Vite. `@microsoft/power-apps` SDK for Dataverse. Fluent UI v9 components.
 Dark mode follows OS.
 

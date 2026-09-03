@@ -9,6 +9,11 @@ is not a hosting swap. It replaces the *platform*, and four things that are curr
 features become things we build and maintain. One requirement fails outright today:
 **Zite offers US or EU data residency, not Canada.**
 
+**Status: PARKED, 2026-09-03.** The question was answered — see § 2b — and the answer rules Zite
+out as the authoritative store. The assessment is retained as the evidence for that decision. The
+active direction is the Azure web application (`docs/14-webapp-architecture.md`). Reopen only if Jay
+asks.
+
 This document is a decision input, not a decision. It does not change `CLAUDE.md`'s stack table.
 
 ---

@@ -1,3 +1,10 @@
+// LEGACY-POWER-PLATFORM — PARKED 2026-09-03.
+//
+// Dataverse is not the production system of record. This module is no longer imported by
+// src/api/index.ts, so none of it reaches the bundle; it is kept on disk only as the record of
+// the adapter shape the AmsBackend interface would need if a Dataverse path were ever revived.
+// Do not implement against it. The production adapter is src/api/http/ against server/.
+
 // DATAVERSE-ONLY
 /**
  * Real Dataverse implementation of AmsBackend via the Power Apps Code Apps SDK

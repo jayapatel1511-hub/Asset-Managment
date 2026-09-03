@@ -1,5 +1,19 @@
 # `zite/` — the Zite test environment
 
+> ## ⛔ PARKED — 2026-09-03
+>
+> This work is **closed, not abandoned**, and is **not** the active direction. Zite cannot be the
+> authoritative store for AMS: `zitejs/db` exposes no transaction and a failing multi-write does not
+> roll back, so `CLAUDE.md` rule 2 — *one business event is one atomic database commit* — is
+> unsatisfiable on it (`docs/18-hosting-alternatives.md` § 2b). Data residency is a second,
+> independent blocker (US/EU only; Canada required).
+>
+> The active direction is the **Azure web application**: `README.md`, `CLAUDE.md`,
+> `docs/14-webapp-architecture.md`. Everything below is kept as evidence for the decision.
+> Do not resume it unless Jay explicitly reopens it.
+
+---
+
 Everything this directory holds was added for the **Zite test environment** built on
 2026-09-03. It writes nothing into `app/`, `server/` or `migration/`, which were read
 as references only.

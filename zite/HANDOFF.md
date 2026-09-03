@@ -1,5 +1,19 @@
 # Zite test environment — session handoff, 2026-09-03
 
+> ## ⛔ PARKED — 2026-09-03
+>
+> This work is **closed, not abandoned**, and is **not** the active direction. Zite cannot be the
+> authoritative store for AMS: `zitejs/db` exposes no transaction and a failing multi-write does not
+> roll back, so `CLAUDE.md` rule 2 — *one business event is one atomic database commit* — is
+> unsatisfiable on it (`docs/18-hosting-alternatives.md` § 2b). Data residency is a second,
+> independent blocker (US/EU only; Canada required).
+>
+> The active direction is the **Azure web application**: `README.md`, `CLAUDE.md`,
+> `docs/14-webapp-architecture.md`. Everything below is kept as evidence for the decision.
+> Do not resume it unless Jay explicitly reopens it.
+
+---
+
 **Read this first if you are resuming this work.** It is the state of play at the moment
 the session stopped, written so a fresh session can pick it up from the repository alone.
 

@@ -1,5 +1,18 @@
 # 05 — Security & environments
 
+> ## 🗄️ LEGACY-POWER-PLATFORM — PARKED 2026-09-03
+>
+> Describes **Power Platform** environments, solution layering and Dataverse security roles.
+>
+> The Power Platform is **not** the delivery path: Power Apps Code App publishing, Dataverse as
+> system of record, Power Automate flows F1–F5 as state authority and SharePoint as the primary
+> certificate store are all parked. The active direction is the Azure web application —
+> `README.md`, `CLAUDE.md`, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md`.
+>
+> Kept because the role model and data-classification intent carry over. Environments, solution layering and Dataverse role mechanics do not — see `docs/14` for identity and `specs/010` for the platform.
+
+---
+
 ## Environments
 - `Englobe-AMS-Dev` — Sandbox, Canada. Developers + Jay. Solution unmanaged.
 - `Englobe-AMS-Prod` — Production, Canada, Managed Environment if available (28-day backups). Solution managed.

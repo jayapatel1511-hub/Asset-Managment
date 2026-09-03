@@ -1,5 +1,18 @@
 # 10 — Microsoft 365 integration surface
 
+> ## 🗄️ LEGACY-POWER-PLATFORM — PARKED 2026-09-03
+>
+> Consolidates the **Microsoft 365** integration research done for the Power Platform build.
+>
+> The Power Platform is **not** the delivery path: Power Apps Code App publishing, Dataverse as
+> system of record, Power Automate flows F1–F5 as state authority and SharePoint as the primary
+> certificate store are all parked. The active direction is the Azure web application —
+> `README.md`, `CLAUDE.md`, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md`.
+>
+> Kept and still partly live: M365 remains an *integration surface* (Teams, email, SharePoint export, Power BI). What is parked is any assumption that core operation depends on it — it must not.
+
+---
+
 **Created**: 2026-09-02. **Why this file exists**: integration *is* specified, but it was scattered
 across five documents, five flow READMEs, `CLAUDE.md` and a source-file docstring. Nobody could
 answer "how does this system use SharePoint?" without reading four files and inferring the rest.

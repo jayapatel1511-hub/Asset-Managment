@@ -1,5 +1,18 @@
 # 03 — Automation (Power Automate, solution-aware, runs as svc-ams)
 
+> ## 🗄️ LEGACY-POWER-PLATFORM — PARKED 2026-09-03
+>
+> Describes seven **Power Automate** flows running as the `svc-ams` service account.
+>
+> The Power Platform is **not** the delivery path: Power Apps Code App publishing, Dataverse as
+> system of record, Power Automate flows F1–F5 as state authority and SharePoint as the primary
+> certificate store are all parked. The active direction is the Azure web application —
+> `README.md`, `CLAUDE.md`, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md`.
+>
+> Kept because the *business* rules each flow encodes are requirements that the API must still satisfy — as server-side transaction commands, not flows. `svc-ams` as a high-privilege account is explicitly retired.
+
+---
+
 Seven flows. Each lives in `solution/flows/<name>/` with `definition.json` + `README.md`.
 All flows: retry policy exponential ×4; on terminal failure, post to Teams channel `AMS-Alerts` and leave
 `eng_processed = false` so `F5` can retry.

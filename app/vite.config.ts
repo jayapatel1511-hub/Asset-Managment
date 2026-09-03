@@ -11,8 +11,8 @@ import path from "node:path";
 //
 // Structural rather than a cleanup step, deliberately: a `rm -rf public/data` before build is a
 // thing someone can forget, and published assets are served from a public endpoint with no recall.
-// The release backend is Dataverse, which fetches its data at runtime after authentication, so a
-// release genuinely does not need these files.
+// The release backend fetches its data at runtime from the API after authentication, so a release
+// genuinely does not need these files. (Was Dataverse; that path is parked — see src/api/index.ts.)
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
   publicDir: mode === "release" ? false : "public",
@@ -32,6 +32,9 @@ export default defineConfig(({ mode }) => ({
   test: {
     environment: "jsdom",
     globals: true,
+    // Restores Storage under jsdom on Node >= 26, which shadows it with its own experimental
+    // localStorage global. No-op on Node 22. See tests/setup.ts for the full explanation.
+    setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx", "src/**/*.test.ts"],
   },
 }));

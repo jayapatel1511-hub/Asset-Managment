@@ -4,7 +4,13 @@
 
 > **The production target is now a conventional Azure-hosted web application with an explicit Data Management & Stewardship capability.**
 
-The existing React/TypeScript/Vite application, migration pipeline, domain rules, tests, synthetic data and business feature specifications remain the foundation. Power Apps Code App, Dataverse and Power Automate are no longer the planned primary runtime.
+The existing React/TypeScript/Vite application, migration pipeline, domain rules, tests, synthetic data and business feature specifications remain the foundation.
+
+Power Apps Code App, Dataverse and Power Automate are **parked** (2026-09-03) — kept on disk and
+banner-marked `LEGACY-POWER-PLATFORM`, removed from the build. The Dataverse adapter is no longer
+imported and the `@microsoft/power-apps` packages are gone from `app/package.json`. Those documents
+are still worth reading for the business rules and logical model they carry; they are not build
+instructions. See `CLAUDE.md`, *Parked — Power Platform*.
 
 ### Target platform
 
@@ -23,6 +29,11 @@ The existing React/TypeScript/Vite application, migration pipeline, domain rules
 | Delivery | GitHub Actions + infrastructure-as-code + immutable revisions |
 
 Microsoft 365 remains available for integrations such as Teams, email, SharePoint exports and Power BI. Core asset and data-management operation does not depend on those integrations.
+
+Zite was evaluated in September 2026 as a hosting alternative and is **parked**: it cannot be the
+authoritative store, because its client exposes no transaction and a failing multi-write does not
+roll back — see [`docs/18-hosting-alternatives.md`](docs/18-hosting-alternatives.md) § 2b. The Azure
+web application below is the single active direction.
 
 ## Status
 
@@ -65,39 +76,40 @@ CLAUDE.md                              active project instructions
 .specify/memory/constitution.md        governing principles and platform decision
 
 docs/00-brief.md                       business problem and acceptance questions
-docs/01-data-model.md                  legacy Dataverse-oriented logical reference
-docs/02-app.md                         existing screen/workflow reference
-docs/03-automation.md                  legacy Power Automate design reference
+docs/01-data-model.md                  PARKED (legacy) — Dataverse tables; logical model still valid
+docs/02-app.md                         PARKED (legacy) — Code App framing; screen/workflow reference
+docs/03-automation.md                  PARKED (legacy) — Power Automate F1-F5; rules still required
 docs/04-migration.md                   source cleanup and migration rules
-docs/05-security.md                    legacy Power Platform security reference
+docs/05-security.md                    PARKED (legacy) — Power Platform environments and roles
 docs/06-delivery-plan.md               active web-application delivery sequence
 docs/07-open-questions.md              product decisions requiring Jay
 docs/08-decisions.md                   decision log
 docs/09-build-report.md                local/mock implementation evidence
-docs/10-integration.md                 legacy M365 integration research
+docs/10-integration.md                 PARKED (legacy) — M365 research; M365 stays an integration surface
 docs/12-ui-spec.md                     detailed mobile UI specification
 docs/13-production-readiness-review.md architecture and production review
 docs/14-webapp-architecture.md          active Azure web architecture
 docs/15-postgres-data-model.md          proposed core PostgreSQL schema
 docs/16-data-management.md              stewardship, jobs, quality, lineage and retention model
 docs/17-ux-audit.md                     UX audit: what is static and must not be; admin console gaps
-docs/18-hosting-alternatives.md         Zite assessed against the approved Azure target
+docs/18-hosting-alternatives.md         PARKED — Zite assessed and ruled out as the store
 
 specs/001-* ... 008-*                  business feature specifications
 specs/009-production-readiness/        cross-cutting integrity and verification gates
 specs/010-web-application-platform/    web platform, API, PWA, storage and operations
 specs/011-data-management/             governed data administration and lifecycle
-specs/ZITE-BUILD-PROMPT.md             handoff prompt for the Zite test environment (Field slice)
+specs/ZITE-BUILD-PROMPT.md             PARKED — handoff prompt for the Zite test environment
 
 app/                                    existing React/Vite interface and mock backend
-server/                                 planned TypeScript API and worker; add when implementation starts
+server/                                 local TypeScript API over in-process PostgreSQL (PGlite); working POC, not production
 packages/                               planned shared contracts/domain packages
 db/                                     planned PostgreSQL migrations and views
 infra/                                  planned Azure infrastructure-as-code
 migration/                              repeatable source profiling, cleaning and target loading
 data/source/                            frozen legacy exports
 data/reference/                         curated mappings and domain inputs
-solution/                               legacy Power Platform and Power BI artifacts; not the production path
+solution/                               PARKED (legacy) — Power Platform solution, flows F1-F5, Power BI project
+zite/                                   PARKED — Zite test environment (loader + Field slice); not the production path
 ```
 
 ## Data management scope
