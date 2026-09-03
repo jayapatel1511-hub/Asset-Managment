@@ -1,36 +1,44 @@
-# Remaining work — production-readiness workstream map
+# Remaining Work — Azure Web Application Workstream Map
 
-**As of 2026-09-02**, after the local/mock build and independent production review.
+**As of 2026-09-03**, after the local/mock build, production-readiness review, and System Owner decision to pivot to a conventional web application.
 
 Read, in order:
 
-1. `specs/AGENT-BRIEF.md`
+1. `CLAUDE.md`
 2. `.specify/memory/constitution.md`
-3. `docs/13-production-readiness-review.md`
-4. `specs/009-production-readiness/spec.md`
-5. `specs/009-production-readiness/checklists/requirements.md`
-6. `docs/06-delivery-plan.md`
+3. `docs/14-webapp-architecture.md`
+4. `docs/15-postgres-data-model.md`
+5. `specs/009-production-readiness/spec.md`
+6. `specs/010-web-application-platform/spec.md`
+7. `docs/06-delivery-plan.md`
 
-The previous workstream map optimized parallel local feature construction. That phase produced useful
-mock implementation and is preserved in `docs/09-build-report.md`. The remaining critical work is not
-more local screens; it is proving the production architecture in a real development tenant.
+The previous workstream map optimized local feature construction and then a Dataverse production route. Both produced useful requirements and mock evidence. The active remaining work is now the TypeScript/PostgreSQL/PWA/Azure path.
+
+---
 
 ## Current status
 
 - Features 001–006: **Mock Implemented**
-- Feature 007: re-check the branch and tests before claiming its current state
-- Feature 008 US1: **Mock Implemented** release guard
-- Feature 009: **Spec Draft** and production gate
-- Real data-platform backend: stub/incomplete
-- Real schema and security roles: not approved or created from the canonical post-review model
-- Hosted scanner/offline behavior: not verified
-- Power BI manager report: not published or security-verified
+- Feature 007: in progress; verify current branch/tests before relying on it
+- Feature 008 US1: release-data guard implemented locally
+- Feature 009: **Spec Draft**, still the production-readiness gate
+- Feature 010: **Spec Draft**, active platform feature
+- Constitution: **2.0.0**, web pivot recorded
+- React/Vite client: existing and reusable
+- Production HTTP API: not implemented
+- PostgreSQL schema/migrations: not implemented
+- Entra sign-in: not implemented
+- PWA offline shell/IndexedDB: not implemented
+- Blob document path: not implemented
+- Azure infrastructure: not implemented
+- PostgreSQL migration rehearsal: not completed
 - Pilot: not approved
 
-## The serial gate — do this first
+---
 
-Do not run schema, backend and flow agents in parallel until the following architecture contract is
-approved. They all otherwise encode different assumptions into the most expensive-to-change layer.
+## The serial architecture gate
+
+Do not start parallel backend, offline, migration and infrastructure implementation until the shared contracts below are frozen. Otherwise each workstream will encode a different state, identity and transaction model.
 
 ### G0.1 Product decisions
 
@@ -40,288 +48,613 @@ Record in `docs/08-decisions.md`:
 - Q8 expected return
 - Q9 backdating
 - Q10 project source
-- Q11 reporting audience/licensing
-- Q18 permanent-component calibration
+- Q11 reporting audience
+- Q18 component calibration
 - global versus office-scoped administrator
-- permanent home-office rehome workflow
+- permanent home-office rehome behavior
 - failed calibration versus physical lab receipt
-- structured ownership categories
+- structured ownership values
+- supported offline workflows
+- supported device/browser matrix
 
-### G0.2 State model
+### G0.2 Enterprise platform decisions
 
-Approve how the system independently represents:
+- Azure subscription and owner
+- approved Canadian region
+- public-behind-Entra versus private-network-only access
+- Dev/UAT/Prod environment ownership
+- Entra app-registration owner
+- RTO/RPO/HA tier and budget
+- certificate malware-scanning route
+- DNS/TLS owner
+- alert/support owner
+
+### G0.3 State and identity contract
+
+Approve:
 
 - lifecycle;
 - physical disposition;
-- serviceability; and
-- calibration currency.
+- serviceability;
+- calibration currency;
+- canonical Asset ID and aliases;
+- stable user identity by Entra tenant/object ID;
+- role and office-scope model;
+- component exceptions.
 
-Re-run every current transition and report rule against that model. Do not create the real Asset table
-with the old catch-all status before this is settled.
+### G0.4 Atomic command contract
 
-### G0.3 Authoritative command contract
+Freeze:
 
-Create the technology-neutral contract for one state-changing event:
-
-- caller and authorization context;
-- client submission identifier;
-- event type and effective time;
-- complete asset/item inputs;
-- server-loaded current state;
-- required validation;
-- calculated before/after snapshots;
-- relationship effects;
+- authenticated caller context;
+- client submission ID;
+- canonical request hashing;
+- event type/effective time;
+- item inputs;
+- server-owned fields;
+- deterministic asset locking;
+- validation and refusal codes;
+- before/after snapshots;
+- relationship/installation effects;
+- outbox events;
 - all-or-nothing result;
-- refusal codes;
-- retry/idempotency behavior; and
-- correction/reversal behavior.
+- retry behavior;
+- correction behavior.
 
-The first proof is a five-asset checkout. Feature 009 SC-001 to SC-005 must pass before any other
-production write path is accepted.
+### G0.5 Canonical PostgreSQL schema
 
-### G0.4 Canonical schema
+Approve `docs/15-postgres-data-model.md`, including every table, constraint, index, role, view, retention rule and migration mapping.
 
-Produce one versioned data model covering all features, including:
-
-- Asset Identifier/Alias;
-- whole-event transaction status and idempotency fields;
-- Installation and Installation Component;
-- Office Administrator Assignment;
-- notification state/history if threshold suppression needs persistence;
-- structured ownership;
-- permanent rehome history; and
-- synthetic-run provenance if tenant loading remains in scope.
-
-**Serial gate DoD:** approved command contract, approved state model, approved canonical schema and all
-blocking product decisions recorded.
+**Gate definition of done:** The product decisions, enterprise prerequisites, state/identity contract, API command contract and physical schema are approved. Shared TypeScript contracts and migrations can then be authored without re-litigation.
 
 ---
 
-## WS-P1 — Authoritative transaction proof
+## WS-W1 — Monorepo and local platform foundation
 
-**Runs after:** serial gate  
-**Blocks:** every production write path
+**Runs after:** architecture gate sufficiently stable  
+**Blocks:** API, PWA and Azure work
 
-Implement one synchronous, server-authoritative five-asset checkout against a development data
-platform.
+### Owns
 
-Required tests:
+- root workspace/package orchestration
+- `server/` foundation
+- `packages/contracts/`
+- `packages/domain/` where approved
+- local PostgreSQL developer/test setup
+- common lint/typecheck/test commands
+- baseline CI
 
-1. five valid assets commit as one event;
-2. one invalid asset writes nothing;
-3. deliberate exception after the third item rolls everything back;
-4. two devices compete for one asset and exactly one succeeds;
-5. response is lost, request is retried, one event exists;
-6. same submission ID with changed payload is refused;
-7. client-supplied before/after state cannot alter the result; and
-8. accepted header and lines cannot be edited by normal roles.
+### Deliverables
 
-**Owned areas:** authoritative server command, transaction contract, idempotency, concurrency tests.  
-**Do not own:** UI redesign, reminder flows, Power BI visuals.
+- [ ] current `app/` tests stay green
+- [ ] local API health endpoint
+- [ ] reproducible local PostgreSQL
+- [ ] migration runner
+- [ ] isolated integration-test database
+- [ ] shared request/response schemas
+- [ ] generated OpenAPI or equivalent contract artifact
+- [ ] root `dev`, `typecheck`, `lint`, `test`, `test:integration`, `build` commands
+- [ ] CI without personal cloud credentials
 
----
+### Must not own
 
-## WS-P2 — Canonical Dataverse solution
+- final transaction logic
+- Entra policy decisions
+- offline UX
+- visual redesign
 
-**Runs after:** serial gate and command contract  
-**Can run with:** WS-P3 after shared schema/security boundaries are frozen
-
-Create the approved tables, fields, choices, alternate keys, indexes, relationships and solution
-packaging. Include environment variables and connection references without embedded secrets.
-
-Required proof:
-
-- clean solution export/import into a fresh development environment;
-- canonical IDs and aliases behave as specified;
-- relationship constraints cannot be bypassed;
-- sequence state is isolated by environment; and
-- schema documentation matches the export.
-
-**Owned areas:** solution schema and ALM artefacts.  
-**Do not own:** role matrix implementation unless explicitly coordinated with WS-P3.
+**Definition of done:** A clean checkout starts the existing client, API and database locally; CI is green.
 
 ---
 
-## WS-P3 — Authorization and identity
+## WS-W2 — PostgreSQL schema and database invariants
 
-**Runs after:** administrator scope decision and schema boundary freeze  
-**Can run with:** WS-P2, WS-P4
+**Runs after:** G0.3–G0.5  
+**Can run with:** WS-W3 after contracts freeze  
+**Blocks:** transaction service and real migration
 
-Implement and test:
+### Owns
 
-- Field User, Administrator and Owner roles;
-- global or office-scoped administration at the data/server layer;
-- secured SIM/network fields;
-- least-privilege automation identity;
-- app-sharing versus data-role error behavior;
-- direct API authorization matrix;
-- relationship-write authority; and
-- device cache/queue isolation by user and environment.
+- `db/migrations/`
+- database test fixtures
+- immutable-history protections
+- relationship/installation constraints
+- reporting views
+- database principals/grants
 
-Test through app, direct API, export and reporting routes. Interface visibility alone is not evidence.
+### Deliverables
 
----
+- [ ] user/role/office scope tables
+- [ ] equipment model, location and project tables
+- [ ] asset and identifier/alias tables
+- [ ] transaction and transaction-line tables
+- [ ] idempotency table
+- [ ] relationship tables and cycle/open-parent protection
+- [ ] installation/component span tables
+- [ ] calibration and document metadata tables
+- [ ] sequence allocation table
+- [ ] outbox and audit tables
+- [ ] reporting views
+- [ ] migration up/down or forward-recovery policy
 
-## WS-P4 — Real migration, delta and cutover
+### Required database tests
 
-**Runs after:** WS-P2 schema and WS-P3 identity resolution are available  
-**Can run with:** hosted-app and reporting work after first Development load
+- duplicate Asset ID refused
+- canonical Asset ID mutation refused
+- shared serials allowed
+- temporary alias retained
+- transaction line update/delete refused
+- second open parent refused
+- relationship cycle refused
+- overlapping installation membership refused
+- synthetic production load refused
+- restricted report views expose no sensitive fields
 
-Keep the existing cleaning/reporting logic. Add:
-
-- real target writer;
-- real directory resolution;
-- corrected calibration export as the only calibration input;
-- ambiguous compliance records left unmatched pending confirmation;
-- source/staged/target reconciliation;
-- second-run idempotency against the real platform;
-- rehearsal snapshot and final delta;
-- freeze/read-only procedure; and
-- per-office cutover and rollback criteria.
-
-Production load remains blocked by:
-
-- `migration/reports/03_models_review.md` sign-off; and
-- `migration/reports/02_conflicts.md` sign-off.
-
----
-
-## WS-P5 — Real backend, hosted app and device evidence
-
-**Runs after:** WS-P1 command and sufficient WS-P2 schema  
-**Can run with:** WS-P4, WS-P6, WS-P7
-
-Implement the real `AmsBackend` adapter. Every state-changing write calls the authoritative command.
-Remove mock-only role switching and scanner substitutes from release builds.
-
-Hosted-device matrix:
-
-- managed iOS and Android;
-- online-to-offline transition;
-- full close/reopen offline;
-- device restart;
-- queued writes and conflict replay;
-- expired authentication;
-- signed-in user change;
-- scanner permission denied/granted/interrupted; and
-- inspection proving secured fields are absent from Field User local storage.
-
-Any failed offline capability is removed from pilot acceptance or marked unsupported. Local queue tests
-do not substitute for this evidence.
+**Definition of done:** Migrations apply to an empty database, schema tests pass, and a second migration run makes no change.
 
 ---
 
-## WS-P6 — Power BI manager reporting
+## WS-W3 — Identity, session and authorization
 
-**Runs after:** first real Development data load and security-model decision  
-**Can run with:** WS-P5, WS-P7
+**Runs after:** role/office decision and shared contract freeze  
+**Can run with:** WS-W2, WS-W4
 
-Implement the manager report outside the Code App. Select and document either per-viewer data identity
-or a shared semantic-model identity with tested row/object security.
+### Owns
 
-Requirements:
+- Entra application integration
+- server session/BFF boundary
+- user synchronization
+- role and office-scope authorization middleware
+- CSRF/redirect/logout protections
+- direct authorization tests
 
-- ordinary manager model excludes ICCID, phone and static IP entirely;
-- all seven acceptance questions are answerable;
-- every page states data currency;
-- every measure reconciles with operational queries;
-- report works as every intended recipient role; and
-- reader licensing and distribution are confirmed.
+### Deliverables
 
-The in-app Reports surface remains useful for app users but does not complete this workstream.
+- [ ] tenant-scoped OIDC sign-in
+- [ ] secure session cookies
+- [ ] no separate password store
+- [ ] stable tenant/object-ID user key
+- [ ] Field User, Office Admin, System Owner, Report Reader
+- [ ] API office-scope checks
+- [ ] disabled user handling
+- [ ] same-device user-change handling contract
+- [ ] deep-link after sign-in
+- [ ] direct API cross-role/cross-office test suite
 
----
+### Must not own
 
-## WS-P7 — Automation, SharePoint and operations
+- UI-only permission checks as security evidence
+- broad Graph permissions without an approved requirement
 
-**Runs after:** WS-P1 authoritative event behavior is fixed  
-**Can run with:** WS-P5 and WS-P6
-
-Build flows for reconciliation, calibration recalculation, reminders and overdue returns without
-reintroducing a second business-state write path.
-
-Complete:
-
-- calibration create/correct/reassociate/replace/void recalculation;
-- failed-result behavior;
-- physical lab-receipt behavior;
-- certificate upload, attach-later, naming, type/size, attribution and retention;
-- best-effort notification delivery and bounded messages;
-- owned alert destination;
-- app rollback;
-- solution recovery;
-- business-data restore;
-- certificate restore; and
-- RPO/RTO and restore-test procedure.
-
-Every flow and procedure gets a successor-readable README.
+**Definition of done:** Authorized test users receive only permitted API data/actions; unauthorized direct requests are refused.
 
 ---
 
-## WS-L1 — Local synthetic/release cleanup
+## WS-W4 — Atomic transaction and registration service
 
-This work is lower priority than WS-P1. Before continuing, re-run:
+**Runs after:** WS-W2 core schema and WS-W3 caller context  
+**Blocks:** all production write workflows
 
-```bash
-cd app
-npm install
-npx tsc -b
-npm test
-npm run build
-npm run build:release
-```
+### Owns
 
-Then inspect the current state of features 007 and 008 rather than relying on the old concurrent-agent
-summary. Preserve the release-data guard. Do not load large synthetic history into a shared Development
-environment until Q14 and the environment strategy are approved.
+- `POST /api/transactions`
+- request canonicalization and hash
+- idempotency claim/result
+- deterministic row locking
+- transition/relationship validation
+- transaction header/line creation
+- derived state application
+- outbox write
+- server-side Asset ID registration/allocation
+- concurrency/fault-injection tests
+
+### First proof
+
+Five-asset checkout:
+
+1. five valid assets commit completely;
+2. invalid fifth asset writes nothing;
+3. exception after third material step rolls back everything;
+4. two users race for an overlapping asset and one wins;
+5. accepted response is lost and retry returns the original result;
+6. same key with different payload is refused;
+7. reversed input order does not create unsafe deadlock behavior;
+8. browser before/after state cannot alter the result;
+9. accepted header/lines cannot be edited normally.
+
+### Registration proof
+
+- 100 concurrent registrations under one prefix
+- 100 unique committed canonical IDs
+- temporary tags retained as aliases
+- browser never reserves the sequence
+
+**Definition of done:** Feature 009/010 atomicity and idempotency outcomes pass against real PostgreSQL. No other write workflow is called API Implemented before this passes.
 
 ---
 
-## Integration order
+## WS-W5 — HTTP client integration and workflow migration
+
+**Runs after:** WS-W4  
+**Can run with:** WS-W6 after the HTTP/cache contracts freeze
+
+### Owns
+
+- `app/src/api/http/`
+- production `AmsBackend` adapter
+- command/error mapping
+- pending/applied/conflict UI state
+- removal of runtime dependence on `api/dataverse/`
+
+### Migration order
+
+1. checkout
+2. return
+3. transfer
+4. register/complete temporary tag
+5. fault/repair
+6. missing/found
+7. calibration dispatch/physical return
+8. calibration record/correction
+9. retire/rehome
+10. component attach/detach
+11. deploy/recover
+12. component swap/configuration change
+13. audit
+
+### Requirements per workflow
+
+- shared contract tests
+- server-side authorization
+- atomicity and idempotency
+- structured refusal codes
+- history/current-state reconciliation
+- no direct state edits
+- race test where applicable
+
+**Definition of done:** Features 001–005 use the HTTP API in Dev and pass shared behavior tests.
+
+---
+
+## WS-W6 — PWA, IndexedDB and offline replay
+
+**Runs after:** HTTP/cache contracts frozen  
+**Can run with:** WS-W5, WS-W7
+
+### Owns
+
+- web manifest
+- service worker
+- asset/reference cache projections
+- IndexedDB schema and migrations
+- draft persistence
+- pending-command queue
+- replay coordinator
+- Needs-attention conflict surface
+- service-worker update behavior
+- device test harness/procedure
+
+### Rules
+
+- cache partition: tenant + environment + user object ID
+- no restricted SIM/network fields or certificate bytes for Field Users
+- pending is not accepted
+- replay while app is active; Background Sync is optional enhancement
+- no replay under another identity
+- commands persist through app/device restarts
+- conflicts are visible and never silently dropped
+
+### Required device tests
+
+- installed PWA online sync
+- app close
+- device reboot
+- airplane-mode cold start
+- offline search
+- queue multiple commands
+- conflict from second device
+- reconnect/replay
+- accepted response loss
+- expired auth
+- same-device user change
+- storage eviction
+- update with queued commands
+- camera permission paths
+
+**Definition of done:** Supported devices have dated evidence for cold start and replay. Unsupported behavior is removed from pilot claims or triggers a native-wrapper decision.
+
+---
+
+## WS-W7 — Calibration documents and Blob Storage
+
+**Runs after:** calibration command contract and Azure identity baseline  
+**Can run with:** WS-W6, WS-W8
+
+### Owns
+
+- private Blob Storage integration
+- document metadata API
+- upload/download authorization
+- integrity hash
+- file/type/size enforcement
+- malware scan/quarantine state
+- replacement history
+- calibration summary recalculation
+- database/object reconciliation
+
+### Required tests
+
+- successful upload
+- upload failure after calibration fact accepted
+- later attachment
+- replacement/reissue
+- failed calibration
+- older historical record entry
+- correction/supersession/void
+- retired asset retrieval
+- unauthorized direct document access
+- database restore/document mismatch report
+
+**Definition of done:** Truthful calibration records survive file failures; private document access and recovery are verified.
+
+---
+
+## WS-W8 — Outbox, workers and optional Microsoft 365 integration
+
+**Runs after:** WS-W4 outbox contract  
+**Can run with:** WS-W7, WS-W9
+
+### Owns
+
+- outbox claim/lease/retry
+- reminder scheduling
+- overdue-return jobs
+- reconciliation jobs
+- Teams/email adapters
+- notification suppression/cadence state
+- operational alerts
+
+### Rules
+
+- business event and outbox commit together
+- notification delivery is best-effort
+- consumer is idempotent
+- failed delivery does not change asset truth
+- backlog age alerts a named owner
+- office recipients derive from live office/admin data
+- messages are bounded
+
+**Definition of done:** Worker failure/retry produces no duplicate business effect and reaches an owned alert destination.
+
+---
+
+## WS-W9 — Reporting
+
+**Runs after:** WS-W2 views and first representative data load  
+**Can run with:** WS-W7/WS-W8
+
+### Owns
+
+- Fleet
+- Where/Who
+- Availability
+- Calibration
+- By Project
+- Asset Timeline
+- Site/Installation Timeline
+- Utilisation
+- export routes
+- Report Reader authorization
+
+### Rules
+
+- reports are read-only
+- data currency visible
+- manager DTOs/views exclude sensitive identifiers
+- every figure reconciles to operational data
+- acquisition/go-live boundaries protect utilisation
+- Power BI optional and uses approved views only
+
+**Definition of done:** A Report Reader answers all seven questions without operational write access or restricted fields.
+
+---
+
+## WS-W10 — Azure infrastructure and deployment
+
+**Runs after:** enterprise platform decisions  
+**Can begin in Dev while application work proceeds, after shared names/contracts freeze
+
+### Owns
+
+- `infra/`
+- Container Apps environment
+- web/API app
+- worker/job
+- Container Registry
+- PostgreSQL
+- private networking
+- Blob Storage
+- managed identities
+- Key Vault where needed
+- monitoring
+- DNS/TLS inputs
+- budgets
+- environment parameters
+- GitHub Actions OIDC deployment
+
+### Required proof
+
+- fresh Dev deployment from repository
+- no long-lived Azure secret in GitHub
+- immutable revision recorded by commit/image/schema
+- health/smoke check
+- controlled traffic promotion
+- compatible rollback
+- environment isolation
+
+**Definition of done:** Dev and UAT can be reproduced from IaC plus documented enterprise prerequisites.
+
+---
+
+## WS-W11 — PostgreSQL migration, delta and cutover
+
+**Runs after:** WS-W2 and sufficient WS-W3 user resolution  
+**Can run with:** representative API/report work after first Dev load
+
+### Preserve
+
+- source profile
+- corrected calibration export
+- model mapping
+- one-to-one office mapping
+- conflict reports
+- completion queue
+- unknown-custodian sweep
+- source-row traceability
+- idempotent reports
+
+### Add
+
+- PostgreSQL target writer
+- user resolution by stable directory identity
+- asset aliases
+- inventory events
+- calibration/document metadata
+- relationship evidence
+- source/staged/target reconciliation
+- second-run empty business diff
+- rehearsal delta
+- freeze/read-only procedure
+- final delta
+- rollback criteria
+
+Ambiguous calibration records remain unmatched pending human confirmation.
+
+Production load remains blocked by model and conflict sign-offs.
+
+**Definition of done:** UAT rehearsal accounts for every record, fits the cutover window and is reversible by the approved procedure.
+
+---
+
+## WS-W12 — Security, scale, recovery and pilot evidence
+
+**Runs after:** integrated Dev/UAT system  
+**Blocks:** Ottawa pilot
+
+### Security
+
+- direct API role/office matrix
+- insecure object access tests
+- CSRF/session/redirect tests
+- document authorization
+- export authorization
+- sensitive network/cache inspection
+- container/dependency/IaC scanning
+
+### Scale
+
+- 5,000 active assets
+- 100,000+ transaction lines
+- overlapping transaction load
+- long timeline
+- report performance
+- migration performance
+- outbox backlog recovery
+
+### Recovery
+
+- PostgreSQL point-in-time restore
+- document recovery
+- metadata/object/hash reconciliation
+- application revision rollback
+- schema compatibility/forward recovery
+- measured RTO/RPO
+- alert escalation test
+
+### Pilot evidence
+
+- migration sign-offs
+- supported device matrix
+- 20+ real checkout/return cycles
+- deliberate double booking
+- offline queue/conflict path
+- calibration certificate path
+- physical stock sample
+- seven questions from production data
+
+**Definition of done:** Features can move through Azure Integrated, Security Verified, Device Verified, Migration Rehearsed and Pilot Accepted with dated evidence.
+
+---
+
+## Parallelization map
 
 ```text
-Serial gate
-   ↓
-WS-P1 atomic command proof
-   ↓
-WS-P2 schema ─────┐
-WS-P3 security ───┼─ freeze shared contracts
-   ↓              │
-WS-P4 real load   │
-   ↓              │
-WS-P5 hosted app  │
-WS-P6 reporting   │  may run in parallel after first load
-WS-P7 automation  │
-   └──────────────┘
-   ↓
-Feature 009 checklist
-   ↓
-Ottawa pilot
+SERIAL GATE
+  product + enterprise decisions
+  state/identity contract
+  atomic command contract
+  PostgreSQL schema approval
+        │
+        ├── WS-W1 foundation
+        │      │
+        │      ├── WS-W2 database ──┐
+        │      └── WS-W3 identity ──┼── WS-W4 atomic transaction
+        │                           │          │
+        │                           │          ├── WS-W5 HTTP workflows
+        │                           │          ├── WS-W6 PWA/offline
+        │                           │          ├── WS-W7 documents
+        │                           │          └── WS-W8 workers
+        │                           │
+        │                           ├── WS-W9 reporting
+        │                           ├── WS-W10 Azure infrastructure
+        │                           └── WS-W11 migration
+        │
+        └────────────────────────────────────── WS-W12 verification/pilot
 ```
+
+Shared files and contracts are frozen before parallel agents are launched. Each workstream receives an explicit ownership map to avoid collisions.
+
+---
+
+## First next task
+
+The highest-value next implementation task is **not** another feature screen.
+
+> Create the approved API command schema and minimal PostgreSQL migrations needed to prove one five-asset checkout atomically, including idempotency, deterministic row locking, immutable transaction history, state updates and outbox records. Run the race, retry and fault-injection tests.
+
+Everything else becomes safer after that boundary exists.
+
+---
 
 ## Pilot gate
 
-Do not approve the Ottawa pilot until:
+Do not approve Ottawa until:
 
-- feature 009 SC-001 to SC-010 pass;
-- hosted iOS/Android behavior is recorded;
-- all unsupported offline claims are removed;
-- the two migration sign-offs exist;
-- direct API and reporting security tests pass;
-- alert and recovery procedures have owners; and
-- the seven questions are answerable from tenant data.
+- feature 009 and 010 atomicity/idempotency outcomes pass;
+- Entra and office-scope direct API tests pass;
+- supported mobile offline behavior is recorded;
+- private document access and failed-calibration behavior pass;
+- migration rehearsal and both sign-offs exist;
+- reports reconcile and expose no restricted fields;
+- database/document restore is exercised;
+- alerts and support ownership are active;
+- all seven questions are answerable from production data.
 
-## Reporting progress
+---
 
-Use these labels in commits, PRs and status notes:
+## Progress labels
+
+Use only:
 
 - Spec Draft
 - Spec Approved
 - Mock Implemented
-- Tenant Implemented
+- API Implemented
+- Azure Integrated
 - Security Verified
 - Device Verified
+- Migration Rehearsed
 - Pilot Accepted
 - Production Accepted
 
-Do not label a feature **Built** without the qualifier that states which level was actually proved.
+Do not label a feature **Built** without stating which level has been evidenced.
