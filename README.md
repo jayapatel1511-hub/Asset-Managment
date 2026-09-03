@@ -87,6 +87,7 @@ specs/001-* ... 008-*                  business feature specifications
 specs/009-production-readiness/        cross-cutting integrity and verification gates
 specs/010-web-application-platform/    web platform, API, PWA, storage and operations
 specs/011-data-management/             governed data administration and lifecycle
+specs/ZITE-BUILD-PROMPT.md             handoff prompt for the Zite test environment (Field slice)
 
 app/                                    existing React/Vite interface and mock backend
 server/                                 planned TypeScript API and worker; add when implementation starts
