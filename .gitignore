@@ -24,3 +24,11 @@ Thumbs.db
 # a dataset does, and so does its verification report under migration/reports/.
 migration/synthetic/*/*
 !migration/synthetic/*/manifest.json
+
+# Zite test-environment load payloads: regenerable byte-for-byte by
+# `python zite/load/build_payloads.py` from the (also ignored) synthetic demo dataset,
+# plus the ad-hoc emit.py batches cut during the paste-driven load. idmap.json is the
+# exception - it records the record UUIDs the live Zite database assigned, which no
+# re-run can reproduce.
+zite/load/out/*
+!zite/load/out/idmap.json
