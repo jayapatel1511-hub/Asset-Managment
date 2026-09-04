@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generates app/src/domain/stateMachine.ts from data/reference/state_machine.json.
+ * Generates packages/contracts/src/stateMachine.ts from data/reference/state_machine.json.
  *
  * Constitution Principle VI / docs/02-app.md: "domain/stateMachine.ts must export the matrix
  * as data (not code) so the same JSON can be pasted into the flow's Compose action — one
@@ -16,7 +16,7 @@ import path from "node:path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SOURCE = path.resolve(__dirname, "../../data/reference/state_machine.json");
-const TARGET = path.resolve(__dirname, "../src/domain/stateMachine.ts");
+const TARGET = path.resolve(__dirname, "../../packages/contracts/src/stateMachine.ts");
 
 const raw = readFileSync(SOURCE, "utf-8");
 const data = JSON.parse(raw);
