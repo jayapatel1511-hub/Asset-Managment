@@ -14,26 +14,10 @@ import { backend } from "../../api";
 import type { Asset, CalibrationCounts, CalibrationRecord, Project } from "../../api/types";
 import { AssetRow } from "../../components/AssetRow";
 import { t } from "../../i18n";
+import { governedExportsAvailable, runGovernedExport, saveTextFile, toCsv } from "./governedExport";
 
 const ALL = "";
 const HORIZON_DAYS = 30;
-
-function csvCell(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
-
-function downloadCsv(filename: string, rows: string[][]): void {
-  const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
 
 function daysOverdue(nextcaldue: string): number {
   const due = new Date(nextcaldue);
@@ -48,6 +32,8 @@ export function CompliancePage() {
   const [selectedProject, setSelectedProject] = useState(ALL);
   const [projectAssets, setProjectAssets] = useState<Asset[] | null>(null);
   const [certByAsset, setCertByAsset] = useState<Map<string, CalibrationRecord | null>>(new Map());
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     backend.getCalibrationCounts(HORIZON_DAYS).then(setCounts);
@@ -72,8 +58,29 @@ export function CompliancePage() {
     })();
   }, [selectedProject]);
 
-  function exportPack() {
+  /**
+   * The compliance pack is the one export in this application that leaves the building — it goes
+   * to a client or an auditor. Rule 19 therefore applies to it hardest, and against a real API it
+   * is produced server-side: approved template, server-cut row scope, private expiring artifact,
+   * audit entry. See ./governedExport.ts for why the in-browser assembly below survives only on
+   * the mock backend.
+   */
+  async function exportPack() {
     if (!projectAssets) return;
+    setExportError(null);
+    if (governedExportsAvailable()) {
+      setExporting(true);
+      const result = await runGovernedExport(
+        "calibration-compliance",
+        { project: selectedProject },
+        `Calibration compliance pack for project ${selectedProject}`
+      );
+      setExporting(false);
+      if (!result.ok) setExportError(t("common.error", { message: `${result.code} — ${result.message}` }));
+      return;
+    }
+
+    // Mock backend only. Unchanged from what this screen always did.
     const rows: string[][] = [["Asset ID", "Manufacturer", "Model", "Status", "Custodian", "Location", "Last calibrated", "Next due", "Days overdue", "Certificate"]];
     for (const a of projectAssets) {
       const overdue = a.nextcaldue && a.nextcaldue < loadedAt.toISOString().slice(0, 10) ? daysOverdue(a.nextcaldue) : "";
@@ -91,7 +98,7 @@ export function CompliancePage() {
         cert?.certificateurl ?? cert?.certificatenumber ?? "",
       ]);
     }
-    downloadCsv(`compliance-${selectedProject || "fleet"}.csv`, rows);
+    saveTextFile(`compliance-${selectedProject || "fleet"}.csv`, toCsv(rows));
   }
 
   return (
@@ -143,11 +150,17 @@ export function CompliancePage() {
             ))}
           </Dropdown>
           {projectAssets && projectAssets.length > 0 && (
-            <Button appearance="primary" onClick={exportPack}>
+            <Button appearance="primary" onClick={() => void exportPack()} disabled={exporting}>
               {t("reports.timeline.export")}
             </Button>
           )}
         </div>
+
+        {exportError && (
+          <Text size={200} style={{ display: "block", marginTop: 8, color: tokens.colorPaletteRedForeground1 }}>
+            {exportError}
+          </Text>
+        )}
 
         {projectAssets && (
           <div style={{ marginTop: 8, border: `1px solid ${tokens.colorNeutralStroke2}` }}>

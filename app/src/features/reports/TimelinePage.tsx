@@ -13,25 +13,7 @@ import { buildTimeline, stateAsOf, type TimelineEvent } from "../../domain/point
 import { StatusPill } from "../../components/StatusPill";
 import { t } from "../../i18n";
 import { statusLabel } from "../../i18n/humanise";
-
-function csvCell(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
-
-/** FR-021: a client-side blob download. This is the app, not a published Artifact viewer (which
- * blocks page-initiated downloads — see tasks.md T014's own note) — a blob download here works. */
-function downloadCsv(filename: string, rows: string[][]): void {
-  const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
+import { governedExportsAvailable, runGovernedExport, saveTextFile, toCsv } from "./governedExport";
 
 export function TimelinePage() {
   const { assetId = "" } = useParams();
@@ -41,6 +23,8 @@ export function TimelinePage() {
   const [relationships, setRelationships] = useState<AssetRelationship[]>([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const loadedAt = useMemo(() => new Date(), [asset]);
 
   useEffect(() => {
@@ -80,7 +64,26 @@ export function TimelinePage() {
     );
   }
 
-  function exportCsv() {
+  /**
+   * FR-021. Against a real API the artifact is produced server-side under the approved
+   * `asset-timeline` template, so the columns, the row scope and the audit entry are the server's
+   * — see ./governedExport.ts. The in-browser assembly below is the mock-backend path only, and is
+   * unchanged from what this screen always did.
+   */
+  async function exportCsv() {
+    setExportError(null);
+    if (governedExportsAvailable()) {
+      setExporting(true);
+      const result = await runGovernedExport(
+        "asset-timeline",
+        { assetId: asset!.assetid, ...(from ? { from } : {}), ...(to ? { to } : {}) },
+        `Asset timeline for ${asset!.assetid}`
+      );
+      setExporting(false);
+      if (!result.ok) setExportError(t("common.error", { message: `${result.code} — ${result.message}` }));
+      return;
+    }
+
     const rows: string[][] = [
       ["Date", "Type", "Status before", "Status after", "Location", "Custodian", "Project", "Performed by", "Notes", "Attachments"],
     ];
@@ -98,7 +101,7 @@ export function TimelinePage() {
         ev.attachments.map((a) => `${a.kind}:${a.assetId}${a.role ? ` (${a.role})` : ""}`).join("; "),
       ]);
     }
-    downloadCsv(`${asset!.assetid}-timeline.csv`, rows);
+    saveTextFile(`${asset!.assetid}-timeline.csv`, toCsv(rows));
   }
 
   return (
@@ -134,10 +137,16 @@ export function TimelinePage() {
               {t("common.all")}
             </Button>
           )}
-          <Button appearance="primary" onClick={exportCsv} style={{ marginLeft: "auto" }}>
+          <Button appearance="primary" onClick={() => void exportCsv()} disabled={exporting} style={{ marginLeft: "auto" }}>
             {t("reports.timeline.export")}
           </Button>
         </div>
+
+        {exportError && (
+          <Text size={200} style={{ display: "block", color: tokens.colorPaletteRedForeground1 }}>
+            {exportError}
+          </Text>
+        )}
 
         {rangeStartState && (
           <div style={{ background: tokens.colorNeutralBackground3, borderRadius: 6, padding: 8 }}>
