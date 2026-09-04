@@ -1,0 +1,92 @@
+name: server
+
+# Verification only. No secrets, no cloud login, no OIDC federation, no deployment.
+# The only credential anywhere in this file's blast radius is docker-compose.yml's
+# ams/ams local development password, which is not a secret and never leaves the
+# runner. See the header of app.yml.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      # A full checkout, not a sparse or server-only one, for three reasons now:
+      # server/tests/helpers.ts seeds from migration/staged/ (committed — 14
+      # files); the server type-imports ../../app/src/api/AmsBackend; and the
+      # schema lives in db/migrations/ at the repository root, applied by
+      # src/db/migrate.ts on open. No `npm ci` is needed in app/ for any of
+      # them — that import chain reaches only app-local .ts type declarations,
+      # and db/migrations/ is plain SQL.
+      - uses: actions/checkout@v4
+
+      # Same Node 26 pin as app.yml, for one toolchain across the repo. Note that
+      # server/package.json still carries `@types/node ^22.15.0` while development
+      # runs Node 26.8.1 — the typecheck passes because the Node 22 types are a
+      # subset, but the two packages disagree and settling that belongs in
+      # server/package.json, which this change does not own.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # The suite needs a real PostgreSQL: server/src/db/database.ts resolves
+      # AMS_DB to "postgres" by default, and server/tests/helpers.ts calls
+      # openTestDatabase(), which CREATEs a uniquely-named database per run and
+      # drops it on close. PGlite is now the fallback (AMS_DB=pglite), not the
+      # default, so a job without a database would not run the default path.
+      #
+      # docker-compose.yml rather than a `services:` block, deliberately. It
+      # already pins postgres:17.11-alpine, --locale=C, the 127.0.0.1:5433 bind
+      # and `max_connections=200` — and that last one cannot be expressed in a
+      # `services:` block at all, which has no way to pass command arguments to
+      # the container. Its own comment records that the stock 100 is
+      # "uncomfortably close" for five parallel test files each holding a pool.
+      # Reusing the compose file also means CI and a developer's machine cannot
+      # drift apart, and gives WS-W1's version pin exactly one home.
+      #
+      # This works because a GitHub-hosted job runs on the VM host, not inside a
+      # container, so a port published on 127.0.0.1 is reachable from the steps.
+      # Docker and the Compose v2 plugin are preinstalled on ubuntu-latest.
+      - name: Start PostgreSQL
+        working-directory: .
+        run: docker compose up -d --wait
+
+      # No AMS_DB / AMS_DATABASE_URL here on purpose: server/src/db/open.ts
+      # defaults to postgres://ams:ams@127.0.0.1:5433/ams, which is documented
+      # there as matching docker-compose.yml. Restating it would create a second
+      # copy to keep in sync.
+      #
+      # No seed step either, and nothing generates synthetic data:
+      # migration/synthetic/*/* is gitignored on purpose (feature 007) and CI
+      # must not populate it. The tests seed from committed migration/staged/.
+      # `npm run test` is `vitest run`, which discovers every tests/*.test.ts —
+      # including tests/e2e.test.ts, which calls app.listen() on an ephemeral
+      # port and drives the API with fetch over a real socket, and
+      # tests/contract.test.ts, which asks the real router whether it still
+      # answers every route app/src/api/http/index.ts names. Neither needs a
+      # separate step or a browser.
+      - name: Test
+        run: npm run test

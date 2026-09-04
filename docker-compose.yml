@@ -1,0 +1,64 @@
+# Local PostgreSQL for Englobe AMS development and integration tests.
+#
+# WS-W1 asks for "reproducible local PostgreSQL — containerised, version-pinned to the Azure
+# Flexible Server major". This is that container. It is a developer and test dependency only:
+# nothing here is an Azure resource, nothing here costs money, and no production data belongs
+# in it (CLAUDE.md rule 12 — synthetic and staged data only).
+#
+# Version: PostgreSQL 17.
+#
+#   docs/14-webapp-architecture.md names "Azure Database for PostgreSQL Flexible Server" and no
+#   major version, and no major version is pinned anywhere else in the repository. 17 is an
+#   ASSUMPTION recorded in docs/08-decisions.md (D-2026-09-03-PG) pending Jay's confirmation,
+#   chosen because it is a current Flexible Server major with the longest remaining support
+#   runway. If Jay picks a different major, change the tag here and re-run the suite — the schema
+#   uses nothing newer than PostgreSQL 13 (`DROP DATABASE ... WITH (FORCE)`, used only by the
+#   test harness, is the newest feature touched).
+#
+# The patch level is pinned too, so a clean checkout gets the same server the tests were verified
+# against. Bumping it is a one-line change and a re-run.
+#
+#   docker compose up -d --wait     start and block until healthy
+#   docker compose down             stop, keeping the volume
+#   docker compose down -v          stop and discard the data
+
+services:
+  postgres:
+    image: postgres:17.11-alpine
+    container_name: ams-postgres
+    environment:
+      POSTGRES_USER: ams
+      POSTGRES_PASSWORD: ams
+      POSTGRES_DB: ams
+      # Deterministic collation, so ORDER BY and unique indexes behave the same on every
+      # developer's machine regardless of host locale.
+      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+    # 5433, not 5432: a developer with a system PostgreSQL already listening should not have to
+    # stop it. 127.0.0.1 only — this database is never reachable from the network.
+    ports:
+      - "127.0.0.1:5433:5432"
+    command:
+      - postgres
+      # The integration suite runs five test files in parallel workers, each holding a pool and
+      # creating its own database; the concurrency proof opens more still. 100 is the default and
+      # is uncomfortably close.
+      - "-c"
+      - "max_connections=200"
+      # Local development only: durability is worth nothing here and the seed load is large.
+      - "-c"
+      - "fsync=off"
+      - "-c"
+      - "synchronous_commit=off"
+      - "-c"
+      - "full_page_writes=off"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ams -d ams"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+    volumes:
+      - ams-pgdata:/var/lib/postgresql/data
+
+volumes:
+  ams-pgdata:
