@@ -32,13 +32,14 @@
  * replay forever.
  */
 import { createHash, randomUUID } from "node:crypto";
-import type { PGlite } from "@electric-sql/pglite";
+import type { Database } from "../db/database";
 import type { SubmissionError, SubmissionOutcome } from "../../../app/src/api/AmsBackend";
 import type { Condition, CurrentUser, KitRole, TransactionHeader } from "../../../app/src/api/types";
 import { deriveState, type AssetSnapshot, type RelationshipOp, type TransactionLineInput } from "../../../app/src/domain/deriveState";
 import type { TransactionType } from "../../../app/src/domain/stateMachine";
 import type { Queryable } from "../db/pglite";
 import { HEADER_COLUMNS, LINE_COLUMNS, assetFromRow, headerToValues, insertRows, type AssetRow } from "../db/rows";
+import { enqueue, transactionAcceptedEvent } from "../outbox";
 
 // ---------------------------------------------------------------- refusal / command wrapper
 
@@ -88,50 +89,126 @@ export interface CommandMeta {
  * failure the offline queue SHOULD retry, unlike a refusal).
  */
 export async function runCommand(
-  db: PGlite,
+  db: Database,
   meta: CommandMeta,
   body: (tx: Queryable) => Promise<SubmissionOutcome>
 ): Promise<SubmissionOutcome> {
   const requestHash = hashRequest(meta.request);
-  // A closure-assigned box: TypeScript cannot see a write made inside the callback, so the
-  // outcome is carried out explicitly rather than through the transaction's return value.
-  const box: { value: SubmissionOutcome | null } = { value: null };
 
-  try {
-    await db.transaction(async (tx) => {
-      const prior = await tx.query<{ response: SubmissionOutcome; request_hash: string }>(
-        "SELECT response, request_hash FROM command_idempotency WHERE client_submission_id = $1",
-        [meta.clientSubmissionId]
-      );
-      const seen = prior.rows[0];
-      if (seen) {
-        if (seen.request_hash !== requestHash) {
-          meta.warn?.(
-            { clientSubmissionId: meta.clientSubmissionId, command: meta.command },
-            "submission id replayed with a different body — returning the original outcome (FR-007)"
-          );
-        }
-        box.value = seen.response;
-        return;
-      }
+  // Two attempts, never more. The only reason to go round again is losing the claim race, and
+  // the winner's row is committed by the time we lose it — so the second pass reads it and
+  // returns. A third pass could not learn anything the second did not.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const prior = await lookupIdempotency(db, meta.clientSubmissionId);
+    if (prior) return answerFromStore(prior, requestHash, meta);
 
-      const outcome = await body(tx);
-      if (!outcome.ok) throw new Refusal(outcome);
+    try {
+      return await db.transaction(async (tx) => {
+        // THE CLAIM, and it is the first thing in the transaction on purpose.
+        //
+        // A second copy of the same submission inserting this primary key BLOCKS here until we
+        // commit or roll back — PostgreSQL's own duplicate-key wait, not a lock we invented. So
+        // two simultaneous copies can never both run the command, which is what read-then-insert
+        // allowed (finding WS-W4-F2). Claiming before `lockAssets` also means duplicates never
+        // contend for asset rows at all.
+        //
+        // `response` is NULL between here and the UPDATE below. No other session can ever observe
+        // that: the row is uncommitted until the outcome is written, and a crash in between rolls
+        // the claim away rather than stranding it.
+        await tx.query(
+          `INSERT INTO command_idempotency (client_submission_id, request_hash, user_upn, command, response, created_at)
+           VALUES ($1, $2, $3, $4, NULL, $5)`,
+          [meta.clientSubmissionId, requestHash, meta.user.upn, meta.command, new Date().toISOString()]
+        );
 
-      await tx.query(
-        `INSERT INTO command_idempotency (client_submission_id, request_hash, user_upn, command, response, created_at)
-         VALUES ($1, $2, $3, $4, $5::jsonb, $6)`,
-        [meta.clientSubmissionId, requestHash, meta.user.upn, meta.command, JSON.stringify(outcome), new Date().toISOString()]
-      );
-      box.value = outcome;
-    });
-  } catch (err) {
-    if (err instanceof Refusal) return err.outcome;
-    throw err;
+        const outcome = await body(tx);
+        // A refusal rolls the claim back with everything else, so the command is re-evaluated on
+        // retry. That is deliberate and unchanged: a refusal is an answer about the state at that
+        // moment, not a result to replay forever.
+        if (!outcome.ok) throw new Refusal(outcome);
+
+        // CLAUDE.md rule 2: "One business event is one atomic database commit... commits all
+        // transaction lines, state changes, relationship changes AND OUTBOX EVENTS, or commits
+        // none." This is the line that makes the last clause true. It runs on `tx`, so the outbox
+        // row lands in the same commit as the lines it describes — there is no window in which a
+        // business event exists without its event, or an event exists without its business fact.
+        //
+        // Deliberately reads the committed lines back rather than re-deriving the asset list from
+        // `meta.request`: every command shape spells its assets differently (`lines[]`,
+        // `assetIds[]`, a bare `assetId`, and deployment's primary-plus-components), and a second
+        // derivation is a second thing to keep in step. The lines are the truth that was just
+        // written.
+        await emitAcceptedEvent(tx, meta);
+
+        await tx.query("UPDATE command_idempotency SET response = $1::jsonb WHERE client_submission_id = $2", [
+          JSON.stringify(outcome),
+          meta.clientSubmissionId,
+        ]);
+        return outcome;
+      });
+    } catch (err) {
+      if (err instanceof Refusal) return err.outcome;
+      // We lost the claim race: the other copy committed while we waited on its key. Go round
+      // once and answer from its result rather than surfacing a 500 (finding WS-W4-F3).
+      if (isDuplicateKey(err) && attempt === 0) continue;
+      throw err;
+    }
   }
 
-  if (!box.value) throw new Error(`Command ${meta.command} produced no outcome.`);
-  return box.value;
+  const settled = await lookupIdempotency(db, meta.clientSubmissionId);
+  if (!settled) throw new Error(`Command ${meta.command} lost the idempotency claim but found no committed result.`);
+  return answerFromStore(settled, requestHash, meta);
+}
+
+interface IdempotencyRow {
+  response: SubmissionOutcome | null;
+  request_hash: string;
+}
+
+async function lookupIdempotency(db: Queryable, clientSubmissionId: string): Promise<IdempotencyRow | null> {
+  const res = await db.query<IdempotencyRow>(
+    "SELECT response, request_hash FROM command_idempotency WHERE client_submission_id = $1",
+    [clientSubmissionId]
+  );
+  return res.rows[0] ?? null;
+}
+
+/**
+ * What a stored claim means for the caller in front of us.
+ *
+ * Same id + same request -> the original result (CLAUDE.md rule 3, first clause).
+ * Same id + DIFFERENT request -> refused (rule 3, second clause).
+ *
+ * The refusal is the correction of finding WS-W4-F1. This function used to return the stored
+ * outcome in both cases, and `server/README.md` § Idempotency argued for it: "refusing would make
+ * a replay fail after a success the caller may already have seen." That argument answers the
+ * wrong question. A client that reuses one submission id for two different requests has a bug,
+ * and handing it someone else's success hides the bug and silently drops the second request —
+ * which is worse than an error a developer can see. CLAUDE.md rule 3 and the frozen R2 contract
+ * both say refuse; rule 13 says the specification wins.
+ */
+function answerFromStore(row: IdempotencyRow, requestHash: string, meta: CommandMeta): SubmissionOutcome {
+  if (row.request_hash !== requestHash) {
+    meta.warn?.(
+      { clientSubmissionId: meta.clientSubmissionId, command: meta.command },
+      "submission id reused with a different body — refusing (CLAUDE.md rule 3)"
+    );
+    return refuse(
+      "This submission was already used for a different request, so it was refused rather than " +
+        "applied twice. [command.error.idempotencyPayloadMismatch]"
+    );
+  }
+  if (!row.response) {
+    // Unreachable through the claim protocol above: a committed row always carries its outcome.
+    throw new Error(`Idempotency row ${meta.clientSubmissionId} is committed with no response.`);
+  }
+  return row.response;
+}
+
+/** SQLSTATE 23505. `pg` puts it on `code`; the message is a fallback for any driver that does not. */
+function isDuplicateKey(err: unknown): boolean {
+  const e = err as { code?: string; message?: string };
+  return e?.code === "23505" || /duplicate key value/i.test(e?.message ?? "");
 }
 
 // ---------------------------------------------------------------- applyTransaction
@@ -410,4 +487,64 @@ async function mirrorComponentChildren(tx: Queryable, parentAssetId: string): Pr
         AND child.assetid = rel.childasset`,
     [parentAssetId]
   );
+}
+
+
+// ---------------------------------------------------------------- outbox
+
+/**
+ * Writes the `transaction.accepted` outbox row for an accepted command, inside the command's own
+ * transaction.
+ *
+ * Skipped — not failed — when the outcome names no transaction header. Not every accepted command
+ * is a business *event*: `SetOfficeAdmins` changes an administrative assignment and creates no
+ * transaction, and a composite command such as deployment returns one id while writing several.
+ * The header lookup is what distinguishes them, and it is a lookup rather than a list of command
+ * names so that a new command type is classified by what it actually wrote.
+ */
+async function emitAcceptedEvent(tx: Queryable, meta: CommandMeta): Promise<void> {
+  // Every header this command wrote, not just the one it returned.
+  //
+  // A single command can be several business events. Returning a damaged asset is a Return AND a
+  // ReportFault; recovering a partially-missing installation is a Recover AND a MarkMissing.
+  // Those are committed together and the command returns ONE transaction id, so looking up that
+  // id alone emitted one event and silently dropped the others — a fault reported on return
+  // reached no consumer at all. Measured and pinned by `tests/outbox.test.ts` A1e, which the
+  // documents/outbox lane wrote against this function before it existed.
+  //
+  // The composites mark their extra headers by suffixing the client submission id — `-fault`,
+  // `-return-from-cal` (commandService.ts), `-missing`, `-deploy` (deploymentService.ts). Matching
+  // the prefix rather than listing those four suffixes means a composite added later is picked up
+  // without anyone remembering to update a list here.
+  //
+  // `starts_with` rather than LIKE on purpose: the submission id comes from the client, and a
+  // value containing `%` or `_` would be a wildcard in a LIKE pattern. This compares literally.
+  const headers = await tx.query<{ id: string; name: string; transactiontype: string; transactiondate: string }>(
+    `SELECT id, name, transactiontype, transactiondate
+       FROM asset_transaction
+      WHERE client_submission_id = $1 OR starts_with(client_submission_id, $1 || '-')
+      ORDER BY transactiondate, name`,
+    [meta.clientSubmissionId]
+  );
+  if (headers.rows.length === 0) return;
+
+  for (const row of headers.rows) {
+    const lines = await tx.query<{ asset: string }>(
+      "SELECT DISTINCT asset FROM asset_transaction_line WHERE transaction_id = $1 ORDER BY asset",
+      [row.id]
+    );
+
+    await enqueue(
+      tx,
+      transactionAcceptedEvent({
+        transactionId: row.id,
+        transactionName: row.name,
+        transactionType: row.transactiontype,
+        assetIds: lines.rows.map((l) => l.asset),
+        performedByUserId: meta.user.upn,
+        recordedAt: row.transactiondate,
+        clientSubmissionId: meta.clientSubmissionId,
+      })
+    );
+  }
 }
