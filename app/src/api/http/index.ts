@@ -52,29 +52,147 @@ import { getMockCurrentUserKey } from "../mock";
 import { getSubmissionQueue } from "../queue";
 
 const DEV_USER_HEADER = "x-ams-dev-user";
+const CSRF_HEADER = "x-ams-csrf";
+const CSRF_COOKIE = "ams_csrf";
 
-function headers(json: boolean): HeadersInit {
+/**
+ * Thrown when the API says 401. Distinct from a network failure **on purpose**: the offline queue
+ * (api/queue/types.ts) treats a throw as "this never reliably reached the server, keep it and
+ * retry", which is exactly right for a dead connection and exactly wrong for an expired session —
+ * a queue that retries an unauthenticated write every few seconds forever is a busy loop that
+ * never succeeds. The queue can test for this and hold the submission instead.
+ */
+export class AuthRequiredError extends Error {
+  readonly authRequired = true;
+  constructor(readonly path: string) {
+    super(`Not signed in (401) for ${path}. The session has expired or was never established.`);
+    this.name = "AuthRequiredError";
+  }
+}
+
+/** Reads a cookie the server deliberately left readable. `ams_csrf` is not a secret from this
+ * page — it is the double-submit mechanism: the value must be echoed in a header, which an
+ * attacker's cross-origin page can read neither from the cookie nor from the response. */
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  for (const part of document.cookie.split(";")) {
+    const [k, ...rest] = part.trim().split("=");
+    if (k === name) return decodeURIComponent(rest.join("="));
+  }
+  return null;
+}
+
+let cachedCsrf: string | null = null;
+
+/**
+ * The CSRF token for a write. Cheap path first: the cookie. Only if that is absent — a fresh tab
+ * before any sign-in, or a cookie the browser has not surfaced yet — does this cost a round trip
+ * to `GET /api/auth/session`, which is the endpoint that issues it.
+ *
+ * Returns null rather than throwing when there is no session at all. Under the dev identity
+ * provider there is no session and no CSRF requirement (the header carries no ambient authority,
+ * so there is nothing for a cross-origin page to ride on); sending no token there is correct, and
+ * turning it into an error would break every existing local workflow.
+ */
+async function csrfToken(): Promise<string | null> {
+  const fromCookie = readCookie(CSRF_COOKIE);
+  if (fromCookie) {
+    cachedCsrf = fromCookie;
+    return fromCookie;
+  }
+  if (cachedCsrf) return cachedCsrf;
+  try {
+    const res = await fetch("/api/auth/session", { credentials: "same-origin", headers: baseHeaders(false) });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { csrfToken: string | null };
+    cachedCsrf = body.csrfToken;
+    return cachedCsrf;
+  } catch {
+    return null;
+  }
+}
+
+function baseHeaders(json: boolean): Record<string, string> {
+  // The dev header is still sent. The server ignores it entirely under the OIDC provider
+  // (auth/providers/), so this costs nothing there and keeps local development working unchanged.
   const h: Record<string, string> = { [DEV_USER_HEADER]: getMockCurrentUserKey() };
   if (json) h["content-type"] = "application/json";
   return h;
 }
 
+/**
+ * Sends the browser to sign-in, preserving where the user was.
+ *
+ * Guarded so a page issuing six parallel reads does not attempt six navigations, and skipped
+ * outside a browser (tests) so a 401 there surfaces as the error it is instead of a redirect that
+ * cannot happen.
+ */
+let redirecting = false;
+function goToSignIn(): void {
+  if (redirecting || typeof window === "undefined") return;
+  redirecting = true;
+  const returnTo = window.location.pathname + window.location.search;
+  window.location.assign(`/api/auth/sign-in?returnTo=${encodeURIComponent(returnTo)}`);
+}
+
+/** Every request goes through here: same-origin credentials, so the session cookie rides along. */
+function request(path: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(path, { credentials: "same-origin", ...init });
+}
+
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(path, { headers: headers(false) });
+  const res = await request(path, { headers: baseHeaders(false) });
+  if (res.status === 401) {
+    goToSignIn();
+    throw new AuthRequiredError(path);
+  }
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status} ${res.statusText}`);
   return (await res.json()) as T;
 }
 
 /** GET that treats 404 as "no such thing" rather than a failure. */
 async function getJsonOrNull<T>(path: string): Promise<T | null> {
-  const res = await fetch(path, { headers: headers(false) });
+  const res = await request(path, { headers: baseHeaders(false) });
   if (res.status === 404) return null;
+  if (res.status === 401) {
+    goToSignIn();
+    throw new AuthRequiredError(path);
+  }
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status} ${res.statusText}`);
   return (await res.json()) as T;
 }
 
 async function send(method: "POST" | "PUT", path: string, body: unknown): Promise<SubmissionOutcome> {
-  const res = await fetch(path, { method, headers: headers(true), body: JSON.stringify(body) });
+  const attempt = async (token: string | null): Promise<Response> => {
+    const headers = baseHeaders(true);
+    if (token) headers[CSRF_HEADER] = token;
+    return request(path, { method, headers, body: JSON.stringify(body) });
+  };
+
+  let res = await attempt(await csrfToken());
+
+  // One retry, and only for a CSRF refusal. A token can go stale legitimately — the session was
+  // renewed in another tab, or the app was restored from the back/forward cache with an old
+  // value — and making the user redo the work for that would be gratuitous. Retrying *once* with
+  // a freshly fetched token is safe because the request is idempotent by construction: it carries
+  // a clientSubmissionId, so if the first attempt somehow did land, the second returns the
+  // original result rather than acting twice (CLAUDE.md rule 3).
+  if (res.status === 403) {
+    const text = await res.clone().text();
+    if (text.includes("csrf_required")) {
+      cachedCsrf = null;
+      res = await attempt(await csrfToken());
+    }
+  }
+
+  if (res.status === 401) {
+    // Deliberately NOT a redirect here. A write may be a queued command replaying in the
+    // background; navigating away mid-replay would lose the user's place for a submission the
+    // queue is perfectly capable of holding onto. The error says what happened; the caller
+    // decides.
+    throw new AuthRequiredError(path);
+  }
+
   const text = await res.text();
   let parsed: unknown = null;
   try {

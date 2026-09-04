@@ -4,7 +4,7 @@ import {
   ArrowImportRegular,
   CalendarClockRegular,
   LocationRegular,
-  SearchRegular,
+  HomeRegular,
   SettingsRegular,
 } from "@fluentui/react-icons";
 import type { ReactNode } from "react";
@@ -19,7 +19,10 @@ interface NavItem {
 }
 
 const ITEMS: NavItem[] = [
-  { to: "/", label: t("nav.search"), icon: <SearchRegular /> },
+    // D2: "/" is the Field home now, not search. Search did not lose its place in the nav so much
+  // as change what the first tab means — the home's own Search action and the scan flow both land
+  // on /search, and a technician who knows the tag is still two taps from it.
+  { to: "/", label: t("nav.home"), icon: <HomeRegular /> },
   { to: "/calibration", label: t("nav.calibration"), icon: <CalendarClockRegular /> },
   { to: "/checkout", label: t("nav.checkout"), icon: <ArrowExportRegular /> },
   { to: "/return", label: t("nav.return"), icon: <ArrowImportRegular /> },
