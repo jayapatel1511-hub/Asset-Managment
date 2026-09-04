@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Englobe AMS — mobile prototype</title>
+  <link rel="stylesheet" href="css/prototype.css">
+</head>
+<body>
+  <div class="stage">
+    <div class="stage-label">Englobe AMS · Field prototype · 390×844</div>
+
+    <!-- Demo controls (outside the phone — not part of the product UI) -->
+    <div class="demo-bar" aria-label="Prototype controls">
+      <button type="button" class="demo-role on" data-role="field">Field User</button>
+      <button type="button" class="demo-role" data-role="admin">Office Admin</button>
+      <button type="button" class="demo-role" data-role="owner">System Owner</button>
+      <button type="button" id="demo-offline">Toggle offline</button>
+      <button type="button" id="demo-reset">Reset data</button>
+    </div>
+
+    <div class="phone" id="phone">
+      <div class="phone-notch" aria-hidden="true">
+        <span>9:41</span>
+        <span class="icons">●●● ▮</span>
+      </div>
+
+      <div class="app" id="phone-app">
+        <!-- App header -->
+        <header class="app-header">
+          <div class="app-title">Englobe AMS</div>
+          <button type="button" class="avatar-btn" id="btn-identity" aria-label="Profile and settings">
+            <span class="avatar"><span id="app-avatar">MT</span><span class="badge" id="app-avatar-badge" hidden>0</span></span>
+            <span class="avatar-office" id="app-header-office">Ottawa</span>
+          </button>
+        </header>
+
+        <!-- Page header with Back (non-root) -->
+        <div class="page-header hidden" id="page-header">
+          <button type="button" class="btn-back" id="btn-back" aria-label="Back">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            Back
+          </button>
+          <div class="page-title" id="page-title"></div>
+        </div>
+
+        <!-- Scrollable main -->
+        <main class="main" id="main"></main>
+
+        <!-- Bottom nav -->
+        <nav class="bottom-nav" id="bottom-nav" aria-label="Primary"></nav>
+
+        <!-- Dialogs / sheets -->
+        <div id="overlay-host"></div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="status"></div>
+      </div>
+    </div>
+
+    <p class="stage-hint">
+      Focused home = search first. Tap the avatar for Settings / Needs attention.
+      Deep links work: <code>#/asset/DL-UM-16984</code>, <code>#/checkout</code>, <code>#/site/337-POWER-ST</code>.
+      See <code>README.md</code> in this folder.
+    </p>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
