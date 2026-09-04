@@ -708,6 +708,6 @@ dispatched through `javascript_tool` drive the app's real code paths when clicks
 - **Not authorised beyond the mock's two rules** (FR-025's custodian check on Return, FR-007's
   not-held check on Deploy). Admin-only screens are gated in the router only; in production the
   three Dataverse security roles do this.
-- **Still no three-axis status model.** One `status` column, on purpose — see `docs/08-decisions.md`.
+- **POC still uses a single `status` column** (intentional). **Production R1 approved 2026-09-03** — four-axis model in `docs/15` §3 / `docs/08-decisions.md`. HTTP/Postgres implementation must not treat the POC column as the target schema.
 - **WS-E and WS-F remain untouched**, and everything under "What needs the tenant" above still
   needs it. This session moved nothing into that column and nothing out of it.

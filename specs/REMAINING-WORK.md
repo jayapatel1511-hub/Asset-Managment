@@ -21,23 +21,54 @@ The previous workstream map optimized local feature construction and then a Data
 - Features 001–006: **Mock Implemented**
 - Feature 007: **Built 2026-09-02** — three profiles, byte-identical on regeneration; US5 blocked on Q14
 - Feature 008 US1: release-data guard implemented locally; rebound to `VITE_AMS_BACKEND=http` on 2026-09-03
-- Feature 009: **Spec Draft**, still the production-readiness gate — no plan or tasks
-- Feature 010: **Spec Draft**, active platform feature — no plan, tasks, data-model or contracts
-- Feature 011: **Spec Draft** — no plan, tasks or contracts
+- Feature 009: **Spec Draft**, production-readiness evidence gate — [plan](009-production-readiness/plan.md) / [tasks](009-production-readiness/tasks.md) / [contracts](009-production-readiness/contracts/) written 2026-09-03
+- Feature 010: **Spec Draft**, active platform — [plan](010-web-application-platform/plan.md) / [tasks](010-web-application-platform/tasks.md) / [contracts](010-web-application-platform/contracts/) (R2 draft) / data-model written 2026-09-03
+- Feature 011: **Spec Draft** — [plan](011-data-management/plan.md) / [tasks](011-data-management/tasks.md) / [contracts](011-data-management/contracts/) written 2026-09-03; write stories blocked on 010 W3/W4
 - Constitution: **2.0.0**, web pivot recorded
-- React/Vite client: existing and reusable; 318 tests green
-- Local API POC (`server/`): Fastify over in-process PGlite, 64 tests green — **single-connection**
 - Power Platform: **parked 2026-09-03**; the Dataverse adapter is no longer imported
 - Zite: **parked 2026-09-03**
-- Production HTTP API: not implemented
-- PostgreSQL schema/migrations: not implemented
-- Entra sign-in: not implemented
-- PWA offline shell/IndexedDB: not implemented
-- Blob document path: not implemented
-- Azure infrastructure: not implemented
-- PostgreSQL migration rehearsal: not completed
-- Shared contracts (`packages/`), migrations (`db/`), IaC (`infra/`) and CI (`.github/`): **no directory exists**
 - Pilot: not approved
+
+### Local end-to-end build — 2026-09-03
+
+The list that used to sit here said "not implemented" nine times. Most of those lines are now
+wrong, and leaving them would be worse than having written nothing. What follows is what is
+actually true, and — more usefully — what each thing has been *evidenced* to do, in the vocabulary
+of § Progress labels below.
+
+The governing freeze for this pass is [`_planning/BUILD-FREEZE.md`](_planning/BUILD-FREEZE.md);
+every assumption taken to get past a blocker is recorded in `docs/08-decisions.md` and is still
+awaiting Jay's confirmation.
+
+| | State | Evidence |
+|---|---|---|
+| React/Vite client | reusable, now a PWA | manifest, icons and a service worker ship in the release bundle; **478 tests** |
+| **HTTP API** (`server/`) | **API Implemented** | Fastify over **containerised PostgreSQL 17**, both drivers green, **386 tests**; every `AmsBackend` method has a route, checked mechanically by `tests/contract.test.ts` |
+| **PostgreSQL schema/migrations** | **implemented** | `db/migrations/` — **twelve** forward-only files, a `schema_migration` ledger, `npm run db:migrate` / `db:check`; second run is a no-op; drift refused three ways |
+| **Database-enforced invariants** | **implemented** | append-only history incl. TRUNCATE, asset-ID immutability, relationship acyclicity, installation spans, rule-12 environment guard, four-axis state |
+| **Identity / authorization** | **implemented**, unprovisioned | pluggable provider; Entra OIDC written and proven against a *fabricated* issuer; deny-by-default on every `/api/*`; role × office matrix tested by direct API call. **R6 (a real tenant) is still an Englobe IT dependency** |
+| **PWA offline shell / IndexedDB** | **implemented** | partitioned by tenant + environment + user; drafts, durable command queue, replay, conflicts |
+| **Blob document path** | **implemented behind an interface** | local `DocumentStore`; Azure Blob is a second implementation (assumption A-DOC). No Azure resource created |
+| **Outbox / workers** | **implemented and wired** | the outbox row commits inside the business event's own transaction — CLAUDE.md rule 2's last clause is now literal, not aspirational. Worker and scheduler start in `main.ts` |
+| **UI — S01 Field home** | **rebuilt** | D2 accepted the Console Mobile layout; built in Fluent + Englobe green per **G-24 = A**. Search moved to `/search` |
+| **Reporting** | **implemented** | seven reports over approved SQL views; no view exposes a restricted identifier |
+| Shared contracts (`packages/`) | **exists** | `packages/contracts/` owns the entity shapes, the `AmsBackend` interface and the generated state machine |
+| CI (`.github/`) | **exists** | two workflows, no cloud credentials |
+| **Scale** | **evidenced** | 6,626 assets / 438,619 transaction lines: fleet list 32 ms, search 17 ms, busiest asset's 322-line history 7 ms, reports reconcile exactly (`server/tests/scale.test.ts`, opt-in) |
+| Azure infrastructure (`infra/`) | **not implemented** | gated on R6, which is not Jay's alone |
+| PostgreSQL migration rehearsal | **not completed** | WS-W11 |
+
+**One command proves it**: `scripts/verify.sh` — container up, migrations from empty, idempotent
+re-run, typecheck, server suite on **both** drivers, client suite, client build.
+
+**Proven in a real browser, not only in tests**: a checkout committed through the actual UI as
+`TXN-000015`, landing in PostgreSQL with the right custodian, project and appended history; role
+switching changing what the server returns; and IndexedDB partitioned per user with no restricted
+field in it.
+
+**What this is not.** None of the above is *Azure Integrated*, *Security Verified*, *Device
+Verified*, *Migration Rehearsed* or *Pilot Accepted*. It is a complete, evidenced local system.
+The pilot gate at the end of this file is unchanged and unmet.
 
 ### Environment change — 2026-09-03
 
@@ -47,14 +78,20 @@ to WASM, in-process) precisely because a real database daemon was not available,
 `server/README.md` is explicit that PGlite "is single-connection, so `db.transaction()` serialises
 the command path **for free**".
 
-Everything concurrent in the design is therefore currently *asserted and unexercised* — the
-`SELECT … FOR UPDATE` ordering and the `ON CONFLICT` sequence increment are, in that README's own
-words, "documenting intent". A real PostgreSQL container makes them do work.
+~~Everything concurrent in the design is therefore currently *asserted and unexercised*~~ —
+**no longer true.** When this paragraph was written, the `SELECT … FOR UPDATE` ordering and the
+`ON CONFLICT` sequence increment were, in that README's own words, "documenting intent". They are
+now exercised: `server/tests/concurrency.test.ts` runs against the container and holds 34 tests
+including 100 simultaneous races for an overlapping asset (exactly one winner each), a 100-way
+registration burst minting 100 unique canonical IDs, and a deliberate opposite-lock-order
+**control** that deadlocks with SQLSTATE 40P01 — which is what proves the ordered path is doing
+the work rather than getting lucky. The same suite is kept green on PGlite, where those 12 tests
+skip themselves and say why.
 
-This unblocks **WS-W1**'s "reproducible local PostgreSQL" and, with it, the parts of **WS-W4** that
-PGlite structurally cannot prove: the five-asset race, the concurrent-registration proof, deadlock
-ordering and serialization-failure retry. It does not change any requirement — it changes what can
-be tested before Azure exists, and therefore how much of WS-W4 can be closed without spend.
+This unblocked **WS-W1**'s "reproducible local PostgreSQL" and, with it, the parts of **WS-W4**
+PGlite structurally cannot prove. It did not change any requirement — it changed what could be
+tested before Azure exists, and therefore how much of WS-W4 could be closed without spend. The
+answer turned out to be: all of it.
 
 ---
 
@@ -69,10 +106,10 @@ new is being introduced.*
 
 | # | Missing | Blocks | Owner |
 |---|---|---|---|
-| **R1** | **The three-axis state model is still PROPOSED.** `docs/15` § lifecycle / disposition / serviceability / calibration currency, recorded PROPOSED in `docs/08-decisions.md` 2026-09-03. `server/` deliberately implements the *old* single `status` column instead | **Everything.** It defines the `asset` table's columns and every transition rule, so schema, contracts, transaction service and migration all encode it. Writing migrations before it is decided means rewriting them | **Jay** |
-| **R2** | G0.4 atomic command contract is unfrozen — submission ID, canonical hashing, refusal codes, lock order, server-owned fields | The transaction service and every client call | Jay + Claude (draft) |
-| **R3** | G0.5 canonical schema unapproved. Note the *minimum* for the first proof is far smaller than the whole document: `asset`, `transaction`, `transaction_line`, `idempotency`, `id_sequence` | First proof needs the subset; full parallel work needs all of it | **Jay** |
-| **R4** | Q8 expected return, Q9 backdating (`recorded_at` vs `effective_at`) | The checkout command's own fields — these two land inside the first proof | **Jay** |
+| ~~**R1**~~ | **APPROVED 2026-09-03** — four-axis state in `docs/15` §3 / `docs/08` | Unblocked. Mock/`server/` POC may keep single `status` until HTTP cutover | Jay |
+| ~~**R2**~~ | **FROZEN for first proof** — `010/contracts/transaction-command.md` (+ auth, errors, outbox) | Unblocked for WS-W4; extend carefully for later event types | Jay |
+| ~~**R3**~~ | **First-proof subset APPROVED** — `010/data-model.md`. Full `docs/15`+`16` still needs table-by-table review for complete WS-W2 | Unblocked for race migrations; full parallel schema still gated | Jay |
+| ~~**R4**~~ | **Q8 confirmed** (optional +14d); **Q9 decided** (admin backdate ≤30d, refuse crossing history) | Unblocked for checkout command fields | Jay |
 | **R5** | Global vs office-scoped administrator | Authorization model, WS-W3 | **Jay** |
 | **R6** | G0.2 enterprise set — Azure subscription, Canadian region, Entra app registration owner, RTO/RPO, DNS/TLS, alert owner | Azure deployment only. **Does not block local development** | **Englobe IT**, not Jay alone |
 
@@ -80,9 +117,9 @@ new is being introduced.*
 
 | Missing | Note |
 |---|---|
-| `plan.md`, `tasks.md`, `data-model.md`, `contracts/` for **009, 010 and 011** | The three active features have `spec.md` and a checklist and nothing else. Features 005, 006 and 008 have plans and tasks — the active ones do not. `/speckit.plan` and `/speckit.tasks` have not been run. **This is the largest single gap between "specified" and "startable"** |
-| `db/` | No migrations, no migration runner |
-| `packages/contracts/` | No shared request/response schemas; `app/` and `server/` currently agree by hand |
+| ~~`plan.md` / `tasks.md` / `contracts/` for 009, 010, 011~~ | **Closed 2026-09-03** via multi-agent planning (`specs/_planning/MULTI-AGENT-OWNERSHIP.md`). Specs remain Draft. **R1–R4 closed same day**; remaining STOP gates are **R5** (admin scope) and product opens for later stories. |
+| `db/` | No migrations, no migration runner — **unblocked to start** first-proof subset |
+| `packages/contracts/` | Spec contracts exist under `specs/010…/contracts/` and `specs/011…/contracts/`; shared TypeScript package not created yet — `app/` and `server/` still agree by hand |
 | `infra/` | No IaC |
 | `.github/` | **No CI at all.** Nothing runs the 382 existing tests on push |
 | Local PostgreSQL | No `docker-compose.yml`. Now possible — see *Environment change* |
@@ -96,13 +133,12 @@ new is being introduced.*
 ### 4. What is *not* blocking, and is worth saying
 
 The container change removes the largest technical excuse for waiting. The first proof —
-WS-W4's five-asset checkout race — needs **no Azure, no Entra, no subscription and no spend**. It
-needs R1–R4 and a PostgreSQL container. G0.2 gates deployment, not development, and treating it as
-a prerequisite would idle the project behind a procurement conversation.
+WS-W4's five-asset checkout race — needs **no Azure, no Entra, no subscription and no spend**.
+**R1–R4 are closed (2026-09-03).** Remaining local prerequisites: Postgres container + implementing
+`010/tasks.md` foundational → WS-W4. G0.2 (R6) gates deployment, not development.
 
-**The critical path is R1.** Nearly everything else is either downstream of it or can proceed in
-parallel once it is settled. A schema, a contract and a migration all encode the state model; none
-of them can be written twice cheaply.
+**The critical path is now implementation of the first-proof race**, not a product undecided.
+R5 still blocks production auth scope; it does not block the local five-asset proof with test doubles.
 
 ---
 
@@ -163,20 +199,19 @@ technician's screens" is a UI gap that WS-W5 must own.
 
 ### G0.3 State and identity contract
 
-Approve:
+**State axes: APPROVED 2026-09-03 (R1).** Still confirm before production auth:
 
-- lifecycle;
-- physical disposition;
-- serviceability;
-- calibration currency;
+- ~~lifecycle / disposition / serviceability / calibration currency~~ — approved
 - canonical Asset ID and aliases;
 - stable user identity by Entra tenant/object ID;
-- role and office-scope model;
-- component exceptions.
+- role and office-scope model (**R5 open**);
+- component exceptions (Q18 open).
 
 ### G0.4 Atomic command contract
 
-Freeze:
+**Frozen for first proof 2026-09-03 (R2)** — see `specs/010-web-application-platform/contracts/transaction-command.md`.
+
+Freeze held:
 
 - authenticated caller context;
 - client submission ID;
@@ -710,11 +745,64 @@ Shared files and contracts are frozen before parallel agents are launched. Each 
 
 ## First next task
 
-The highest-value next implementation task is **not** another feature screen.
+~~The highest-value next implementation task~~ — **that task is done.**
 
-> Create the approved API command schema and minimal PostgreSQL migrations needed to prove one five-asset checkout atomically, including idempotency, deterministic row locking, immutable transaction history, state updates and outbox records. Run the race, retry and fault-injection tests.
+> **Closed 2026-09-03.** Local PostgreSQL stood up, migrations landed from `010/data-model.md`,
+> the atomic command implemented, and the five-asset race / retry / fault-injection tests run
+> green against the container. See § *Local end-to-end build* above.
 
-Everything else becomes safer after that boundary exists.
+The boundary now exists, so the things that were waiting on it are safe to start. In rough order
+of value:
+
+0. **~~Settle G-24~~ — done.** Fluent + Englobe green wins (option A) and Console Mobile is the
+   new S01 (D2). Screen work is unblocked; `docs/12-ui-spec.md` § 5.1 is superseded. Still open on
+   the UI: **G-22**'s remainder (the four report screens, the reservation calendar and the rest of
+   the desktop Console family) and **G-23** (vehicles have no visual identity).
+1. **Get Jay's confirmation on the assumptions.** `docs/08-decisions.md` carries six taken to get
+   past blockers, plus the lane calls. **A-STATE** and **D-AUTH-5** (fleet row visibility) are the
+   two most worth a second opinion. Everything below is cheaper to change before more is built on
+   it.
+2. **R6 — the enterprise prerequisites.** Azure subscription, Canadian region, Entra app
+   registration, DNS/TLS and alert owners. Not Jay's alone; this is the long-lead item and it now
+   blocks more than it did, because the OIDC client is written and waiting for a tenant.
+3. **Fold the outbox and document DDL into `db/migrations/`.** Recorded in `docs/08-decisions.md`;
+   it is a real coupling today, not a tidiness item.
+4. **WS-W11 — the PostgreSQL migration rehearsal.** The loader path exists and the schema is
+   settled; the reconciliation and delta work is not done.
+5. **Temporary-tag completion.** 35 assets in the real migrated data carry `TMP-*` tags with no
+   workflow to resolve them. This needs a decision before code — see § *Known gap* below.
+6. **The specification review gates**, which no amount of implementation closes: feature 010's
+   checklist is 5 of 112 reviewed, 009 and 011 are unreviewed, and both migration sign-offs are
+   still open.
+
+---
+
+## Known gap — temporary-tag completion needs a decision, not code
+
+CLAUDE.md rule 6 says "temporary and legacy tags remain aliases", and WS-W4's registration proof
+asks for "temporary tags retained as aliases". Neither is satisfied, and the reason is worth
+stating precisely rather than filing as a to-do.
+
+**There is no alias table.** `server/tests/concurrency.test.ts` carries a deliberate tripwire that
+asserts `asset_alias` and `asset_identifier` do *not* exist, so the day one lands, that test fails
+and forces this proof to be extended. That is the right shape for the gap.
+
+**Two cases hide behind one requirement, and only one of them is easy:**
+
+- *A newly registered asset that had a temporary sticker on it.* Clean. There is no history under
+  the temporary tag, so an alias row pointing at the asset's UUID resolves it, and scanning the old
+  sticker finds the asset. This is what WS-W4 actually asks for.
+- *The 35 assets in `migration/staged/` already carrying `TMP-*` tags.* Not clean, and not a coding
+  problem. **The compatibility schema keys transaction history on `asset.assetid`, not on the
+  UUID** — `asset_transaction_line.asset` holds the tag. So "completing" one of those tags means
+  either rewriting history rows, which rule 5 forbids, or leaving history addressed by a tag that
+  is no longer the asset's identity. `db/migrations/0004_asset_identity.sql` now refuses the rename
+  outright, deliberately and with no escape hatch.
+
+That is an **identity-model** question, which CLAUDE.md's *Ask before doing* reserves for Jay. It
+was not decided unilaterally. `docs/15-postgres-data-model.md` carries the alias table for the
+canonical schema, where history is keyed on UUID and the problem does not arise; the practical
+question is whether those 35 assets wait for that schema or get an interim answer.
 
 ---
 

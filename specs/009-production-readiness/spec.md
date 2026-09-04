@@ -126,7 +126,10 @@ three separate procedures.
 ### State and identity
 
 - **FR-013**: Lifecycle, physical disposition, serviceability and calibration currency MUST be
-  representable independently.
+  representable independently. **No axis value may duplicate a fact another axis already carries.**
+  Concretely: `lifecycle` and `disposition` and `serviceability` are three separate stored columns, and
+  calibration currency is derived from calibration requirement, calibration records, due date and the current
+  date **only** — never from `disposition`. Amended 2026-09-03, see below.
 - **FR-014**: Fault and repair events MUST NOT overwrite valid custody, project or location facts.
 - **FR-015**: Availability MUST require active lifecycle, serviceable condition and physical presence at
   the selected office.
@@ -159,7 +162,8 @@ three separate procedures.
   inaccessible on identity change.
 - **FR-030**: Field-user cache, export and ordinary manager reports MUST contain no secured SIM/network
   attributes.
-- **FR-031**: Manager reporting MUST work without opening the Code App and MUST state its identity and
+- **FR-031**: Manager reporting MUST work without requiring the Power Apps runtime (in-app
+  read-only reports and/or an approved optional BI tool) and MUST state its identity and
   authorization model.
 - **FR-032**: Reporting recipients and required licences MUST be approved before sharing.
 
@@ -179,8 +183,9 @@ three separate procedures.
 
 ### Evidence and status
 
-- **FR-041**: Status MUST distinguish Spec Approved, Mock Implemented, Tenant Implemented, Security
-  Verified, Device Verified, Pilot Accepted and Production Accepted.
+- **FR-041**: Status MUST distinguish Spec Approved, Mock Implemented, API Implemented, Azure
+  Integrated, Security Verified, Device Verified, Migration Rehearsed, Pilot Accepted and
+  Production Accepted.
 - **FR-042**: A feature MUST NOT be described as production-built while its real backend, tenant
   integration or required verification is stubbed.
 - **FR-043**: Every production gate MUST have dated evidence, a named owner and a pass/fail result.
@@ -209,5 +214,42 @@ three separate procedures.
 
 ## Dependencies
 
-This feature depends on 001–008 and blocks Tenant Implemented, Security Verified, Device Verified,
+This feature depends on 001–008 and blocks API Implemented / Azure Integrated claims that lack
+dated evidence, Security Verified, Device Verified,
 Pilot Accepted and Production Accepted status for them.
+---
+
+## Amendments made 2026-09-03 (prototype-scoped, reversible)
+
+> **DEMO CALL 2026-09-03 (DC-26)** — **FR-013 is amended to say what "independently" means**, and the
+> calibration-currency value list loses `InCalibration` as a consequence.
+>
+> **The problem.** `docs/19-state-model-decision.md` §7.2 found that the approved currency list contains
+> `InCalibration`, and the implemented derivation gives it **priority over the date buckets**
+> (`app/src/api/mock/reporting.ts:128`, commented "FR-013: already at the lab — not also 'overdue'/'due
+> soon'"). That makes currency a **partial function of `disposition`** — the two axes encode the same fact —
+> and it silently drops assets at the lab out of the overdue count that feature 006 exists to report. FR-013 as
+> written said the four MUST be independent while the approved value list quietly was not.
+>
+> **The decision.** Amend FR-013 to define independence as *no axis value duplicates another axis's fact*, and
+> drop `InCalibration` from the derived currency list. "At the lab" is `disposition = AtCalibrationLab`, which
+> already carries it. Currency becomes six values: `NotRequired | Unknown | Current | DueSoon | Overdue |
+> Failed`. Full derivation and precedence:
+> `specs/010-web-application-platform/contracts/transition-table.md` §6 (DC-18, DC-19, DC-20).
+>
+> **Why this direction and not the other.** Weakening FR-013 to permit the coupling would have kept a seventh
+> value whose only job is to suppress two others. Dropping it makes the derivation a **pure function of
+> calibration data and the date** — `deriveState` does not need to look at `disposition` at all to compute it,
+> which is the simpler thing to implement and the simpler thing to test.
+>
+> **Reversal cost:** re-adding `InCalibration` is one value plus one precedence row. **No data migration ever**,
+> because currency is derived and has no column.
+>
+> **Residual, stated honestly:** `docs/15-postgres-data-model.md` §3.4 and the R1 row at
+> `docs/08-decisions.md:88` still list seven values. Neither file is this pass's to edit. Until they are
+> reconciled they disagree with this spec and with 010's contracts; reported to the decision-log owner under
+> `CLAUDE.md` rule 13 (*"a useful implementation deviation is recorded and the governing requirement is
+> amended"*).
+
+FR-014 and FR-015 are unchanged and are implemented literally by `transition-table.md` rules R-12/R-13
+(fault and repair touch one axis and nothing else) and R-02/R-07 (checkout and deploy require all three axes).

@@ -24,7 +24,7 @@ everything else is a constraint to honour.
 | Shared components | Build § 4 first as reusable components with variants, then compose screens from them |
 | Copy | Paste strings exactly as quoted. Keep `{placeholder}` tokens visible in the design as e.g. `{assetId}` → `DL-UM-16984` sample text |
 | Dark mode | Build one light set. Dark is a token swap (§ 2.4) — a second theme, not a second design |
-| Sample data | Use real-shaped IDs: `DL-UM-16984`, `GEO-V12-30220`, `SLM-S50-13595`, `DST-0246`, `TMP-0031`. Offices: Ottawa, Toronto, Sudbury, SWO. Project numbers look like `02208928` |
+| Sample data | Use real-shaped IDs: `DL-UM-16984`, `GEO-V12-30220`, `SLM-S50-13595`, `DST-0246`, `TMP-0031`. Offices: Ottawa, Toronto, Sudbury, SWO. Project numbers look like `02208928`. **The scheme is not a design choice** — rule 6 makes the canonical Asset ID the identity, so a mockup must not invent a second shape. Fleet coverage should include a total station and a vehicle, which the first mockup's sample set omitted *(hardened 2026-09-03 after `docs/20-mockup-review.md` M2)* |
 
 ---
 
@@ -429,6 +429,19 @@ Every screen below lists: route, roles, which acceptance question it answers (fr
 Q1–Q7), layout top to bottom, elements with exact copy, behaviour, and states.
 
 ### 5.1 — S01 Search / Home
+
+> **SUPERSEDED 2026-09-03 by decision D2.** The Field home is no longer search. It is now a
+> greeting and custody count, three quick actions (Scan / Check out / Return), calibration
+> due-soon and overdue counts, recent activity, and the user's own equipment — the layout of
+> `docs/mockups/review-ref/Assets Console Mobile.dc.html`, built in Fluent + Englobe green per
+> **G-24 = A**, not in that file's teal palette. Search keeps its own route at `/search`, reached
+> from the home's Search action and from the scan flow. Implemented in
+> `app/src/features/home/FieldHomePage.tsx`; the decisions it makes are pure functions in
+> `homeModel.ts` and are tested in `app/tests/features/home.test.ts`.
+>
+> The section below describes the previous search-first home and is kept as the record of what
+> changed, not as an instruction.
+
 
 Route `/` · all roles · answers Q1, Q2, Q3, Q4 (via filters), Q5 (via filter)
 
@@ -1074,12 +1087,19 @@ Complete refusal copy catalogue (design the error MessageBar to fit the longest)
 These are real, observed in the build. Each is a place where the design tool should propose something
 rather than copy what exists.
 
-**Eight of the 23 rows are closed** (2026-09-03): G-01 by Jay's mobile/desktop decision, and G-07,
+**Eight of the 24 rows are closed** (2026-09-03): G-01 by Jay's mobile/desktop decision, and G-07,
 G-08, G-09, G-10, G-11, G-13 and G-15 in commits `f09f0ee` / `7b37683` — the subset where the spec was
 unambiguous and the string it asked for already existed in `en.json`. Closed rows are struck through and
 kept, not deleted, so a later session can see the gap was found and answered rather than missed.
 **G-12 (hide vs disable invalid actions) was deliberately left open** — that one is a design decision,
 not a deviation, and `asset.actions.notAllowed` is still unused.
+
+**A clickable mockup answering G-01 to G-21 was reviewed on 2026-09-03** — `docs/20-mockup-review.md`.
+It was built against a copy of this file taken *before* that day's edits, so its G-01 verdict ("the
+phone stays canonical") is **superseded by § 1 and § 8**, and it never saw G-22 or G-23. Its proposals
+for the still-open rows are recorded below as *Mockup proposes*; none of them is agreed. Its ten
+screenshots render stock Fluent blue and **must be re-exported before review** — the file itself
+defaults to the Englobe ramp, the shots predate it.
 
 | # | Gap | Where | Suggested direction |
 |---|---|---|---|
@@ -1104,17 +1124,21 @@ not a deviation, and `asset.actions.notAllowed` is still unused.
 | G-19 | Admin home cards carry developer copy (FR numbers, "Q3") | S13 | Plain-language card text |
 | G-20 | Validation error is a banner only; field not highlighted | forms | Fluent `Field validationMessage` on the offending control as well |
 | G-21 | Most screens have no Back affordance; rely on nav / browser back | S03, S04… | Consistent Back in a page header |
-| G-22 | No desktop screens exist to design against — the four report screens, the reservation calendar and the admin screens are the ones that most need width | shell, S13–S20 | Design the desktop surface first now that it is canonical: two-pane shell, full-width tables, and a reservation calendar (`docs/02-app.md` § Reservations) *(added 2026-09-03)* |
-| G-23 | Vehicles have no visual identity — a pickup truck renders identically to a data logger (same row, same pills, plate hidden in the identifier field) | C1, C2, S01, S03 | Give the Vehicles asset group an icon and surface the plate on the row; decide whether a vehicle's Asset ID reads as a plate *(added 2026-09-03)* |
+| G-22 | No desktop screens exist to design against — the four report screens, the reservation calendar and the admin screens are the ones that most need width | shell, S13–S20 | **Partially answered 2026-09-03.** A desktop Console now exists in the mockup package (`Assets Console.dc.html`): entity rail grouped OPERATIONS / REFERENCE DATA, sortable table, filter chips, multi-select revealing a bulk bar with a separated destructive action, pagination. **Still missing:** the four report screens, the reservation calendar, and the rest of the Console family (`docs/02-app.md` § Surfaces). Note the Console is drawn in a *different design system* — see G-24 |
+| G-23 | Vehicles have no visual identity — a pickup truck renders identically to a data logger (same row, same pills, plate hidden in the identifier field) | C1, C2, S01, S03 | Give the Vehicles asset group an icon and surface the plate on the row; decide whether a vehicle's Asset ID reads as a plate *(added 2026-09-03)*. **Still open** — the mockup's Console sample data now contains a vehicle (`VEH-1042`, Ford F-250) but renders it with the same treatment as a data logger and shows no plate |
+| G-24 | **Three design systems now exist, with three token vocabularies for the same four concepts.** The phone mockup: `--brandFg/Bg/Tint/FgOn`, Englobe green `#14713a`, Segoe UI, Fluent neutrals. Both Console files: **zero brand tokens**, hardcoded warm stone, teal `#0F5F55`, Inter + IBM Plex Mono, a separate status ramp. `docs/mockups/ams-field-ui.html`: `--brand/-fg/-soft`, **stock Fluent blue `#0f6cbd`** — Fluent neutrals and semantic pills, but G-03 not implemented at all | tokens, all screens | **DECIDED 2026-09-03 — option (A). No longer blocking.** Fluent v9 + Englobe green wins; the Console mockups are layout references, not visual ones, and § 1's fixed constraint stands unamended. See `docs/08-decisions.md` § UI decisions. *(A)* Retrofit the Console onto Fluent + Englobe green — honours this file's fixed constraint in § 1, cheapest, keeps mockup and built app aligned. *(B)* Move the phone onto the Console's system — better answers the "plain and boring" complaint, but requires formally amending § 1 and restyling Fluent v9 rather than using it stock. Detail and evidence: `docs/20-mockup-review.md` § D1 *(added 2026-09-03)* |
 
 ## 11. Open questions that change the UI
 
 From `specs/clarifications.md` — Jay decides; design both variants where cheap.
 
+**Q8 and Q9 were decided on 2026-09-03** (`docs/08-decisions.md`, rows R4/Q8 and R4/Q9) — after the
+mockup was built, which still renders both as undecided. The rows below carry the outcome.
+
 | Q | Question | UI impact |
 |---|---|---|
-| Q8 | Is expected return required on checkout? | Required marker on the date field; blank not allowed |
-| Q9 | May admins backdate, and how far? | A "Transaction date" field on Checkout/Return/Transfer for admins, with a 30-day floor |
+| Q8 | Is expected return required on checkout? | **DECIDED 2026-09-03: optional.** Pre-fill +14 days, editable and clearable. No required marker. The mockup's default state already matches |
+| Q9 | May admins backdate, and how far? | **DECIDED 2026-09-03: 30 days, admins only.** A "Transaction date" field on Checkout/Return/Transfer for Office Admin and System Owner, 30-day floor, hidden from Field Users. **Plus a refusal path the mockup does not have:** a backdate landing at or before an existing transaction line for the same asset is refused, naming the conflicting transaction. That error state needs designing and needs copy |
 | — | Inactive project: refuse or warn-and-permit? | Error MessageBar vs warning MessageBar + proceed |
 | — | Site coordinates: device, hand, or both? | Keep/remove "Use device location"; possibly make capture primary |
 | Q12 | French in Phase 1? | Width slack; language switch location |

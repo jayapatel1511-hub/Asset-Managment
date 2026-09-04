@@ -1,7 +1,7 @@
 # 15 — Canonical PostgreSQL Data Model
 
 **Decision date:** 2026-09-03  
-**Status:** Proposed canonical physical schema for the Azure web application. Requires schema review before implementation.  
+**Status:** **§3 State model APPROVED** (Jay, 2026-09-03 — R1). **First-proof table subset** in `specs/010-web-application-platform/data-model.md` is approved for migration (R3). Remaining tables in this document are the target catalogue and still require table-by-table review before full WS-W2 parallel work.  
 **Supersedes physically:** Dataverse-specific types, keys, privileges, and flow-owned state fields in `docs/01-data-model.md`.  
 **Retains logically:** Asset identity, curated reference data, immutable event history, dated relationships, calibration records, installations, and the seven acceptance questions.
 
@@ -59,7 +59,9 @@ PostgreSQL enums or constrained reference tables may be used. Reference tables a
 
 ## 3. State model
 
-The original single `asset_status` field combined physical location, custody, repair condition, calibration process, loss, and retirement. The web application separates these dimensions.
+**Approved 2026-09-03 (R1).** Recorded in `docs/08-decisions.md`.
+
+The original single `asset_status` field combined physical location, custody, repair condition, calibration process, loss, and retirement. The web application separates these dimensions. The local mock and `server/` POC may keep a compatibility single `status` until the HTTP cutover; production schema and new transaction derivation use the axes below.
 
 ### 3.1 Lifecycle
 

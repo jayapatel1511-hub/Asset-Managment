@@ -48,7 +48,8 @@
 - [ ] CHK032 Identity change prevents access to and replay of the prior user's data.
 - [ ] CHK033 Field-user local storage contains no secured SIM/network attributes.
 - [ ] CHK034 Ordinary manager reporting contains no secured SIM/network columns.
-- [ ] CHK035 Manager reporting works without opening the Code App.
+- [x] CHK035 Manager reporting works without requiring the Power Apps runtime (in-app reports and/or approved optional BI).
+  <br>*Wording scrubbed 2026-09-03 with FR-031; was “Code App”.*
 - [ ] CHK036 Report identity, authorization, recipients and licensing are approved and tested.
 
 ## Hosted device verification

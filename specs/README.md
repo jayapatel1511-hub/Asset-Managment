@@ -76,9 +76,9 @@ The existing test suite and browser walkthroughs prove Mock Implemented behavior
 | [006](006-fleet-reporting/spec.md) | **Fleet Reporting** | Seven acceptance questions, calibration compliance, timeline and utilisation | **Mock Implemented.** Production target is read-only web reporting over approved PostgreSQL views. Power BI is optional. |
 | [007](007-synthetic-data/spec.md) | **Synthetic Fleet History** | Fictional 20-year history, five-year operational detail, answer key, planted scenarios and scale profiles | **Built 2026-09-02** (WS-G) — three profiles verified, 1,459 / 371 / 6,626 assets, byte-identical on regeneration; US5 blocked on Q14. Remaining: adapt output to PostgreSQL/API contracts. Q15, Q16 and Q18 remain relevant. Production loading stays structurally refused. |
 | [008](008-release-and-operations/spec.md) | **Release & Operations** | Safe build, publish, verify, rollback, promotion and monitoring | **US1 built** (WS-H); T012 and T016 closed 2026-09-03 (`f6a090f`) — release guard, bundle scan, mode-conditional `publicDir`, `build:release`, and the MOCK-ONLY stand-ins tree-shaken out of a release bundle. FR-001's guard now requires `VITE_AMS_BACKEND=http`, not `dataverse` (rebound 2026-09-03 when Dataverse was parked; FR-001 itself is unchanged — it says "the real data platform" and never names one). Azure container delivery, migrations, observability, restore and runbooks move under feature 010. |
-| [009](009-production-readiness/spec.md) | **Production Readiness** | Atomic authority, safe identity allocation, state correctness, security, device proof, cutover and recovery | **Spec Draft.** Still applies; **no plan, tasks or contracts exist yet**. Dataverse-specific recommended implementation is parked in favour of the TypeScript/PostgreSQL architecture. [Checklist](009-production-readiness/checklists/requirements.md). |
-| [010](010-web-application-platform/spec.md) | **Web Application Platform** | Entra-authenticated PWA, TypeScript API, PostgreSQL, private documents, offline queue, Azure operations and reporting | **Spec Draft.** Active production platform and implementation route for feature 009. **No `plan.md`, `tasks.md`, `data-model.md` or `contracts/` exist yet — `/speckit.plan` and `/speckit.tasks` have not been run.** [Checklist](010-web-application-platform/checklists/requirements.md): 112 items, 5 reviewed. |
-| [011](011-data-management/spec.md) | **Data Management & Stewardship** | Governed reference/master data, controlled corrections, import/bulk jobs, quality issues, duplicate resolution, lineage, exports, external reconciliation, retention and legal hold | **Spec Draft.** Added because prior coverage was distributed and incomplete. Requires ownership/role, classification, approval, retention and source-authority decisions. **No plan, tasks or contracts yet.** [Checklist](011-data-management/checklists/requirements.md): unreviewed. |
+| [009](009-production-readiness/spec.md) | **Production Readiness** | Atomic authority, safe identity allocation, state correctness, security, device proof, cutover and recovery | **Spec Draft.** Evidence gate (not a delivery platform). [plan](009-production-readiness/plan.md), [tasks](009-production-readiness/tasks.md) (T001–T055), [contracts/](009-production-readiness/contracts/) (race, registration, security matrix, device, cutover, recovery). Consumes 010 command shapes. [Checklist](009-production-readiness/checklists/requirements.md). |
+| [010](010-web-application-platform/spec.md) | **Web Application Platform** | Entra-authenticated PWA, TypeScript API, PostgreSQL, private documents, offline queue, Azure operations and reporting | **Spec Draft.** Active production platform. [plan](010-web-application-platform/plan.md), [tasks](010-web-application-platform/tasks.md) (T001–T086), [research](010-web-application-platform/research.md), [data-model](010-web-application-platform/data-model.md), [contracts/](010-web-application-platform/contracts/) including R2 `transaction-command.md`. R1–R5 remain STOP gates. [Checklist](010-web-application-platform/checklists/requirements.md): 112 items, 5 reviewed. |
+| [011](011-data-management/spec.md) | **Data Management & Stewardship** | Governed reference/master data, controlled corrections, import/bulk jobs, quality issues, duplicate resolution, lineage, exports, external reconciliation, retention and legal hold | **Spec Draft.** [plan](011-data-management/plan.md), [tasks](011-data-management/tasks.md) (T001–T090), [research](011-data-management/research.md), [data-model](011-data-management/data-model.md), [contracts/](011-data-management/contracts/). Read-only dictionary/quality first; writes blocked on 010 W3/W4. Ownership/classification/retention decisions still open. [Checklist](011-data-management/checklists/requirements.md): unreviewed. |
 
 Detailed production findings remain in [`docs/13-production-readiness-review.md`](../docs/13-production-readiness-review.md). The active platform decision is in [`docs/14-webapp-architecture.md`](../docs/14-webapp-architecture.md). The data-management model is in [`docs/16-data-management.md`](../docs/16-data-management.md). The execution order is in [`docs/06-delivery-plan.md`](../docs/06-delivery-plan.md).
 
@@ -143,15 +143,13 @@ Ambiguous calibration evidence remains unmatched until a person confirms its tar
 
 ## Product clarifications and sign-offs
 
-Resolved: Q1, Q2, Q3, Q5, Q7 and Q13. Q4 is completed data work awaiting review.
+Resolved: Q1, Q2, Q3, Q5, Q7, Q8, Q9 and Q13. Q4 is completed data work awaiting review.
 
 Still requiring confirmation or decision:
 
 | Item | Effect in the web/data-management architecture |
 |---|---|
 | Q6 server/configuration treatment | Asset catalogue and migration |
-| Q8 expected return | Checkout command, quality rules and reminders |
-| Q9 backdating | `recorded_at`, `effective_at`, ordering and correction rules |
 | Q10 project master | Project authority, API and reconciliation |
 | Q11 report audience | `ReportReader` scope, exports and optional Power BI |
 | Q12 French timing | Phase scope; strings already externalized |
@@ -163,7 +161,7 @@ Still requiring confirmation or decision:
 | inactive-project rule | Server validation and source reconciliation |
 | reminder cadence | Outbox notification state |
 | site-coordinate capture | PWA device workflow and quality rule |
-| global vs office-scoped administrator | API authorization and stewardship scope |
+| global vs office-scoped administrator | API authorization and stewardship scope (**R5**) |
 | Data Steward role | Explicit authorization model for feature 011 |
 | data owners/stewards | Accountability and issue routing |
 | approval thresholds | Corrections, merges, bulk jobs, restricted exports and purge |
@@ -172,7 +170,7 @@ Still requiring confirmation or decision:
 | failed calibration and physical receipt | Calibration summary and lab movement |
 | retention periods and legal hold | Feature 011 lifecycle controls |
 | project/source authority | External reconciliation contract |
-| RTO/RPO/HA | Database and document recovery tier |
+| RTO/RPO/HA | Database and document recovery tier (**R6**) |
 | internet vs private access | Azure networking and field usability |
 | supported mobile browsers | PWA pilot scope |
 
