@@ -10,7 +10,7 @@
  * as TransferPage.tsx's "New custodian" field — a UPN is a plain text input, not a picker.
  */
 import { useEffect, useState } from "react";
-import { Badge, Button, Card, Field, Input, MessageBar, MessageBarBody, Spinner, Text, Title2, Title3, tokens } from "@fluentui/react-components";
+import { Badge, Button, Card, Field, Input, MessageBar, MessageBarBody, Spinner, Text, Title3, tokens } from "@fluentui/react-components";
 import { DeleteRegular } from "@fluentui/react-icons";
 import { backend } from "../../api";
 import type { OfficeAdminAssignment } from "../../api/types";
@@ -69,8 +69,6 @@ export function OfficeAdminsPage() {
 
   return (
     <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
-      <Title2>{t("admin.officeAdmins.title")}</Title2>
-
       {!assignments && <Spinner style={{ margin: 24 }} label={t("common.loading")} />}
 
       {assignments && (

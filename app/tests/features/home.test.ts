@@ -7,7 +7,7 @@
  * this file exists.
  */
 import { describe, expect, it } from "vitest";
-import { greetingKey, firstName, initials, isoDay, splitCalibration } from "@/features/home/homeModel";
+import { greetingKey, firstName, initials, isoDay, splitCalibration, qualityIssuesPath, QUALITY_RULE_OVERDUE, QUALITY_RULE_UNKNOWN_DUE } from "@/features/home/homeModel";
 import type { Asset } from "@/api/types";
 
 function asset(assetid: string, nextcaldue: string | null): Asset {
@@ -126,5 +126,12 @@ describe("isoDay", () => {
     // Zero-padded, which string comparison depends on entirely.
     expect(isoDay(new Date("2026-01-05T00:00:00.000Z")) < "2026-01-06").toBe(true);
     expect(isoDay(new Date("2026-01-05T00:00:00.000Z")) > "2026-01-04").toBe(true);
+  });
+});
+
+describe("quality issue routing", () => {
+  it("sends overdue and unknown-due counts to the quality queue, not calibration/compliance", () => {
+    expect(qualityIssuesPath(QUALITY_RULE_OVERDUE)).toBe("/data-management/quality/issues?ruleKey=DQ-CAL-OVERDUE");
+    expect(qualityIssuesPath(QUALITY_RULE_UNKNOWN_DUE)).toBe("/data-management/quality/issues?ruleKey=DQ-CAL-UNKNOWN-DUE");
   });
 });

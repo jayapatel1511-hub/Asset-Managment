@@ -13,7 +13,7 @@
  * ownership list. This page is where pending and rejected submissions are visible for now.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Badge, Button, Spinner, Text, Title2, tokens } from "@fluentui/react-components";
+import { Badge, Button, Spinner, Text, tokens } from "@fluentui/react-components";
 import { backend } from "../../api";
 import { getSubmissionQueue } from "../../api/queue";
 import type { PendingSubmission, PendingSubmissionKind } from "../../api/types";
@@ -69,10 +69,7 @@ export function NeedsAttentionPage() {
   const rejected = items.filter((i) => i.status === "Rejected");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: 16 }}>
-        <Title2>{t("offline.needsAttention.title")}</Title2>
-      </div>
+    <div className="ams-page">
 
       {pending.length > 0 && (
         <section>

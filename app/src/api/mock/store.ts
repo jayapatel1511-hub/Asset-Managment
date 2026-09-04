@@ -24,10 +24,12 @@ import type {
   Asset,
   AssetRelationship,
   CalibrationRecord,
+  EquipmentCategory,
   EquipmentModel,
   Installation,
   InstallationComponent,
   Location,
+  Manufacturer,
   OfficeAdminAssignment,
   Project,
   TransactionHeader,
@@ -93,6 +95,10 @@ export interface StoreDelta {
   installations: Installation[];
   installationComponents: InstallationComponent[];
   officeAdminAssignments: OfficeAdminAssignment[];
+  manufacturers?: Manufacturer[];
+  categories?: EquipmentCategory[];
+  equipmentModels?: EquipmentModel[];
+  projects?: Project[];
 }
 
 export interface StoreSnapshot {
@@ -114,6 +120,8 @@ export interface StoreSnapshot {
   // Feature 004 US4 (WS-D). Starts empty — every office is an FR-027a gap until an admin
   // assigns someone, which is the honest default, not a migration omission.
   officeAdminAssignments: OfficeAdminAssignment[];
+  manufacturers: Manufacturer[];
+  categories: EquipmentCategory[];
 }
 
 let cached: MockStore | null = null;
@@ -136,6 +144,8 @@ export class MockStore {
   installationComponents: InstallationComponent[] = [];
   /** Feature 004 US4 (WS-D) — same ownership note as above, for admin.ts. */
   officeAdminAssignments: OfficeAdminAssignment[] = [];
+  manufacturers: Manufacturer[] = [];
+  categories: EquipmentCategory[] = [];
   private txnCounter = 0;
   ready: Promise<void>;
   /** Provenance of the loaded dataset (feature 007 FR-007). */
@@ -170,6 +180,8 @@ export class MockStore {
     installations?: Installation[];
     installationComponents?: InstallationComponent[];
     officeAdminAssignments?: OfficeAdminAssignment[];
+    manufacturers?: Manufacturer[];
+    categories?: EquipmentCategory[];
   }): MockStore {
     const store = new MockStore({ skipAutoLoad: true });
     for (const a of data.assets) {
@@ -186,6 +198,8 @@ export class MockStore {
     store.installations = data.installations ?? [];
     store.installationComponents = data.installationComponents ?? [];
     store.officeAdminAssignments = data.officeAdminAssignments ?? [];
+    store.manufacturers = data.manufacturers ?? [];
+    store.categories = data.categories ?? [];
     store.txnCounter = store.transactions.length;
     store.invalidateHistoryIndexes();
     return store;
@@ -245,6 +259,24 @@ export class MockStore {
       else this.installationComponents.push(c);
     }
     this.officeAdminAssignments = delta.officeAdminAssignments;
+    if (delta.manufacturers) this.manufacturers = delta.manufacturers;
+    if (delta.categories) this.categories = delta.categories;
+    if (delta.equipmentModels) {
+      for (const m of delta.equipmentModels) {
+        const i = this.equipmentModels.findIndex(
+          (x) => x.manufacturer === m.manufacturer && x.model === m.model && x.equipmenttype === m.equipmenttype
+        );
+        if (i >= 0) this.equipmentModels[i] = m;
+        else this.equipmentModels.push(m);
+      }
+    }
+    if (delta.projects) {
+      for (const p of delta.projects) {
+        const i = this.projects.findIndex((x) => x.id === p.id);
+        if (i >= 0) this.projects[i] = p;
+        else this.projects.push(p);
+      }
+    }
     this.invalidateHistoryIndexes();
     this.idSequence = { ...this.idSequence, ...delta.idSequence };
     this.processedClientSubmissionIds = new Set(delta.processedClientSubmissionIds);
@@ -363,6 +395,10 @@ export class MockStore {
       installations: changedInstallations,
       installationComponents: changedInstallationComponents,
       officeAdminAssignments: this.officeAdminAssignments,
+      manufacturers: this.manufacturers,
+      categories: this.categories,
+      equipmentModels: this.equipmentModels,
+      projects: this.projects,
     };
   }
 
@@ -486,6 +522,8 @@ export class MockStore {
     touser?: string | null;
     fromproject?: string | null;
     toproject?: string | null;
+    toLocationKind?: "Office" | "Site" | "CalibrationLab" | "Other" | null;
+    calibrationResult?: "Pass" | "Fail" | "Adjusted" | null;
     primaryAssetId?: string | null;
     expectedreturn?: string | null;
     notes?: string | null;
@@ -525,12 +563,16 @@ export class MockStore {
           offendingAssetId: asset.assetid,
         };
       }
+      const foundDefaultsToHome =
+        params.transactiontype === "Found" && !params.tolocation && !params.touser && !params.toproject;
       const lineInput: TransactionLineInput = {
         type: params.transactiontype,
         date: params.date,
-        tolocation: params.tolocation,
+        tolocation: foundDefaultsToHome ? asset.homeoffice : params.tolocation,
+        toLocationKind: foundDefaultsToHome ? "Office" : params.toLocationKind,
         touser: params.touser,
         toproject: params.toproject,
+        calibrationResult: params.calibrationResult,
         primaryAssetId: params.primaryAssetId,
         retirementReason: line.retirementReason,
         isPrimary: params.primaryAssetId === asset.assetid,

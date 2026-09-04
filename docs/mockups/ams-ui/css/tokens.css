@@ -1,0 +1,105 @@
+/* Englobe AMS — design tokens
+   Fluent v9 neutrals + one restrained brand (Englobe green #14713a).
+   Swap the four --brand* variables to retheme. */
+
+:root {
+  --bg0: #f3f2f1;
+  --bg1: #ffffff;
+  --bg2: #fafafa;
+  --bg3: #f5f5f5;
+  --bg5: #f0f0f0;
+  --stroke1: #d1d1d1;
+  --stroke2: #e0e0e0;
+  --stroke3: #f0f0f0;
+  --fg1: #242424;
+  --fg2: #424242;
+  --fg3: #616161;
+  --fg4: #8a8a8a;
+
+  --brand: #14713a;
+  --brandFg: #14713a;
+  --brandBg: #14713a;
+  --brandTint: #eaf4ee;
+  --brandSoft: #d7eadc;
+  --brandOn: #ffffff;
+
+  --avail: #0e700e;
+  --availBg: #e7f5e7;
+  --out: #3b5b8a;
+  --outBg: #eef3f8;
+  --deploy: #0f6a62;
+  --deployBg: #e6f4f2;
+  --cal: #8a6d00;
+  --calBg: #fff6c8;
+  --repair: #bc2f32;
+  --repairBg: #fdf3f4;
+  --missing: #8a1538;
+  --missingBg: #f8e8ee;
+  --retired: #616161;
+  --retiredBg: #f5f5f5;
+  --warn: #bc4b09;
+  --warnBg: #fff9f5;
+  --warnBorder: #fdcfb4;
+  --danger: #b10e1c;
+  --dangerBg: #fdf3f4;
+  --dangerBorder: #eeacb2;
+  --ok: #0e700e;
+  --okBg: #f1faf1;
+  --okBorder: #9fd89f;
+  --infoBg: #f5f5f5;
+
+  --mono: Consolas, "Courier New", Courier, monospace;
+  --sans: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
+  --r2: 2px;
+  --r4: 4px;
+  --r6: 6px;
+  --r8: 8px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --header-h: 56px;
+  --nav-h: 56px;
+  --rail-w: 232px;
+  --phone-w: 390px;
+  --phone-h: 844px;
+  --desk-w: 1440px;
+  --desk-h: 900px;
+  --touch: 44px;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+body {
+  font-family: var(--sans);
+  color: var(--fg1);
+  background: #d8d6d3;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--brandFg); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, .mono { font-family: var(--mono); }
+
+/* Type */
+.t-app { font-size: 20px; line-height: 28px; font-weight: 600; }
+.t-title { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.02em; }
+.t-title2 { font-size: 20px; line-height: 26px; font-weight: 600; }
+.t-hero { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.02em; }
+.t-body { font-size: 14px; line-height: 20px; font-weight: 400; }
+.t-strong { font-size: 14px; line-height: 20px; font-weight: 600; }
+.t-cap { font-size: 12px; line-height: 16px; color: var(--fg3); }
+.t-fine { font-size: 11px; line-height: 14px; color: var(--fg3); }
+.t-nav { font-size: 11px; line-height: 14px; }
+.t-id { font-family: var(--mono); font-weight: 700; font-size: 14px; letter-spacing: -0.02em; }
+.t-id-lg { font-family: var(--mono); font-weight: 700; font-size: 22px; line-height: 28px; letter-spacing: -0.03em; }
+.muted { color: var(--fg3); }
+.hidden { display: none !important; }

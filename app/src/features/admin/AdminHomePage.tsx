@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, Text, Title2, Title3, tokens } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset } from "../../api/types";
 import { isIncompleteAssetId } from "../../domain/assetId";
 import { AssetRow } from "../../components/AssetRow";
+import { ListFrame } from "../../components/ListFrame";
+import { Page } from "../../components/Page";
+import { SectionLabel } from "../../components/SectionLabel";
 import { t } from "../../i18n";
 
 export function AdminHomePage() {
@@ -19,64 +21,52 @@ export function AdminHomePage() {
   const sweep = assets?.filter((a) => a.status === "CheckedOut" && !a.custodian) ?? [];
 
   return (
-    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
-      <Title2>{t("admin.title")}</Title2>
+    <Page>
+      <nav className="ams-qa-grid">
+        <button type="button" className="ams-qa primary" onClick={() => navigate("/admin/new-asset")}>
+          <span>{t("admin.newAsset")}</span>
+        </button>
+        <button type="button" className="ams-qa" onClick={() => navigate("/admin/office-admins")}>
+          <span>{t("admin.officeAdmins.title")}</span>
+        </button>
+        <button type="button" className="ams-qa" onClick={() => navigate("/admin/reference")}>
+          <span>{t("admin.reference.title")}</span>
+        </button>
+        <button type="button" className="ams-qa" onClick={() => navigate("/data-management")}>
+          <span>{t("dm.title")}</span>
+        </button>
+        <button type="button" className="ams-qa" onClick={() => navigate("/reports")}>
+          <span>{t("reports.title")}</span>
+        </button>
+        <button type="button" className="ams-qa" onClick={() => navigate("/needs-attention")}>
+          <span>{t("offline.needsAttention.title")}</span>
+        </button>
+      </nav>
 
-      <Card style={{ padding: 16 }}>
-        <Title3>{t("admin.newAsset")}</Title3>
-        <Text size={200} style={{ display: "block", marginBottom: 8 }}>
-          Pick a model from the catalogue, get an immutable Asset ID (FR-006), register.
-        </Text>
-        <Button appearance="primary" onClick={() => navigate("/admin/new-asset")}>
-          {t("admin.newAsset")}
-        </Button>
-      </Card>
-
-      {/* Entry points for features not on the bottom nav (AGENT-BRIEF.md §5: this page is not
-          owned by any single workstream — the orchestrator maintains these three links so WS-B/
-          C/D don't collide adding their own). */}
-      <Card style={{ padding: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <Button onClick={() => navigate("/reports")}>{t("reports.title")}</Button>
-        <Button onClick={() => navigate("/admin/office-admins")}>{t("admin.officeAdmins.title")}</Button>
-        <Button onClick={() => navigate("/needs-attention")}>{t("offline.needsAttention.title")}</Button>
-      </Card>
-
-      <Card style={{ padding: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Title3>Field-completion queue</Title3>
-          <Badge color="warning">{needsCompletion.length}</Badge>
-        </div>
-        <Text size={200} style={{ display: "block", margin: "4px 0 8px" }}>
-          Temporary tags and assets with no recorded home office (feature 002 FR-032) — not a
-          separate table, a live query over the registry.
-        </Text>
-        <div style={{ maxHeight: 260, overflowY: "auto", border: `1px solid ${tokens.colorNeutralStroke2}` }}>
-          {needsCompletion.length === 0 && (
-            <Text size={200} style={{ padding: 12, display: "block" }}>
-              {t("common.none")}
-            </Text>
-          )}
+      <section>
+        <SectionLabel count={needsCompletion.length}>Field-completion queue</SectionLabel>
+        <p className="muted" style={{ margin: "0 0 8px", fontSize: 13 }}>
+          Temporary tags and assets with no recorded home office — a live query over the registry.
+        </p>
+        <ListFrame>
+          {needsCompletion.length === 0 && <div className="ams-empty">{t("common.none")}</div>}
           {needsCompletion.slice(0, 50).map((a) => (
             <AssetRow key={a.id} asset={a} />
           ))}
-        </div>
-      </Card>
+        </ListFrame>
+      </section>
 
-      <Card style={{ padding: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Title3>Return sweep (Q3 / pilot week)</Title3>
-          <Badge color="informative">{sweep.length}</Badge>
-        </div>
-        <Text size={200} style={{ display: "block", margin: "4px 0 8px" }}>
-          Loaded as CheckedOut with no custodian at migration — return each as it's physically
-          located (FR-025 restricts this to an administrator since there's no custodian).
-        </Text>
-        <div style={{ maxHeight: 260, overflowY: "auto", border: `1px solid ${tokens.colorNeutralStroke2}` }}>
+      <section>
+        <SectionLabel count={sweep.length}>Return sweep</SectionLabel>
+        <p className="muted" style={{ margin: "0 0 8px", fontSize: 13 }}>
+          Loaded as CheckedOut with no custodian at migration — return each as it is physically located.
+        </p>
+        <ListFrame>
           {sweep.slice(0, 50).map((a) => (
             <AssetRow key={a.id} asset={a} />
           ))}
-        </div>
-      </Card>
-    </div>
+        </ListFrame>
+      </section>
+    </Page>
   );
 }

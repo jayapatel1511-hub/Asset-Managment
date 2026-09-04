@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, Spinner, Text, Title2, tokens } from "@fluentui/react-components";
-import { LocationRegular } from "@fluentui/react-icons";
+import { Spinner } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Location } from "../../api/types";
+import { Chip } from "../../components/Chip";
+import { EmptyState } from "../../components/EmptyState";
+import { ListFrame } from "../../components/ListFrame";
+import { Page } from "../../components/Page";
 import { t } from "../../i18n";
 
 interface SiteRow {
@@ -40,37 +43,40 @@ export function SiteListPage() {
   const visible = currentOnly ? rows.filter((r) => r.currentCount > 0) : rows;
 
   return (
-    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <Title2>{t("site.title")}</Title2>
-      <Button appearance="primary" icon={<LocationRegular />} onClick={() => navigate("/deploy")}>
+    <Page>
+      <button type="button" className="ams-btn ams-btn-primary" onClick={() => navigate("/deploy")}>
         {t("deploy.title")}
-      </Button>
-      <Checkbox label={t("site.filterCurrentOnly")} checked={currentOnly} onChange={(_, d) => setCurrentOnly(Boolean(d.checked))} />
+      </button>
+      <div className="ams-chips">
+        <Chip on={!currentOnly} onClick={() => setCurrentOnly(false)}>
+          {t("common.all")}
+        </Chip>
+        <Chip on={currentOnly} onClick={() => setCurrentOnly(true)}>
+          {t("site.filterCurrentOnly")}
+        </Chip>
+      </div>
 
-      {visible.length === 0 && <Text style={{ color: tokens.colorNeutralForeground3 }}>{t("site.listEmpty")}</Text>}
-
-      {visible.map((r) => (
-        <div
-          key={r.location.id}
-          role="button"
-          tabIndex={0}
-          onClick={() => navigate(`/site/${encodeURIComponent(r.location.name)}`)}
-          onKeyDown={(e) => e.key === "Enter" && navigate(`/site/${encodeURIComponent(r.location.name)}`)}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "10px 4px",
-            borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-            cursor: "pointer",
-          }}
-        >
-          <Text weight="semibold">{r.location.name}</Text>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-            {r.currentCount > 0 ? `${r.currentCount} current` : `${r.totalCount} past`}
-          </Text>
-        </div>
-      ))}
-    </div>
+      {visible.length === 0 ? (
+        <EmptyState>{t("site.listEmpty")}</EmptyState>
+      ) : (
+        <ListFrame>
+          {visible.map((r) => (
+            <button
+              key={r.location.id}
+              type="button"
+              className="ams-asset-row"
+              onClick={() => navigate(`/site/${encodeURIComponent(r.location.name)}`)}
+            >
+              <span className="meta">
+                <span style={{ fontSize: 14, fontWeight: 600 }}>
+                  {r.location.name}
+                </span>
+                <div className="sub">{r.currentCount > 0 ? `${r.currentCount} current` : `${r.totalCount} past`}</div>
+              </span>
+            </button>
+          ))}
+        </ListFrame>
+      )}
+    </Page>
   );
 }

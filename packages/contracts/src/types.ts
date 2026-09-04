@@ -4,9 +4,8 @@
  * that is the seam that lets the mock run with zero Dataverse code paths reachable (build-order
  * Phase C DoD) and lets a real Dataverse connection replace it later with no screen changes.
  */
-import type { AssetStatus } from "./stateMachine";
-
-export type Lifecycle = "Active" | "Retired";
+import type { AssetStatus, Lifecycle } from "./stateMachine";
+export type { Lifecycle };
 export type LocationType = "Region" | "Office" | "Site" | "Vehicle" | "CalLab" | "Client" | "Storage";
 export type RetirementReason = "Sold" | "Lost" | "Damaged" | "Obsolete";
 export type Condition = "Good" | "Damaged" | "NeedsService";
@@ -32,6 +31,68 @@ export interface EquipmentModel {
   isserialised: boolean;
   identifiertype: "Serial" | "ICCID" | "IMEI" | "None";
   defaultcalintervalmonths: number | null;
+  /** Absent on staged JSON loaded before 0013 — treat as active. */
+  isactive?: boolean;
+}
+
+/** Curated manufacturer — selected when creating a catalogue row (Rule 7). */
+export interface Manufacturer {
+  id: string;
+  name: string;
+  isactive: boolean;
+  note?: string | null;
+}
+
+/**
+ * Hierarchical equipment category (docs/08 Q21 / specs/011 EquipmentCategory).
+ * Roots are the former asset groups; children are the former equipment types.
+ */
+export interface EquipmentCategory {
+  id: string;
+  name: string;
+  parentId: string | null;
+  sortorder: number;
+  isactive: boolean;
+  note?: string | null;
+}
+
+/** Domains an administrator may maintain. People are not a reference table (docs/08 Q22). */
+export type ReferenceDomain =
+  | "Manufacturer"
+  | "EquipmentCategory"
+  | "EquipmentModel"
+  | "Location"
+  | "Project";
+
+export interface ReferenceCommandBase {
+  domain: ReferenceDomain;
+  clientSubmissionId: string;
+  reason: string;
+}
+
+export interface CreateReferenceInput extends ReferenceCommandBase {
+  attributes: Record<string, unknown>;
+}
+
+export interface EditReferenceInput extends ReferenceCommandBase {
+  id: string;
+  attributes: Record<string, unknown>;
+}
+
+export interface DeactivateReferenceInput extends ReferenceCommandBase {
+  id: string;
+}
+
+export interface ReparentLocationInput extends ReferenceCommandBase {
+  id: string;
+  newParentId: string | null;
+}
+
+export interface ReferenceImpactPreview {
+  domain: ReferenceDomain;
+  id: string;
+  affectedAssetCount: number;
+  reversibleClass: "Reversible" | "Compensatable" | "Irreversible";
 }
 
 export interface Location {

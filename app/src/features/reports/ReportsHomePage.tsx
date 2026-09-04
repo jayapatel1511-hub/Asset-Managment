@@ -14,11 +14,15 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, Dropdown, Input, Option, Spinner, Text, Title2, Title3, tokens } from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset, FleetCounts, Location, Project } from "../../api/types";
 import type { AssetFilter } from "../../api/AmsBackend";
 import { AssetRow } from "../../components/AssetRow";
+import { ListFrame } from "../../components/ListFrame";
+import { Page } from "../../components/Page";
+import { SearchField } from "../../components/SearchField";
+import { SectionLabel } from "../../components/SectionLabel";
 import { t } from "../../i18n";
 import { humaniseEnum } from "../../i18n/humanise";
 
@@ -26,15 +30,13 @@ const ALL = "";
 
 function BreakdownList({ counts }: { counts: Record<string, number> }) {
   const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  if (entries.length === 0) return <Text size={200}>{t("common.none")}</Text>;
+  if (entries.length === 0) return <p className="muted" style={{ margin: 0, fontSize: 13 }}>{t("common.none")}</p>;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+    <div className="ams-breakdown">
       {entries.map(([key, count]) => (
-        <div key={key || "—"} style={{ display: "flex", justifyContent: "space-between" }}>
-          <Text size={200}>{key ? humaniseEnum(key) : t("common.unknown")}</Text>
-          <Text size={200} weight="semibold">
-            {count}
-          </Text>
+        <div key={key || "—"} className="ams-breakdown-row">
+          <span className="k">{key ? humaniseEnum(key) : t("common.unknown")}</span>
+          <span className="n">{count}</span>
         </div>
       ))}
     </div>
@@ -93,153 +95,151 @@ export function ReportsHomePage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 12 }}>
-      <div>
-        <Title2>{t("reports.title")}</Title2>
-        <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block", marginTop: 4 }}>
-          {t("reports.dataAsOf", { time: loadedAt.toLocaleString() })}
-        </Text>
+    <Page>
+      <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+        {t("reports.dataAsOf", { time: loadedAt.toLocaleTimeString() })}
+      </p>
+
+      <div className="ams-cat-grid">
+        <button type="button" className="ams-report-card" onClick={() => navigate("/reports/compliance")}>
+          <h3>{t("reports.compliance.title")}</h3>
+          <span className="muted" style={{ fontSize: 12 }}>{t("reports.compliance.byOffice")}</span>
+        </button>
+        <button type="button" className="ams-report-card" onClick={() => navigate("/reports/utilisation")}>
+          <h3>{t("reports.utilisation.title")}</h3>
+          <span className="muted" style={{ fontSize: 12 }}>{t("reports.utilisation.idle")}</span>
+        </button>
       </div>
 
-      <Card style={{ padding: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <Dropdown
-          placeholder={t("asset.homeOffice")}
-          value={office || t("common.all")}
-          selectedOptions={[office]}
-          onOptionSelect={(_, d) => setOffice(d.optionValue ?? ALL)}
-        >
-          <Option value={ALL}>{t("common.all")}</Option>
-          {locations
-            .filter((l) => l.locationtype === "Office")
-            .map((l) => (
-              <Option key={l.id} value={l.name}>
-                {l.name}
-              </Option>
+      <div className="ams-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <label className="ams-field">
+          {t("asset.homeOffice")}
+          <select value={office} onChange={(e) => setOffice(e.target.value)}>
+            <option value={ALL}>{t("common.all")}</option>
+            {locations
+              .filter((l) => l.locationtype === "Office")
+              .map((l) => (
+                <option key={l.id} value={l.name}>
+                  {l.name}
+                </option>
+              ))}
+          </select>
+        </label>
+        <label className="ams-field">
+          {t("reports.fleet.byType")}
+          <select value={equipmenttype} onChange={(e) => setEquipmenttype(e.target.value)}>
+            <option value={ALL}>{t("common.all")}</option>
+            {equipmentTypes.map((et) => (
+              <option key={et} value={et}>
+                {et}
+              </option>
             ))}
-        </Dropdown>
-        <Dropdown
-          placeholder={t("reports.fleet.byType")}
-          value={equipmenttype || t("common.all")}
-          selectedOptions={[equipmenttype]}
-          onOptionSelect={(_, d) => setEquipmenttype(d.optionValue ?? ALL)}
-        >
-          <Option value={ALL}>{t("common.all")}</Option>
-          {equipmentTypes.map((et) => (
-            <Option key={et} value={et}>
-              {et}
-            </Option>
-          ))}
-        </Dropdown>
-      </Card>
+          </select>
+        </label>
+      </div>
 
-      <Card style={{ padding: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Title3>{t("reports.fleet.title")}</Title3>
-          {fleetCounts ? <Badge size="large">{fleetCounts.total}</Badge> : <Spinner size="tiny" />}
+      <section>
+        <SectionLabel count={fleetCounts?.total}>{t("reports.fleet.title")}</SectionLabel>
+        <div className="ams-card">
+          {!fleetCounts && <Spinner size="tiny" />}
+          {fleetCounts && (
+            <>
+              <div className="ams-stat-strip" style={{ marginBottom: 12 }}>
+                <div className="ams-stat">
+                  <div className="n">{fleetCounts.total}</div>
+                  <div className="l">{t("reports.fleet.title")}</div>
+                </div>
+                <div className="ams-stat">
+                  <div className="n">{fleetCounts.temporaryTags}</div>
+                  <div className="l">{t("reports.fleet.temporaryTags")}</div>
+                </div>
+                <div className="ams-stat">
+                  <div className="n">{fleetCounts.thirdPartyOwned}</div>
+                  <div className="l">{t("reports.fleet.thirdPartyOwned")}</div>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <section>
+                  <div className="ams-sec-label" style={{ marginBottom: 6 }}>{t("reports.fleet.byOffice")}</div>
+                  <BreakdownList counts={fleetCounts.byOffice} />
+                </section>
+                <section>
+                  <div className="ams-sec-label" style={{ marginBottom: 6 }}>{t("reports.fleet.byGroup")}</div>
+                  <BreakdownList counts={fleetCounts.byAssetGroup} />
+                </section>
+                <section style={{ gridColumn: "1 / -1" }}>
+                  <div className="ams-sec-label" style={{ marginBottom: 6 }}>{t("reports.fleet.byType")}</div>
+                  <BreakdownList counts={fleetCounts.byEquipmentType} />
+                </section>
+              </div>
+            </>
+          )}
         </div>
-        {fleetCounts && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
-            <section>
-              <Text size={200} weight="semibold" style={{ display: "block" }}>
-                {t("reports.fleet.byOffice")}
-              </Text>
-              <BreakdownList counts={fleetCounts.byOffice} />
-            </section>
-            <section>
-              <Text size={200} weight="semibold" style={{ display: "block" }}>
-                {t("reports.fleet.byGroup")}
-              </Text>
-              <BreakdownList counts={fleetCounts.byAssetGroup} />
-            </section>
-            <section style={{ gridColumn: "1 / -1" }}>
-              <Text size={200} weight="semibold" style={{ display: "block" }}>
-                {t("reports.fleet.byType")}
-              </Text>
-              <BreakdownList counts={fleetCounts.byEquipmentType} />
-            </section>
-            <div style={{ gridColumn: "1 / -1", display: "flex", gap: 16 }}>
-              <Text size={200}>
-                {t("reports.fleet.temporaryTags")}: <b>{fleetCounts.temporaryTags}</b>
-              </Text>
-              <Text size={200}>
-                {t("reports.fleet.thirdPartyOwned")}: <b>{fleetCounts.thirdPartyOwned}</b>
-              </Text>
+      </section>
+
+      <section>
+        <SectionLabel count={availableCounts?.total}>{t("reports.availability.title")}</SectionLabel>
+        <div className="ams-card">
+          {!availableCounts && <Spinner size="tiny" />}
+          {availableCounts && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <section>
+                <div className="ams-sec-label" style={{ marginBottom: 6 }}>{t("reports.fleet.byOffice")}</div>
+                <BreakdownList counts={availableCounts.byOffice} />
+              </section>
+              <section>
+                <div className="ams-sec-label" style={{ marginBottom: 6 }}>{t("reports.fleet.byType")}</div>
+                <BreakdownList counts={availableCounts.byEquipmentType} />
+              </section>
             </div>
-          </div>
-        )}
-      </Card>
-
-      <Card style={{ padding: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Title3>{t("reports.availability.title")}</Title3>
-          {availableCounts ? <Badge size="large" color="success">{availableCounts.total}</Badge> : <Spinner size="tiny" />}
+          )}
         </div>
-        {availableCounts && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
-            <section>
-              <Text size={200} weight="semibold" style={{ display: "block" }}>
-                {t("reports.fleet.byOffice")}
-              </Text>
-              <BreakdownList counts={availableCounts.byOffice} />
-            </section>
-            <section>
-              <Text size={200} weight="semibold" style={{ display: "block" }}>
-                {t("reports.fleet.byType")}
-              </Text>
-              <BreakdownList counts={availableCounts.byEquipmentType} />
-            </section>
-          </div>
-        )}
-      </Card>
+      </section>
 
-      <Card style={{ padding: 12 }}>
-        <Title3>{t("reports.byProject.title")}</Title3>
-        <Dropdown
-          style={{ marginTop: 8, minWidth: 220 }}
-          placeholder={t("common.all")}
-          value={selectedProject ? projects.find((p) => p.projectnumber === selectedProject)?.name ?? selectedProject : t("common.all")}
-          selectedOptions={[selectedProject]}
-          onOptionSelect={(_, d) => setSelectedProject(d.optionValue ?? ALL)}
-        >
-          <Option value={ALL}>{t("common.all")}</Option>
-          {projects.map((p) => (
-            <Option key={p.id} value={p.projectnumber} text={`${p.name} (${p.projectnumber})`}>
-              {p.name} ({p.projectnumber})
-            </Option>
-          ))}
-        </Dropdown>
+      <section>
+        <SectionLabel>{t("reports.byProject.title")}</SectionLabel>
+        <div className="ams-field">
+          <select value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)} aria-label={t("reports.byProject.title")}>
+            <option value={ALL}>{t("common.all")}</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.projectnumber}>
+                {p.name} ({p.projectnumber})
+              </option>
+            ))}
+          </select>
+        </div>
         {projectAssets && (
-          <div style={{ marginTop: 8, border: `1px solid ${tokens.colorNeutralStroke2}` }}>
+          <ListFrame>
             {projectAssets.length === 0 && (
-              <Text size={200} style={{ padding: 12, display: "block" }}>
-                {t("common.none")}
-              </Text>
+              <div className="ams-empty">{t("common.none")}</div>
             )}
             {projectAssets.map((a) => (
               <AssetRow key={a.id} asset={a} />
             ))}
-          </div>
+          </ListFrame>
         )}
-      </Card>
+      </section>
 
-      <Card style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-        <Title3>{t("reports.timeline.title")}</Title3>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Input placeholder={t("search.placeholder")} value={lookup} onChange={(_, d) => setLookup(d.value)} style={{ flex: 1 }} />
-          <Button appearance="primary" onClick={goToTimeline}>
+      <section>
+        <SectionLabel>{t("reports.timeline.title")}</SectionLabel>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SearchField
+              value={lookup}
+              placeholder={t("search.placeholder")}
+              onChange={setLookup}
+              onSubmit={goToTimeline}
+            />
+          </div>
+          <button type="button" className="ams-btn ams-btn-primary" onClick={goToTimeline}>
             {t("common.confirm")}
-          </Button>
+          </button>
         </div>
-      </Card>
+      </section>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <Button onClick={() => navigate("/reports/compliance")}>{t("reports.compliance.title")}</Button>
-        <Button onClick={() => navigate("/reports/utilisation")}>{t("reports.utilisation.title")}</Button>
-      </div>
-
-      <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block" }}>
+      <p className="muted" style={{ margin: 0, fontSize: 12 }}>
         {t("reports.notPublished")}
-      </Text>
-    </div>
+      </p>
+    </Page>
   );
 }

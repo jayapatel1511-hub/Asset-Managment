@@ -1,20 +1,8 @@
 import { useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogBody,
-  DialogContent,
-  DialogSurface,
-  DialogTitle,
-  DialogTrigger,
-  Field,
-  MessageBar,
-  MessageBarBody,
-  Select,
-} from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset, RetirementReason } from "../../api/types";
+import { Banner } from "../../components/Banner";
+import { Sheet } from "../../components/Sheet";
 import { t } from "../../i18n";
 
 const REASONS: RetirementReason[] = ["Sold", "Lost", "Damaged", "Obsolete"]; // FR-024: fixed list only
@@ -50,47 +38,48 @@ export function RetireDialog({ asset, onClose, onDone }: { asset: Asset; onClose
   }
 
   return (
-    <Dialog open onOpenChange={(_, d) => !d.open && onClose()}>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle>{t("admin.retire.title")}</DialogTitle>
-          <DialogContent style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {error && (
-              <MessageBar intent="error">
-                <MessageBarBody>{error}</MessageBarBody>
-              </MessageBar>
-            )}
-            {confirming && (
-              <MessageBar intent="warning">
-                <MessageBarBody>{t("admin.retire.confirm", { assetId: asset.assetid })}</MessageBarBody>
-              </MessageBar>
-            )}
-            <Field label={t("admin.retire.reason")} required>
-              <Select style={{ minWidth: 0, width: "100%" }} value={reason} onChange={(_, d) => {
-                  setReason(d.value as RetirementReason);
-                  setConfirming(false); // a changed reason is a changed decision — confirm it again
-                }}>
-                <option value="" disabled>
-                  —
-                </option>
-                {REASONS.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </DialogContent>
-          <DialogActions>
-            <DialogTrigger disableButtonEnhancement>
-              <Button appearance="secondary">{t("common.cancel")}</Button>
-            </DialogTrigger>
-            <Button appearance="primary" disabled={busy} onClick={submit}>
-              {confirming ? t("common.confirm") : t("asset.actions.retire")}
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+    <Sheet
+      title={t("admin.retire.title")}
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="ams-btn" onClick={onClose}>
+            {t("common.cancel")}
+          </button>
+          <button
+            type="button"
+            className={`ams-btn ${confirming ? "ams-btn-danger" : "ams-btn-primary"}`}
+            disabled={busy}
+            onClick={submit}
+          >
+            {confirming ? t("common.confirm") : t("asset.actions.retire")}
+          </button>
+        </>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {error && <Banner intent="err">{error}</Banner>}
+        {confirming && <Banner intent="warn">{t("admin.retire.confirm", { assetId: asset.assetid })}</Banner>}
+        <label className="ams-field">
+          {t("admin.retire.reason")}
+          <select
+            value={reason}
+            onChange={(e) => {
+              setReason(e.target.value as RetirementReason);
+              setConfirming(false); // a changed reason is a changed decision — confirm it again
+            }}
+          >
+            <option value="" disabled>
+              —
+            </option>
+            {REASONS.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+    </Sheet>
   );
 }

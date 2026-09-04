@@ -47,6 +47,14 @@ import type {
   OfficeAdminAssignment,
   PendingSubmission,
   Project,
+  Manufacturer,
+  EquipmentCategory,
+  CreateReferenceInput,
+  EditReferenceInput,
+  DeactivateReferenceInput,
+  ReparentLocationInput,
+  ReferenceImpactPreview,
+  ReferenceDomain,
 } from "../types";
 import { getMockCurrentUserKey } from "../mock";
 import { getSubmissionQueue } from "../queue";
@@ -263,6 +271,36 @@ export class HttpAmsBackend implements AmsBackend {
   }
   listProjects(): Promise<Project[]> {
     return getJson("/api/projects");
+  }
+  listManufacturers(): Promise<Manufacturer[]> {
+    return getJson("/api/data-management/reference/Manufacturer");
+  }
+  listEquipmentCategories(): Promise<EquipmentCategory[]> {
+    return getJson("/api/data-management/reference/EquipmentCategory");
+  }
+  listReference(domain: ReferenceDomain): Promise<unknown[]> {
+    return getJson(`/api/data-management/reference/${enc(domain)}`);
+  }
+  getReference(domain: ReferenceDomain, id: string): Promise<unknown | null> {
+    return getJsonOrNull(`/api/data-management/reference/${enc(domain)}/${enc(id)}`);
+  }
+  createReference(input: CreateReferenceInput): Promise<SubmissionOutcome> {
+    return send("POST", "/api/data-management/reference/commands/create", input);
+  }
+  editReference(input: EditReferenceInput): Promise<SubmissionOutcome> {
+    return send("POST", "/api/data-management/reference/commands/edit", input);
+  }
+  deactivateReference(input: DeactivateReferenceInput): Promise<SubmissionOutcome> {
+    return send("POST", "/api/data-management/reference/commands/deactivate", input);
+  }
+  reactivateReference(input: DeactivateReferenceInput): Promise<SubmissionOutcome> {
+    return send("POST", "/api/data-management/reference/commands/reactivate", input);
+  }
+  reparentLocation(input: ReparentLocationInput): Promise<SubmissionOutcome> {
+    return send("POST", "/api/data-management/reference/commands/reparent-location", input);
+  }
+  previewReferenceImpact(domain: ReferenceDomain, id: string): Promise<ReferenceImpactPreview> {
+    return getJson(`/api/data-management/reference/${enc(domain)}/${enc(id)}/impact`);
   }
 
   // ---- calibration (feature 004) ----

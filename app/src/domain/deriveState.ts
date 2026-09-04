@@ -1,34 +1,43 @@
 /**
- * deriveState — the F1 logic (docs/03-automation.md) as a pure function.
+ * deriveState — one transaction line's consequences as a pure function.
  *
- * Constitution Principle I: current status/location/custodian/project/parent are OUTPUTS of a
+ * Constitution Principle I: current axes/location/custodian/project/parent are OUTPUTS of a
  * transaction line, never a direct write. Principle V: an invalid transition is refused here
  * exactly as it would be refused by the app's own pre-submit check — this is the same function
- * both call (see api/mock/transactions.ts), so there is only one place the rule actually lives.
+ * both call, so there is only one place the rule actually lives.
  *
- * This function is intentionally pure and synchronous: give it the asset's current snapshot and
- * one transaction line's inputs, get back either a rejection or the field updates plus the
- * relationship operations (kit open/close) the caller should apply. It does not touch a store —
- * that lets every cell of data/reference/state_machine.json be exercised by a plain unit test
- * (tests/domain/deriveState.test.ts) with no backend at all.
+ * Allow/deny is TRANSITION_RULES (transition-table.md §3 / DC-22 item 4), evaluated against the
+ * three stored axes. The seven-value STATE_MACHINE pill matrix is a generated compatibility
+ * projection, not the authority.
  *
- * What this function does NOT do (by design, kept in the API layer instead — see
- * api/mock/transactions.ts):
+ * This function is intentionally pure and synchronous. It does not touch a store — that lets
+ * every rule variant be exercised by a plain unit test with no backend at all.
+ *
+ * What this function does NOT do (by design, kept in the API layer instead):
  *   - Mirror a status/location/custodian change onto an asset's permanent Component children
- *     (F1 step 5). That is a store-wide fan-out over the relationship table, not a
- *     single-asset derivation.
- *   - Re-verify the asset's status hasn't changed since it was added to a cart (FR-023) — a
- *     concurrency concern the store's write path owns.
+ *   - Re-verify the asset's status hasn't changed since it was added to a cart (FR-023)
  *   - Persist anything.
  */
-import { STATE_MACHINE, type AssetStatus, type TransactionType } from "./stateMachine";
+import type { AssetStatus, TransactionType } from "./stateMachine";
+import {
+  axesFromStatus,
+  statusFromAxes,
+  type Disposition,
+  type Serviceability,
+  type StateAxes,
+} from "./stateAxes";
+import { evaluateTransition } from "./transition";
 
 export type Lifecycle = "Active" | "Retired";
+export type { Disposition, Serviceability, StateAxes };
 
 export interface AssetSnapshot {
   assetId: string;
   status: AssetStatus;
   lifecycle: Lifecycle;
+  /** Stored axes when known. Absent snapshots are hydrated from `status` (lossy). */
+  disposition?: Disposition;
+  serviceability?: Serviceability;
   homeoffice: string | null;
   currentlocation: string | null;
   custodian: string | null;
@@ -41,8 +50,10 @@ export interface TransactionLineInput {
   /** ISO date/time the transaction is recorded at. */
   date: string;
   tolocation?: string | null;
+  toLocationKind?: "Office" | "Site" | "CalibrationLab" | "Other" | null;
   touser?: string | null;
   toproject?: string | null;
+  calibrationResult?: "Pass" | "Fail" | "Adjusted" | null;
   /** Set only when this transaction forms or breaks a kit (Checkout/Deploy/Return/Undeploy). */
   primaryAssetId?: string | null;
   retirementReason?: string | null;
@@ -51,8 +62,11 @@ export interface TransactionLineInput {
 }
 
 export interface DerivedFields {
+  /** Compatibility pill — derived from the three axes (DC-21). Never stored as authority. */
   statusAfter: AssetStatus;
   lifecycle: Lifecycle;
+  disposition: Disposition;
+  serviceability: Serviceability;
   custodian: string | null;
   currentlocation: string | null;
   currentproject: string | null;
@@ -65,43 +79,58 @@ export type RelationshipOp =
   | { op: "closeAllAsParent"; parentAssetId: string; end: string };
 
 export type DeriveResult =
-  | { ok: true; fields: DerivedFields; relationshipOps: RelationshipOp[] }
-  | { ok: false; reason: string };
+  | { ok: true; fields: DerivedFields; relationshipOps: RelationshipOp[]; ruleId: string }
+  | { ok: false; reason: string; code: string; failedAxis: "lifecycle" | "disposition" | "serviceability" | null };
 
 const KIT_OPENING_TYPES: ReadonlySet<TransactionType> = new Set(["Checkout", "Deploy"]);
-const KIT_CLOSING_TYPES: ReadonlySet<TransactionType> = new Set([
-  "Return",
-  "Undeploy",
-  "Retire",
-  "MarkMissing",
-]);
+const KIT_CLOSING_TYPES: ReadonlySet<TransactionType> = new Set(["Return", "Undeploy", "Retire"]);
 
-/**
- * FR-020/FR-021/FR-022/FR-024: refuse a transition the matrix doesn't allow, for EVERY asset —
- * including a Retired one (the matrix has no entries at all under "Retired", so any transaction
- * type against it falls straight into the rejection branch here, satisfying FR-022 without a
- * separate special case).
- */
+function snapshotAxes(asset: AssetSnapshot): StateAxes {
+  if (asset.disposition && asset.serviceability) {
+    return { lifecycle: asset.lifecycle, disposition: asset.disposition, serviceability: asset.serviceability };
+  }
+  return axesFromStatus(asset.status, asset.lifecycle);
+}
+
 export function deriveState(asset: AssetSnapshot, line: TransactionLineInput): DeriveResult {
-  const allowed = STATE_MACHINE[asset.status];
-  const statusAfter = allowed[line.type];
-  if (!statusAfter) {
+  const current = snapshotAxes(asset);
+  const pill = statusFromAxes(current);
+  const matched = evaluateTransition(line.type, current, {
+    currentLocation: asset.currentlocation,
+    toLocation: line.tolocation,
+    toLocationKind: line.toLocationKind,
+    toUser: line.touser,
+    toProject: line.toproject,
+    calibrationResult: line.calibrationResult,
+  });
+
+  if (!matched.ok) {
     return {
       ok: false,
-      reason: `${line.type} is not a valid transition from ${asset.status} for ${asset.assetId}.`,
+      reason: `${line.type} is not a valid transition from ${pill} for ${asset.assetId}.`,
+      code: matched.code,
+      failedAxis: matched.failedAxis,
     };
   }
 
-  const fields = deriveFields(asset, line, statusAfter);
+  const statusAfter = statusFromAxes(matched.axesAfter);
+  const fields = deriveFields(asset, line, statusAfter, matched.axesAfter);
   const relationshipOps = deriveRelationshipOps(asset, line);
 
-  return { ok: true, fields, relationshipOps };
+  return { ok: true, fields, relationshipOps, ruleId: matched.rule.id };
 }
 
-function deriveFields(asset: AssetSnapshot, line: TransactionLineInput, statusAfter: AssetStatus): DerivedFields {
+function deriveFields(
+  asset: AssetSnapshot,
+  line: TransactionLineInput,
+  statusAfter: AssetStatus,
+  axesAfter: StateAxes
+): DerivedFields {
   const base: DerivedFields = {
     statusAfter,
-    lifecycle: asset.lifecycle,
+    lifecycle: axesAfter.lifecycle,
+    disposition: axesAfter.disposition,
+    serviceability: axesAfter.serviceability,
     custodian: asset.custodian,
     currentlocation: asset.currentlocation,
     currentproject: asset.currentproject,
@@ -132,20 +161,13 @@ function deriveFields(asset: AssetSnapshot, line: TransactionLineInput, statusAf
       };
 
     case "Undeploy":
-      // DEVIATION from docs/03-automation.md (written before feature 005 existed), recorded in
-      // docs/08-decisions.md: that doc originally grouped Undeploy with Return (custodian: null,
-      // location: home office). Feature 005's FR-013 is explicit and more specific — a recovered
-      // component returns to the RECOVERING USER's custody, not to nobody, and being in someone's
-      // custody means location is unknown until a later Return, exactly like Checkout — not
-      // "at the office" (that would be a false claim about where the item physically is, the
-      // same dishonesty Principle I forbids for Checkout). specs/ wins over docs/ where they
-      // disagree (specs/README.md). currentproject follows Return's behavior (cleared) since
-      // recovery ends the component's assignment to the installation's project.
+      // DC-06: Undeploy targets CheckedOut and keeps the project. Feature 005 FR-013 still
+      // returns the component to the recovering user's custody (location unknown until Return).
       return {
         ...base,
         custodian: line.touser ?? null,
-        currentproject: null,
-        currentlocation: null,
+        currentproject: asset.currentproject,
+        currentlocation: line.tolocation ?? null,
       };
 
     case "Transfer":
@@ -160,7 +182,7 @@ function deriveFields(asset: AssetSnapshot, line: TransactionLineInput, statusAf
       return { ...base, custodian: null, currentlocation: line.tolocation ?? asset.currentlocation };
 
     case "ReturnFromCalibration":
-      return { ...base, currentlocation: asset.homeoffice };
+      return { ...base, currentlocation: line.tolocation ?? asset.homeoffice };
 
     case "Retire":
       return {
@@ -172,15 +194,26 @@ function deriveFields(asset: AssetSnapshot, line: TransactionLineInput, statusAf
         retirementReason: line.retirementReason ?? null,
       };
 
+    case "Found":
+      if (line.touser) {
+        return { ...base, custodian: line.touser, currentlocation: null };
+      }
+      if (line.toproject) {
+        return { ...base, currentproject: line.toproject, currentlocation: line.tolocation ?? asset.currentlocation };
+      }
+      return { ...base, currentlocation: line.tolocation ?? asset.homeoffice };
+
+    case "RehomeAsset":
+      return base;
+
     case "ReportFault":
     case "MarkMissing":
     case "RepairComplete":
-    case "Found":
-      // status changes only; custodian/location/project are whatever they already were
-      return base;
-
+    case "MarkOutOfService":
+    case "ReturnToService":
     case "Audit":
     case "AddToInventory":
+    case "Correction":
       return base;
 
     default:
@@ -207,9 +240,7 @@ function deriveRelationshipOps(asset: AssetSnapshot, line: TransactionLineInput)
   }
 
   if (KIT_CLOSING_TYPES.has(line.type)) {
-    // this asset, if it is itself a kit child, has its own relationship closed
     ops.push({ op: "closeAsChild", childAssetId: asset.assetId, end: line.date });
-    // and if it is a kit parent, every child relationship it opened is closed too
     ops.push({ op: "closeAllAsParent", parentAssetId: asset.assetId, end: line.date });
   }
 

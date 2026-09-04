@@ -174,12 +174,13 @@ async function assetRow(assetId: string) {
   const res = await t.db.query<{
     assetid: string;
     status: string;
+    disposition: string;
     custodian: string | null;
     currentlocation: string | null;
     currentproject: string | null;
     row_version: number;
   }>(
-    "SELECT assetid, status, custodian, currentlocation, currentproject, row_version FROM asset WHERE assetid = $1",
+    "SELECT assetid, status, disposition, custodian, currentlocation, currentproject, row_version FROM asset WHERE assetid = $1",
     [assetId]
   );
   return res.rows[0];
@@ -412,7 +413,7 @@ describe("S4 — two users race for an overlapping asset and exactly one wins", 
         l.arrive();
         await l.all; // both reads are now complete; neither has written
         if (seen !== "Available") return { wrote: false, seen };
-        await tx.query("UPDATE asset SET status = 'CheckedOut', custodian = $2 WHERE assetid = $1", [contested, tag]);
+        await tx.query("UPDATE asset SET disposition = 'CheckedOut', custodian = $2 WHERE assetid = $1", [contested, tag]);
         return { wrote: true, seen };
       });
 
@@ -421,9 +422,9 @@ describe("S4 — two users race for an overlapping asset and exactly one wins", 
     expect(b.seen).toBe("Available");
     expect([a.wrote, b.wrote]).toEqual([true, true]); // DOUBLE BOOKED — the bug the lock prevents
 
-    await t.db.query("UPDATE asset SET status = $2, custodian = $3 WHERE assetid = $1", [
+    await t.db.query("UPDATE asset SET disposition = $2, custodian = $3 WHERE assetid = $1", [
       contested,
-      original.status,
+      original.disposition,
       original.custodian,
     ]);
   });
@@ -438,7 +439,7 @@ describe("S4 — two users race for an overlapping asset and exactly one wins", 
     const first = t.db.transaction(async (tx) => {
       await tx.query("SELECT status FROM asset WHERE assetid = $1 FOR UPDATE", [contested]);
       await gate;
-      await tx.query("UPDATE asset SET status = 'CheckedOut', custodian = 'racer-a' WHERE assetid = $1", [contested]);
+      await tx.query("UPDATE asset SET disposition = 'CheckedOut', custodian = 'racer-a' WHERE assetid = $1", [contested]);
     });
     // Give the first transaction its lock before the second one asks for it.
     await new Promise((r) => setTimeout(r, 50));
@@ -456,9 +457,9 @@ describe("S4 — two users race for an overlapping asset and exactly one wins", 
     await Promise.all([first, second]);
     expect(secondSaw).toBe("CheckedOut"); // re-read after the lock, not the stale snapshot
 
-    await t.db.query("UPDATE asset SET status = $2, custodian = $3 WHERE assetid = $1", [
+    await t.db.query("UPDATE asset SET disposition = $2, custodian = $3 WHERE assetid = $1", [
       contested,
-      original.status,
+      original.disposition,
       original.custodian,
     ]);
   }, 60_000);
@@ -837,7 +838,7 @@ describe("S7 — reversed input order does not deadlock", () => {
     expect(await pending).toMatchObject({ ok: true });
 
     expect(blocked).toHaveLength(1);
-    expect(blocked[0]).toMatch(/FROM asset WHERE assetid IN \([^)]*\) ORDER BY assetid FOR UPDATE/);
+    expect(blocked[0]).toMatch(/FROM asset a[\s\S]*ORDER BY a\.assetid\s+FOR UPDATE/);
   }, 60_000);
 
   /**
@@ -1108,19 +1109,21 @@ describe("R — registration: the server allocates, the browser never reserves",
   }, 180_000);
 
   /**
-   * BLOCKED on the schema catching up to the approved model, not skipped. WS-W4's registration
-   * proof also requires "temporary tags retained as aliases" and
-   * `009/contracts/registration-concurrency.md` R3 requires a `TMP-*` value to survive as a
-   * searchable alias resolving to the same asset UUID. The compatibility schema has one
-   * identifier column, `asset.assetid`, and no alias table (`docs/15-postgres-data-model.md`
-   * carries it; `server/src/db/schema.sql` does not). The assertion below FAILS the day an alias
-   * table lands, which is the day this proof must be extended.
+   * R3: a TMP-* value survives as a searchable alias on the same asset UUID
+   * (`009/contracts/registration-concurrency.md`). `asset_identifier` is the table; there is
+   * no `asset_alias` synonym.
    */
-  it("R3 alias clause is BLOCKED on the schema — no alias table exists", async () => {
+  it("R3 — temporary tags are retained as aliases on asset_identifier", async () => {
     const res = await t.db.query<{ a: string | null; b: string | null }>(
       "SELECT to_regclass('public.asset_alias') AS a, to_regclass('public.asset_identifier') AS b"
     );
     expect(res.rows[0].a).toBeNull();
-    expect(res.rows[0].b).toBeNull();
+    expect(res.rows[0].b).not.toBeNull();
+
+    const tagged = await t.db.query<{ c: number }>(
+      `SELECT count(*)::int AS c FROM asset_identifier
+        WHERE is_current AND identifier_type = 'TemporaryTag' AND identifier_value ~ '^TMP-'`
+    );
+    expect(tagged.rows[0].c).toBeGreaterThan(0);
   });
 });

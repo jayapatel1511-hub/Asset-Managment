@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Field, Input, MessageBar, MessageBarBody, Select, Spinner, Switch, Text, Title2, tokens } from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Condition, Installation, InstallationSnapshot, KitRole, Orientation } from "../../api/types";
+import { Banner } from "../../components/Banner";
+import { Page } from "../../components/Page";
+import { SectionLabel } from "../../components/SectionLabel";
 import { t } from "../../i18n";
 import { describeRefusal } from "../deploy/refusals";
 
@@ -95,97 +98,114 @@ export function RecoverPage() {
   if (installation === undefined) return <Spinner style={{ margin: 24 }} label={t("common.loading")} />;
   if (installation === null) {
     return (
-      <div style={{ padding: 16 }}>
-        <Text>{t("common.unknown")}</Text>
-      </div>
+      <Page>
+        <p className="muted">{t("common.unknown")}</p>
+      </Page>
     );
   }
 
   if (confirmation) {
     return (
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-        <MessageBar intent="success">
-          <MessageBarBody>{confirmation}</MessageBarBody>
-        </MessageBar>
-        <Button appearance="primary" onClick={() => navigate(`/site/${encodeURIComponent(installation.site)}`)}>
+      <Page>
+        <div className="ams-success">
+          <Banner intent="ok">{confirmation}</Banner>
+          <div className="txn">{confirmation}</div>
+        </div>
+        <button
+          type="button"
+          className="ams-btn ams-btn-primary ams-btn-block"
+          onClick={() => navigate(`/site/${encodeURIComponent(installation.site)}`)}
+        >
           {t("site.title")}
-        </Button>
-      </div>
+        </button>
+      </Page>
     );
   }
 
   return (
-    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <Title2>{t("recover.title")}</Title2>
-      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+    <Page>
+      <p className="muted" style={{ margin: 0, fontSize: 13 }}>
         {installation.sitename} · {installation.project}
-      </Text>
+      </p>
 
-      {rows.map((r) => (
-        <div key={r.assetId} style={{ display: "flex", flexDirection: "column", gap: 6, padding: "8px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <Text font="monospace" weight="semibold">
-                {r.assetId}
-              </Text>
-              <Text size={200} style={{ display: "block", color: tokens.colorNeutralForeground3 }}>
-                {r.kitrole}
-                {r.orientation ? ` · ${r.orientation}` : ""}
-              </Text>
-            </div>
-            <Switch checked={r.included} onChange={(_, d) => updateRow(r.assetId, { included: d.checked })} label={r.included ? t("recover.disposition.recovered") : "—"} />
-          </div>
+      <section>
+        <SectionLabel count={rows.length}>{t("site.detail.components")}</SectionLabel>
+        <div className="ams-list">
+          {rows.map((r) => (
+            <div key={r.assetId} className="ams-cart" style={{ flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <div style={{ minWidth: 0 }}>
+                  <span className="t-id">{r.assetId}</span>
+                  <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+                    {r.kitrole}
+                    {r.orientation ? ` · ${r.orientation}` : ""}
+                  </div>
+                </div>
+                <label className="ams-check" style={{ minHeight: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={r.included}
+                    onChange={(e) => updateRow(r.assetId, { included: e.target.checked })}
+                  />
+                  {r.included ? t("recover.disposition.recovered") : "—"}
+                </label>
+              </div>
 
-          {r.included && (
-            <div style={{ display: "flex", gap: 8 }}>
-              <Field label={t("recover.disposition")}>
-                <Select style={{ minWidth: 0, width: "100%" }} value={r.disposition} onChange={(_, d) => updateRow(r.assetId, { disposition: d.value as Row["disposition"] })}>
-                  <option value="Recovered">{t("recover.disposition.recovered")}</option>
-                  <option value="Missing">{t("recover.disposition.missing")}</option>
-                </Select>
-              </Field>
-              {r.disposition === "Recovered" && (
-                <Field label={t("recover.condition")}>
-                  <Select style={{ minWidth: 0, width: "100%" }} value={r.condition} onChange={(_, d) => updateRow(r.assetId, { condition: d.value as Condition })}>
-                    <option value="Good">{t("return.condition.good")}</option>
-                    <option value="Damaged">{t("return.condition.damaged")}</option>
-                    <option value="NeedsService">{t("return.condition.needsService")}</option>
-                  </Select>
-                </Field>
+              {r.included && (
+                <div className="ams-field-row">
+                  <label className="ams-field">
+                    {t("recover.disposition")}
+                    <select
+                      value={r.disposition}
+                      onChange={(e) => updateRow(r.assetId, { disposition: e.target.value as Row["disposition"] })}
+                    >
+                      <option value="Recovered">{t("recover.disposition.recovered")}</option>
+                      <option value="Missing">{t("recover.disposition.missing")}</option>
+                    </select>
+                  </label>
+                  {r.disposition === "Recovered" && (
+                    <label className="ams-field">
+                      {t("recover.condition")}
+                      <select
+                        value={r.condition}
+                        onChange={(e) => updateRow(r.assetId, { condition: e.target.value as Condition })}
+                      >
+                        <option value="Good">{t("return.condition.good")}</option>
+                        <option value="Damaged">{t("return.condition.damaged")}</option>
+                        <option value="NeedsService">{t("return.condition.needsService")}</option>
+                      </select>
+                    </label>
+                  )}
+                </div>
+              )}
+
+              {!r.included && needsLeaveBehindReasons && (
+                <label className="ams-field">
+                  {t("recover.leaveBehindReason")}
+                  <input value={r.leaveBehindReason} onChange={(e) => updateRow(r.assetId, { leaveBehindReason: e.target.value })} />
+                </label>
               )}
             </div>
-          )}
-
-          {!r.included && needsLeaveBehindReasons && (
-            <Field label={t("recover.leaveBehindReason")} required>
-              <Input value={r.leaveBehindReason} onChange={(_, d) => updateRow(r.assetId, { leaveBehindReason: d.value })} />
-            </Field>
-          )}
+          ))}
         </div>
-      ))}
+      </section>
 
-      {needsLeaveBehindReasons && (
-        <MessageBar intent="warning">
-          <MessageBarBody>{t("recover.leaveBehindPrompt")}</MessageBarBody>
-        </MessageBar>
-      )}
+      {needsLeaveBehindReasons && <Banner intent="warn">{t("recover.leaveBehindPrompt")}</Banner>}
 
-      <Field label={t("recover.date")} required>
-        <Input type="date" value={recoveryDate} onChange={(_, d) => setRecoveryDate(d.value)} />
-      </Field>
-      <Field label={t("deploy.notes")}>
-        <Input value={notes} onChange={(_, d) => setNotes(d.value)} />
-      </Field>
+      <label className="ams-field">
+        {t("recover.date")}
+        <input type="date" value={recoveryDate} onChange={(e) => setRecoveryDate(e.target.value)} />
+      </label>
+      <label className="ams-field">
+        {t("deploy.notes")}
+        <input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </label>
 
-      {error && (
-        <MessageBar intent="error">
-          <MessageBarBody>{error}</MessageBarBody>
-        </MessageBar>
-      )}
+      {error && <Banner intent="err">{error}</Banner>}
 
-      <Button appearance="primary" size="large" disabled={submitting} onClick={submit}>
+      <button type="button" className="ams-btn ams-btn-primary ams-btn-block" disabled={submitting} onClick={submit}>
         {submitting ? t("cart.submitting") : t("cart.submit")}
-      </Button>
-    </div>
+      </button>
+    </Page>
   );
 }

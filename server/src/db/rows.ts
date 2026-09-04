@@ -18,13 +18,14 @@ import type {
   TransactionLine,
 } from "../../../app/src/api/types";
 import type { AssetStatus } from "../../../app/src/domain/stateMachine";
+import { axesFromStatus, type Disposition, type Serviceability } from "../../../app/src/domain/stateAxes";
 
 // ---------------------------------------------------------------- asset
 
 export const ASSET_COLUMNS = [
   "id", "assetid", "migrationsource", "manufacturer", "model", "equipmenttype", "serialnumber", "homeoffice",
-  "lifecycle", "status", "currentlocation", "custodian", "currentproject", "parentasset", "lastcaldate",
-  "nextcaldue", "retirementreason", "notes", "carrier", "identifiervalue", "phonenumber", "staticip",
+  "lifecycle", "disposition", "serviceability", "currentlocation", "custodian", "currentproject", "parentasset",
+  "lastcaldate", "nextcaldue", "retirementreason", "notes", "carrier", "identifiervalue", "phonenumber", "staticip",
 ] as const;
 
 export interface AssetRow {
@@ -37,6 +38,8 @@ export interface AssetRow {
   serialnumber: string | null;
   homeoffice: string | null;
   lifecycle: "Active" | "Retired";
+  disposition: Disposition;
+  serviceability: Serviceability;
   status: AssetStatus;
   currentlocation: string | null;
   custodian: string | null;
@@ -79,9 +82,11 @@ export function assetFromRow(r: AssetRow): Asset {
 }
 
 export function assetToValues(a: Asset): unknown[] {
+  const axes = axesFromStatus(a.status, a.lifecycle);
   return [
     a.id, a.assetid, a.migrationsource ?? null, a.equipmentmodel.manufacturer, a.equipmentmodel.model,
-    a.equipmentmodel.equipmenttype, a.serialnumber, a.homeoffice, a.lifecycle, a.status, a.currentlocation,
+    a.equipmentmodel.equipmenttype, a.serialnumber, a.homeoffice, axes.lifecycle, axes.disposition,
+    axes.serviceability, a.currentlocation,
     a.custodian, a.currentproject, a.parentasset, a.lastcaldate, a.nextcaldue, a.retirementreason, a.notes,
     a.carrier, a.identifiervalue, a.phonenumber, a.staticip,
   ];
@@ -116,7 +121,11 @@ export function headerToValues(h: TransactionHeader, clientSubmissionId: string 
 }
 
 export const LINE_COLUMNS = [
-  "id", "transaction_id", "asset", "statusbefore", "statusafter", "kitrole", "orientation", "powersource",
+  "id", "transaction_id", "asset",
+  "lifecycle_before", "lifecycle_after",
+  "disposition_before", "disposition_after",
+  "serviceability_before", "serviceability_after",
+  "kitrole", "orientation", "powersource",
   "condition", "processed", "notes", "line_number",
 ] as const;
 
@@ -143,9 +152,61 @@ export function lineFromRow(r: LineRow): TransactionLine {
   };
 }
 
+export const IDENTIFIER_COLUMNS = [
+  "id", "asset_uuid", "identifier_type", "identifier_value", "normalized_value", "is_current", "is_sensitive", "source",
+] as const;
+
+/** Seed / register rows. TMP-* assets are TemporaryTag only — completing them adds CanonicalAssetId. */
+export function identifierValuesForAsset(a: Pick<Asset, "id" | "assetid" | "serialnumber" | "identifiervalue">): unknown[][] {
+  const rows: unknown[][] = [];
+  const tag = a.assetid.trim();
+  const isTmp = /^TMP-[^-]+$/.test(tag);
+  rows.push([
+    `id-tag-${a.id}`,
+    a.id,
+    isTmp ? "TemporaryTag" : "CanonicalAssetId",
+    a.assetid,
+    tag.toLowerCase(),
+    true,
+    false,
+    "seed",
+  ]);
+  if (a.serialnumber?.trim()) {
+    rows.push([
+      `id-serial-${a.id}`,
+      a.id,
+      "Serial",
+      a.serialnumber,
+      a.serialnumber.trim().toLowerCase(),
+      true,
+      false,
+      "seed",
+    ]);
+  }
+  if (a.identifiervalue?.trim()) {
+    rows.push([
+      `id-iccid-${a.id}`,
+      a.id,
+      "ICCID",
+      a.identifiervalue,
+      a.identifiervalue.trim().toLowerCase(),
+      true,
+      true,
+      "seed",
+    ]);
+  }
+  return rows;
+}
+
 export function lineToValues(l: TransactionLine, lineNumber: number): unknown[] {
+  const before = axesFromStatus(l.statusbefore);
+  const after = axesFromStatus(l.statusafter);
   return [
-    l.id, l.transaction, l.asset, l.statusbefore, l.statusafter, l.kitrole, l.orientation, l.powersource,
+    l.id, l.transaction, l.asset,
+    before.lifecycle, after.lifecycle,
+    before.disposition, after.disposition,
+    before.serviceability, after.serviceability,
+    l.kitrole, l.orientation, l.powersource,
     l.condition, l.processed, l.notes, lineNumber,
   ];
 }
@@ -247,14 +308,15 @@ export const MODEL_COLUMNS = [
   "manufacturer", "model", "equipmenttype", "assetgroup", "idprefix", "isserialised", "identifiertype",
   "defaultcalintervalmonths", "name",
 ] as const;
-export type ModelRow = EquipmentModel & { name: string | null };
+export type ModelRow = EquipmentModel & { name: string | null; isactive?: boolean };
 /** The staged catalogue carries a display `name` beyond the EquipmentModel type; passed through
  * exactly as the mock does (it returns the JSON rows verbatim). */
 export function modelFromRow(r: ModelRow): EquipmentModel & { name?: string } {
   return {
     manufacturer: r.manufacturer, model: r.model, equipmenttype: r.equipmenttype, assetgroup: r.assetgroup,
     idprefix: r.idprefix, isserialised: r.isserialised, identifiertype: r.identifiertype,
-    defaultcalintervalmonths: r.defaultcalintervalmonths, ...(r.name ? { name: r.name } : {}),
+    defaultcalintervalmonths: r.defaultcalintervalmonths, isactive: r.isactive !== false,
+    ...(r.name ? { name: r.name } : {}),
   };
 }
 export function modelToValues(m: EquipmentModel & { name?: string }): unknown[] {

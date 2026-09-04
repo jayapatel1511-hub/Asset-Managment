@@ -1,5 +1,3 @@
-import { Button, Field, Input, Select, Text } from "@fluentui/react-components";
-import { LocationRegular } from "@fluentui/react-icons";
 import type { Location, LocationType, PowerSource } from "../../api/types";
 import { t } from "../../i18n";
 
@@ -79,70 +77,75 @@ export function SiteFields({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <Field label={t("deploy.site")} required>
-        <Select style={{ minWidth: 0, width: "100%" }} value={isNewSite ? NEW_SITE_VALUE : value.site} onChange={(_, d) => pickSite(d.value)}>
+      <label className="ams-field">
+        {t("deploy.site")}
+        <select value={isNewSite ? NEW_SITE_VALUE : value.site} onChange={(e) => pickSite(e.target.value)}>
           <option value={NEW_SITE_VALUE}>{t("deploy.siteNew")}</option>
           {existingSites.map((s) => (
             <option key={s.id} value={s.name}>
               {s.name}
             </option>
           ))}
-        </Select>
-      </Field>
+        </select>
+      </label>
       {isNewSite && (
-        <Field label={t("deploy.siteNew")} required>
-          <Input value={value.site} onChange={(_, d) => set("site", d.value)} />
-        </Field>
+        <label className="ams-field">
+          {t("deploy.siteNew")}
+          <input value={value.site} onChange={(e) => set("site", e.target.value)} />
+        </label>
       )}
 
-      <Field label={t("deploy.locationType")} required>
-        <Select style={{ minWidth: 0, width: "100%" }} value={value.locationtype} onChange={(_, d) => set("locationtype", d.value as LocationType)}>
+      <label className="ams-field">
+        {t("deploy.locationType")}
+        <select value={value.locationtype} onChange={(e) => set("locationtype", e.target.value as LocationType)}>
           {LOCATION_TYPES.map((lt) => (
             <option key={lt} value={lt}>
               {lt}
             </option>
           ))}
-        </Select>
-      </Field>
+        </select>
+      </label>
 
-      <Field label={t("deploy.siteName")} required>
-        <Input value={value.sitename} onChange={(_, d) => set("sitename", d.value)} />
-      </Field>
+      <label className="ams-field">
+        {t("deploy.siteName")}
+        <input value={value.sitename} onChange={(e) => set("sitename", e.target.value)} />
+      </label>
 
-      <Field label={t("deploy.position")}>
-        <Input value={value.position} onChange={(_, d) => set("position", d.value)} placeholder="POR-403, Pier 3, …" />
-      </Field>
+      <label className="ams-field">
+        {t("deploy.position")}
+        <input value={value.position} onChange={(e) => set("position", e.target.value)} placeholder="POR-403, Pier 3, …" />
+      </label>
 
-      {/* minWidth: 0 on each half — a flex item defaults to min-width: auto, so a Fluent Input
-          cannot shrink below its own min-content width and the pair overflowed a 390px
-          viewport (measured: right edge 402px). */}
-      <div style={{ display: "flex", gap: 8 }}>
-        <Field label={t("deploy.latitude")} style={{ flex: 1, minWidth: 0 }}>
-          <Input
+      <div className="ams-field-row">
+        <label className="ams-field">
+          {t("deploy.latitude")}
+          <input
             value={value.latitude}
-            onChange={(_, d) => onChange({ ...value, latitude: d.value, coordinatesource: "Manual" })}
+            onChange={(e) => onChange({ ...value, latitude: e.target.value, coordinatesource: "Manual" })}
             type="number"
           />
-        </Field>
-        <Field label={t("deploy.longitude")} style={{ flex: 1, minWidth: 0 }}>
-          <Input
+        </label>
+        <label className="ams-field">
+          {t("deploy.longitude")}
+          <input
             value={value.longitude}
-            onChange={(_, d) => onChange({ ...value, longitude: d.value, coordinatesource: "Manual" })}
+            onChange={(e) => onChange({ ...value, longitude: e.target.value, coordinatesource: "Manual" })}
             type="number"
           />
-        </Field>
+        </label>
       </div>
-      <Button appearance="subtle" icon={<LocationRegular />} onClick={useDeviceLocation}>
+      <button type="button" className="ams-btn" onClick={useDeviceLocation}>
         {t("deploy.useDevice")}
-      </Button>
+      </button>
       {value.coordinatesource && (
-        <Text size={200}>
+        <p className="muted" style={{ margin: 0, fontSize: 12 }}>
           {value.coordinatesource === "Device" ? t("deploy.coordinateSource.device") : t("deploy.coordinateSource.manual")}
-        </Text>
+        </p>
       )}
 
-      <Field label={t("deploy.powerSource")} required>
-        <Select style={{ minWidth: 0, width: "100%" }} value={value.powersource} onChange={(_, d) => set("powersource", d.value as PowerSource)}>
+      <label className="ams-field">
+        {t("deploy.powerSource")}
+        <select value={value.powersource} onChange={(e) => set("powersource", e.target.value as PowerSource)}>
           <option value="" disabled>
             —
           </option>
@@ -151,8 +154,8 @@ export function SiteFields({
               {ps}
             </option>
           ))}
-        </Select>
-      </Field>
+        </select>
+      </label>
     </div>
   );
 }

@@ -38,6 +38,20 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
+describe("SC-015 Report Reader is a selectable mock identity", () => {
+  it("exposes a ReportReader demo user the role switcher can select", async () => {
+    setMockCurrentUserKey("reader");
+    const { backend } = makeBackend();
+    const user = await backend.getCurrentUser();
+    expect(user.roles).toEqual(["ReportReader"]);
+    expect(user.upn).toBe("reader@englobecorp.com");
+    const sim = await backend.getAsset("GEO-UM-16984");
+    expect(sim?.identifiervalue).toBeNull();
+    expect(sim?.phonenumber).toBeNull();
+    expect(sim?.staticip).toBeNull();
+  });
+});
+
 describe("MockAmsBackend — checkout (feature 003 US1)", () => {
   it("checks out an Available asset, setting custodian and project, and records one history line", async () => {
     const { backend } = makeBackend();

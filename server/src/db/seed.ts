@@ -38,8 +38,10 @@ import type {
 } from "../../../app/src/api/types";
 import { readMeta, resolveEnvironment, writeMeta } from "./database";
 import { seedDevIdentities } from "./identity";
+import { refreshCatalogueReferences } from "../services/referenceService";
 import {
   ASSET_COLUMNS, assetToValues,
+  IDENTIFIER_COLUMNS, identifierValuesForAsset,
   CALIBRATION_COLUMNS, calibrationToValues,
   COMPONENT_COLUMNS, componentToValues,
   HEADER_COLUMNS, headerToValues,
@@ -148,7 +150,8 @@ export function datasetKeyFor(info: DatasetInfo, dir: string): string {
 const TABLES = [
   "asset_transaction_line", "asset_transaction", "asset_relationship", "calibration_record",
   "installation_component", "installation", "office_admin_assignment", "command_idempotency",
-  "asset", "location", "equipment_model", "project", "id_sequence",
+  "asset_identifier", "asset", "location", "equipment_model", "project", "manufacturer", "equipment_category", "id_sequence",
+  "data_quality_issue", "data_job",
 ];
 
 export async function seedIfNeeded(db: Database, datasetDir: string, opts: { force?: boolean } = {}): Promise<SeedResult> {
@@ -207,8 +210,10 @@ export async function seedIfNeeded(db: Database, datasetDir: string, opts: { for
     await tx.exec(`TRUNCATE ${TABLES.join(", ")}`);
     await insertRows(tx, "location", LOCATION_COLUMNS, locations.map(locationToValues));
     await insertRows(tx, "equipment_model", MODEL_COLUMNS, models.map(modelToValues));
+    await refreshCatalogueReferences(tx);
     await insertRows(tx, "project", PROJECT_COLUMNS, projects.map(projectToValues));
     await insertRows(tx, "asset", ASSET_COLUMNS, assets.map(assetToValues));
+    await insertRows(tx, "asset_identifier", IDENTIFIER_COLUMNS, assets.flatMap(identifierValuesForAsset));
     await insertRows(tx, "asset_transaction", HEADER_COLUMNS, transactions.map((h) => headerToValues(h, null, h.transactiondate)));
     await insertRows(tx, "asset_transaction_line", LINE_COLUMNS, lineValues);
     await insertRows(tx, "asset_relationship", RELATIONSHIP_COLUMNS, relationships.map(relationshipToValues));

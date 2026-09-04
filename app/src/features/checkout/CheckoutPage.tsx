@@ -1,21 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  Badge,
-  Button,
-  Field,
-  Input,
-  MessageBar,
-  MessageBarBody,
-  Select,
-  Text,
-  Title2,
-  tokens,
-} from "@fluentui/react-components";
-import { DeleteRegular } from "@fluentui/react-icons";
 import { backend } from "../../api";
 import { getSubmissionQueue } from "../../api/queue";
 import type { Asset, Project } from "../../api/types";
+import { Banner } from "../../components/Banner";
+import { EmptyState } from "../../components/EmptyState";
+import { Page } from "../../components/Page";
+import { SearchField } from "../../components/SearchField";
+import { SectionLabel } from "../../components/SectionLabel";
 import { StatusPill } from "../../components/StatusPill";
 import { t } from "../../i18n";
 
@@ -147,71 +139,77 @@ export function CheckoutPage() {
 
   if (confirmation || queued) {
     return (
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-        <MessageBar intent={queued ? "warning" : "success"}>
-          <MessageBarBody>{queued ? t("offline.submissionQueued") : confirmation}</MessageBarBody>
-        </MessageBar>
-        <Button
-          appearance="primary"
+      <Page>
+        <div className="ams-success">
+          <Banner intent={queued ? "warn" : "ok"}>{queued ? t("offline.submissionQueued") : confirmation}</Banner>
+          {confirmation && <div className="txn">{confirmation}</div>}
+        </div>
+        <button
+          type="button"
+          className="ams-btn ams-btn-primary ams-btn-block"
           onClick={() => {
             setConfirmation(null);
             setQueued(false);
           }}
         >
           {t("common.back")}
-        </Button>
-      </div>
+        </button>
+      </Page>
     );
   }
 
   return (
-    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <Title2>{t("checkout.title")}</Title2>
-
-      <div style={{ display: "flex", gap: 8 }}>
-        <Input
-          style={{ flex: 1 }}
-          placeholder={t("search.placeholder")}
+    <Page>
+      <div className="ams-search-row">
+        <SearchField
           value={addQuery}
-          onChange={(_, d) => setAddQuery(d.value)}
-          onKeyDown={(e) => e.key === "Enter" && addQuery.trim() && addAsset(addQuery.trim())}
+          placeholder={t("search.placeholder")}
+          onChange={setAddQuery}
+          onSubmit={() => addQuery.trim() && addAsset(addQuery.trim())}
         />
-        <Button appearance="primary" onClick={() => addQuery.trim() && addAsset(addQuery.trim())}>
-          Add
-        </Button>
+        <button type="button" className="ams-btn ams-btn-primary" onClick={() => addQuery.trim() && addAsset(addQuery.trim())}>
+          {t("cart.add")}
+        </button>
       </div>
-      {addError && (
-        <MessageBar intent="error">
-          <MessageBarBody>{addError}</MessageBarBody>
-        </MessageBar>
-      )}
+      {addError && <Banner intent="err">{addError}</Banner>}
 
-      <div>
-        <Text weight="semibold">{t("cart.title")}</Text>
-        {cart.length === 0 && <Text style={{ display: "block", color: tokens.colorNeutralForeground3 }}>{t("cart.empty")}</Text>}
-        {cart.map((item) => (
-          <div
-            key={item.asset.assetid}
-            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}
-          >
-            <div>
-              <Text font="monospace" weight="semibold">
-                {item.asset.assetid}
-              </Text>
-              {primaryAssetId === item.asset.assetid && <Badge style={{ marginLeft: 6 }}>{t("cart.primary")}</Badge>}
-              <br />
-              <Text size={200}>{item.asset.equipmentmodel.manufacturer} {item.asset.equipmentmodel.model}</Text>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <StatusPill status={item.asset.status} />
-              <Button size="small" appearance="subtle" icon={<DeleteRegular />} onClick={() => removeAsset(item.asset.assetid)} aria-label={t("cart.remove")} />
-            </div>
+      <section>
+        <SectionLabel count={cart.length}>{t("cart.title")}</SectionLabel>
+        {cart.length === 0 ? (
+          <EmptyState icon="box">{t("cart.empty")}</EmptyState>
+        ) : (
+          <div className="ams-list">
+            {cart.map((item) => (
+              <div key={item.asset.assetid} className="ams-cart">
+                <div className="meta">
+                  <span className="t-id">{item.asset.assetid}</span>
+                  {primaryAssetId === item.asset.assetid && (
+                    <span className="ams-pill ams-pill-ok" style={{ marginLeft: 6 }}>
+                      {t("cart.primary")}
+                    </span>
+                  )}
+                  <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+                    {item.asset.equipmentmodel.manufacturer} {item.asset.equipmentmodel.model}
+                  </div>
+                </div>
+                <StatusPill status={item.asset.status} />
+                <button
+                  type="button"
+                  className="ams-btn ams-btn-sm ams-btn-ghost"
+                  onClick={() => removeAsset(item.asset.assetid)}
+                  aria-label={t("cart.remove")}
+                >
+                  {t("cart.remove")}
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
+      </section>
 
-      <Field label={t("checkout.project")} required>
-        <Select style={{ minWidth: 0, width: "100%" }} value={project} onChange={(_, d) => setProject(d.value)}>
+      <div className="ams-field">
+        <label htmlFor="checkout-project">{t("checkout.project")}</label>
+        <select id="checkout-project" value={project} required onChange={(e) => setProject(e.target.value)}>
           <option value="" disabled>
             —
           </option>
@@ -220,26 +218,29 @@ export function CheckoutPage() {
               {p.projectnumber} — {p.name}
             </option>
           ))}
-        </Select>
-      </Field>
+        </select>
+      </div>
 
-      <Field label={t("checkout.expectedReturn")}>
-        <Input type="date" value={expectedReturn} onChange={(_, d) => setExpectedReturn(d.value)} />
-      </Field>
+      <div className="ams-field">
+        <label htmlFor="checkout-return">{t("checkout.expectedReturn")}</label>
+        <input id="checkout-return" type="date" value={expectedReturn} onChange={(e) => setExpectedReturn(e.target.value)} />
+      </div>
 
-      <Field label={t("checkout.notes")}>
-        <Input value={notes} onChange={(_, d) => setNotes(d.value)} />
-      </Field>
+      <div className="ams-field">
+        <label htmlFor="checkout-notes">{t("checkout.notes")}</label>
+        <textarea id="checkout-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+      </div>
 
-      {submitError && (
-        <MessageBar intent="error">
-          <MessageBarBody>{submitError}</MessageBarBody>
-        </MessageBar>
-      )}
+      {submitError && <Banner intent="err">{submitError}</Banner>}
 
-      <Button appearance="primary" size="large" disabled={cart.length === 0 || submitting} onClick={submit}>
+      <button
+        type="button"
+        className="ams-btn ams-btn-primary ams-btn-block"
+        disabled={cart.length === 0 || submitting}
+        onClick={submit}
+      >
         {submitting ? t("cart.submitting") : t("cart.submit")}
-      </Button>
-    </div>
+      </button>
+    </Page>
   );
 }

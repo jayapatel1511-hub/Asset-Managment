@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button, Field, MessageBar, MessageBarBody, Select, Text, Title2, tokens } from "@fluentui/react-components";
-import { DeleteRegular } from "@fluentui/react-icons";
 import { backend } from "../../api";
 import { getSubmissionQueue } from "../../api/queue";
 import type { Asset, Condition } from "../../api/types";
+import { Banner } from "../../components/Banner";
+import { Chip } from "../../components/Chip";
+import { EmptyState } from "../../components/EmptyState";
+import { Page } from "../../components/Page";
+import { SectionLabel } from "../../components/SectionLabel";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
-import { t } from "../../i18n";
+import { t, type StringKey } from "../../i18n";
 
 interface Line {
   asset: Asset;
   condition: Condition;
 }
+
+const CONDITIONS: Array<{ value: Condition; label: StringKey }> = [
+  { value: "Good", label: "return.condition.good" },
+  { value: "Damaged", label: "return.condition.damaged" },
+  { value: "NeedsService", label: "return.condition.needsService" },
+];
 
 export function ReturnPage() {
   const [params] = useSearchParams();
@@ -72,67 +81,77 @@ export function ReturnPage() {
 
   if (confirmation || queued) {
     return (
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-        <MessageBar intent={queued ? "warning" : "success"}>
-          <MessageBarBody>{queued ? t("offline.submissionQueued") : confirmation}</MessageBarBody>
-        </MessageBar>
-        <Button
-          appearance="primary"
+      <Page>
+        <div className="ams-success">
+          <Banner intent={queued ? "warn" : "ok"}>{queued ? t("offline.submissionQueued") : confirmation}</Banner>
+        </div>
+        <button
+          type="button"
+          className="ams-btn ams-btn-primary ams-btn-block"
           onClick={() => {
             setConfirmation(null);
             setQueued(false);
           }}
         >
           {t("common.back")}
-        </Button>
-      </div>
+        </button>
+      </Page>
     );
   }
 
   return (
-    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <Title2>{t("return.title")}</Title2>
-      <Text size={200}>{t("return.prefilledFromCustody")}</Text>
-      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+    <Page>
+      <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+        {t("return.prefilledFromCustody")}
+      </p>
+      <p className="muted" style={{ margin: 0, fontSize: 13 }}>
         {t("return.location")}: {user?.homeoffice ?? "—"}
-      </Text>
+      </p>
 
-      {loading && <Text>{t("common.loading")}</Text>}
-      {!loading && lines.length === 0 && <Text>{t("cart.empty")}</Text>}
+      <SectionLabel count={lines.length}>{t("cart.title")}</SectionLabel>
+      {loading && <p className="muted">{t("common.loading")}</p>}
+      {!loading && lines.length === 0 && <EmptyState icon="box">{t("cart.empty")}</EmptyState>}
 
-      {lines.map((line) => (
-        <div key={line.asset.assetid} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>
-          <div>
-            <Text font="monospace" weight="semibold">
-              {line.asset.assetid}
-            </Text>
-            <br />
-            <Text size={200}>
-              {line.asset.equipmentmodel.manufacturer} {line.asset.equipmentmodel.model}
-            </Text>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Field label={t("return.condition")}>
-              <Select style={{ minWidth: 0, width: "100%" }} value={line.condition} onChange={(_, d) => setCondition(line.asset.assetid, d.value as Condition)}>
-                <option value="Good">{t("return.condition.good")}</option>
-                <option value="Damaged">{t("return.condition.damaged")}</option>
-                <option value="NeedsService">{t("return.condition.needsService")}</option>
-              </Select>
-            </Field>
-            <Button size="small" appearance="subtle" icon={<DeleteRegular />} onClick={() => remove(line.asset.assetid)} aria-label={t("cart.remove")} />
-          </div>
+      {lines.length > 0 && (
+        <div className="ams-list">
+          {lines.map((line) => (
+            <div key={line.asset.assetid} className="ams-cart">
+              <div className="meta">
+                <span className="t-id">{line.asset.assetid}</span>
+                <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+                  {line.asset.equipmentmodel.manufacturer} {line.asset.equipmentmodel.model}
+                </div>
+                <div className="cond" role="group" aria-label={t("return.condition")}>
+                  {CONDITIONS.map((c) => (
+                    <Chip key={c.value} on={line.condition === c.value} onClick={() => setCondition(line.asset.assetid, c.value)}>
+                      {t(c.label)}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="ams-btn ams-btn-sm ams-btn-ghost"
+                onClick={() => remove(line.asset.assetid)}
+                aria-label={t("cart.remove")}
+              >
+                {t("cart.remove")}
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
-
-      {error && (
-        <MessageBar intent="error">
-          <MessageBarBody>{error}</MessageBarBody>
-        </MessageBar>
       )}
 
-      <Button appearance="primary" size="large" disabled={lines.length === 0 || submitting} onClick={submit}>
+      {error && <Banner intent="err">{error}</Banner>}
+
+      <button
+        type="button"
+        className="ams-btn ams-btn-primary ams-btn-block"
+        disabled={lines.length === 0 || submitting}
+        onClick={submit}
+      >
         {submitting ? t("cart.submitting") : t("cart.submit")}
-      </Button>
-    </div>
+      </button>
+    </Page>
   );
 }

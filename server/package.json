@@ -14,6 +14,7 @@
     "db:reset": "docker compose -f ../docker-compose.yml down -v && docker compose -f ../docker-compose.yml up -d --wait",
     "db:migrate": "tsx src/db/migrateCli.ts",
     "db:check": "tsx src/db/migrateCli.ts --check",
+    "data:dictionary:check": "tsx src/modules/data-management/dictionaryCheck.ts",
     "test": "vitest run",
     "test:postgres": "AMS_DB=postgres vitest run",
     "test:pglite": "AMS_DB=pglite vitest run",

@@ -61,7 +61,15 @@ const IDENTITY_COOKIE_MAX_AGE_SEC = 365 * 24 * 60 * 60;
 
 /** Routes that an unauthenticated or disabled caller must still be able to reach, or sign-in is
  * a locked door with the key inside. */
-const ALWAYS_OPEN = new Set(["/api/health", "/api/auth/sign-in", "/api/auth/callback", "/api/auth/session", "/api/auth/sign-out"]);
+const ALWAYS_OPEN = new Set([
+  "/api/health",
+  "/api/health/ready",
+  "/api/metrics",
+  "/api/auth/sign-in",
+  "/api/auth/callback",
+  "/api/auth/session",
+  "/api/auth/sign-out",
+]);
 
 function setCookies(reply: FastifyReply, cookies: string[]): void {
   const existing = reply.getHeader("set-cookie");
@@ -133,6 +141,7 @@ export function registerSessionRoutes(app: FastifyInstance, ctx: AppContext): vo
       return reply.code(401).send({
         error: "unauthenticated",
         message: "This endpoint requires an authenticated caller. Sign in at /api/auth/sign-in.",
+        correlationId: req.id,
       });
     }
 
@@ -143,6 +152,7 @@ export function registerSessionRoutes(app: FastifyInstance, ctx: AppContext): vo
       return reply.code(403).send({
         error: "account_disabled",
         message: "This account is deactivated in the asset management system. Contact the system owner.",
+        correlationId: req.id,
       });
     }
 
@@ -156,6 +166,7 @@ export function registerSessionRoutes(app: FastifyInstance, ctx: AppContext): vo
       return reply.code(403).send({
         error: "csrf_required",
         message: `A state-changing request authenticated by session cookie must echo the CSRF token in ${settings.csrfHeaderName}. Read it from GET /api/auth/session.`,
+        correlationId: req.id,
       });
     }
     return;

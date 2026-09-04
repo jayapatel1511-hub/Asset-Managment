@@ -124,7 +124,7 @@ The freeze that governed the parallel build is `specs/_planning/BUILD-FREEZE.md`
 | **A-R6** | R6 — Azure subscription, Canadian region, Entra app registration owner | Not required locally. Identity is an `IdentityProvider` interface with a `dev` implementation (the existing header shortcut) and a written-out OIDC implementation selected by `AMS_AUTH=oidc` | `server/src/auth/providers/` | G0.2 is an Englobe IT dependency, not Jay's alone, and `REMAINING-WORK.md` already states R6 "does not block local development". No Azure resource was created and no cost was incurred |
 | **A-DOC** | WS-W7 — private Blob Storage | Documents go behind a `DocumentStore` interface. The local implementation writes to `server/data/documents/` (gitignored) under the same private-by-default, hash-verified, metadata-in-PostgreSQL contract. Azure Blob is a second implementation of the same interface | `server/src/documents/` | The *contract* — authorization on every request, integrity hash, no broad storage credential in the browser (rule 11) — is what WS-W7 actually tests. The storage backend is the swappable part |
 | **A-PG** | PostgreSQL major version | 17 (already recorded above as D-2026-09-03-PG) | `docker-compose.yml` | Unchanged from the earlier entry |
-| **A-STATE** | R1's approved four-axis state vs the POC's single `status` column | `asset.status` **stays** as the operational value the screens use; the four approved axes are added as derived columns plus a view, not a rewrite | `db/migrations/` | `REMAINING-WORK.md` explicitly permits the single status "until HTTP cutover", and the earlier decision above records why a rewrite was out of scope. Deriving rather than replacing satisfies rule 9's separation while keeping 416 green tests green. **This is the row most likely to need revisiting** — a derived axis cannot carry a fact the single status does not already encode |
+| **A-STATE** | R1's approved four-axis state vs the POC's single `status` column | **SUPERSEDED 2026-09-03** by **D-STATE-DC22**. Original assumption: `asset.status` stayed the operational write; axes were generated from it (`0008`). Jay ordered the approved contract implemented (`docs/21` DC-22 / `transition-table.md` §8.3). | `db/migrations/0016_dc22_stored_axes.sql` | Kept as the historical freeze-era row. A derived axis cannot carry a fact the pill does not encode — that is why the assumption was reversed. |
 | **A-TENANT** | Offline cache partition (tenant + environment + user object ID) | Locally: tenant `englobe.local`, environment from the Vite mode, object ID from `/api/me` | `app/src/offline/partition.ts` | The partition *rule* is the non-negotiable; the values are environment configuration |
 
 ### What was deliberately **not** assumed
@@ -132,8 +132,9 @@ The freeze that governed the parallel build is `specs/_planning/BUILD-FREEZE.md`
 - No production Azure resource, no cloud spend, no shared-environment data change — all four are on
   CLAUDE.md's *Ask before doing* list and none was touched.
 - The canonical state model, transaction semantics, identity model, merge semantics and retention
-  policy were **not** changed. A-STATE adds a derived projection over the existing model; it does not
-  redefine it.
+  policy were **not** changed *during the freeze*. **D-STATE-DC22** (same day, Jay) later stored the
+  three approved axes as truth and made `status` the generated projection — that is the approved
+  model, not a silent rewrite.
 - No high-impact data operation was approved or self-approved on Jay's behalf.
 
 ---
@@ -147,8 +148,20 @@ because each is a fork the specification left open, not a detail.
 |---|---|---|---|
 | **D-MIG-1** | Migrations are **forward-only**. There is no `down`. | WS-W2's deliverable is "migration up/down **or** forward-recovery policy" — the *or* is real, and a `down` script is a liability rather than an asset here: it is written when the schema is fresh in mind, run months later against data the author never saw, and the two protections that matter most (append-only history, rule 5; asset-ID immutability, rule 6) exist precisely to make destructive reversal impossible. Recovery is a new numbered migration plus PostgreSQL point-in-time restore, which WS-W12 exercises anyway. | `db/migrations/` policy + `server/src/db/migrate.ts` |
 | **D-MIG-2** | `SET LOCAL ams.allow_history_write` is the **single sanctioned escape hatch** from append-only history, and only `server/src/db/seed.ts` and migrations may use it. | The seed loader must be able to replace a whole dataset, so the choice was between weakening rule 5 for everyone (what `TRUNCATE` silently did before) and opening one named, greppable, transaction-scoped door. `SET LOCAL` cannot leak to the next statement on a pooled connection, and an API route reaching for it has to *say so in SQL*, which makes the bug visible in review. **An application command must never set it** — rule 5's correction path is a compensating event. | `db/migrations/0003_history_append_only.sql` |
-| **D-MIG-3** | The four approved state axes are **generated columns plus a view**, not a schema rewrite. | Assumption A-STATE above, now implemented. `docs/19` § 8.3 is right that a *transaction line's* two status columns cannot be split into six after the fact — and nothing touches `asset_transaction_line`. For an *asset's current* state the mapping is total, so the axes can be true today without invalidating a row or a test. Each `CASE` has no `ELSE`: an unmapped status is refused, not bucketed. | `db/migrations/0008_state_axes.sql` |
+| **D-MIG-3** | The four approved state axes are **generated columns plus a view**, not a schema rewrite. | **SUPERSEDED 2026-09-03** by **D-STATE-DC22**. `0008` implemented this. `0016` inverts it: axes are stored, `status` / `statusbefore` / `statusafter` are generated. Line backfill is honest and lossy — see D-STATE-DC22. | `db/migrations/0008_state_axes.sql` (historical), `0016_dc22_stored_axes.sql` |
 | **D-MIG-4** | The production marker is `AMS_ENV`, falling back to `NODE_ENV`. Rule 12's refusal is enforced in the **database**, on `meta`, in both directions — loading synthetic data into a production environment, and promoting an environment holding synthetic data to production. | Rule 12 says "environment and seed markers are verified **before any load**". Enforcing it in application code makes that a promise; enforcing it on `meta` makes it a fact, and writing the markers first makes "before any load" literal — a refused load leaves zero rows, verified end to end. | `db/migrations/0007_environment_guard.sql`, `server/.env.example` |
+| **D-STATE-DC22** | Three state axes are stored truth; compatibility `status` is generated. `asset_transaction_line` has six axis columns from its first row. Allow/deny is the generated axis machine (`data/reference/state_machine.json` from `transition-table.md` §3); the seven-value pill matrix is a compatibility projection. | Jay, 2026-09-03: implement the approved contract (`specs/010…/contracts/transition-table.md` §8.3, `docs/21` DC-22). Reverses A-STATE / D-MIG-3. Screens may still *display* the pill; they must not write it. | `db/migrations/0016_dc22_stored_axes.sql`, `app/src/domain/stateAxes.ts`, `app/scripts/generate-state-machine.mjs` |
+
+**D-STATE-DC22 backfill — irreversible holes.** Two-column history cannot reconstruct every axis. `0016` walks each asset's lines in date/line order, replays transaction-type Sets when the resulting pill matches the recorded `statusafter`, otherwise applies the conservative `ams_axes_from_status` map. Remaining gaps:
+
+- **NeedsRepair** with no recoverable prior disposition → assumed `AtOffice`.
+- **InCalibration** with no prior ReportFault → assumed `Serviceable`.
+- **Missing** → prior serviceability assumed `Serviceable` unless the chain recovered it.
+- **Retired** with no prior line → `AtOffice` + `OutOfService`.
+- First line of an asset that *starts* as one of those four pills: mechanical map only.
+- **InTransit** never existed in the two-column data; the axis is stored going forward and the compatibility pill collapses to Available.
+
+Those values are not historical facts. They are the only total function of the pills that were stored. A later correction is a compensating event (rule 5), not a rewrite of `0016`.
 
 ### Consequence — `server/src/db/schema.sql` no longer exists
 
@@ -302,15 +315,17 @@ generates 164 notifications about records nobody intends to complete.
 
 ---
 
-## UI decisions — 2026-09-03 (G-24, D2)
+## UI decisions — 2026-09-03 (G-24, D2, D3, D4)
 
-Both taken by Jay in session, answering the two questions `docs/20-mockup-review.md` raised as
-blocking. **G-24 was explicitly gating all further screen work**; it is now open.
+These decisions reconcile the accepted Field direction, the working responsive UI and the missing
+Desk/Console design contract. **G-24 was explicitly gating all further screen work**; it is now open.
 
 | # | Decision | What it settles |
 |---|---|---|
-| **G-24 / D1** | **Option A — Fluent v9 + Englobe green wins.** The Console mockups' teal `#0F5F55` / Inter / warm-stone system does **not** become the app's design system | `docs/12-ui-spec.md` § 1's fixed constraint stands unamended. The app keeps stock Fluent v9, Segoe UI, and brand isolated to the four `--brandFg/Bg/Tint/FgOn` variables (G-03). The Console mockups are **layout references, not visual ones** — their structure is adopted, their palette is not. Retheming the two `.dc.html` files is a documentation task, not a prerequisite |
+| **G-24 / D1** | **Option A — Fluent v9 + Englobe green wins.** The Console mockups' teal `#0F5F55` / Inter / warm-stone system does **not** become the app's design system | `docs/12-ui-spec.md` § 1's fixed constraint stands unamended. The app keeps stock Fluent v9, Segoe UI, and brand isolated to the four `--brandFg/Bg/Tint/FgOn` variables (G-03). The Console mockups are **layout references, not visual ones** — their structure is adopted, their palette is not. Retheming the two `.dc.html` files is a documentation task, not a prerequisite. **Widened by D3** (token layer); option A and Englobe green are unchanged |
 | **D2** | **Yes — `Assets Console Mobile.dc.html` is accepted as the new S01 Field home**, replacing the search-first home | `docs/12-ui-spec.md` § 5.1 is superseded: the Field home becomes greeting + custody count, Scan / Check out / Return quick actions, recent activity, and due-soon / overdue counts. Search moves from *being* the home to being reachable from it. Built in Fluent + Englobe green per G-24, not in the mockup's palette |
+| **D3** | **Field IA and token layer catch-up (rule 13).** The working tree's five-item bottom nav, `/more` (S21), and ~40-token style layer are accepted as the specified Field IA — not as a silent deviation | Five items: Home `/`, Assets `/search`, Scan (action), Due soon `/calibration`, More `/more`. Checkout, Return, Sites and Admin are reached from Home quick actions or More, not from the tab bar. Brand remains Englobe green `#14713a` on Fluent v9; isolation is no longer "four CSS variables only" — `app/src/styles/ams.css` and `theme.ts` pin a full neutral and status palette. `docs/mockups/ams-ui/` GOVERN section and the 1440×900 / 232 px desktop rail stay a **proposal**, not a spec amendment (feature 011 is unstarted; `docs/12` does not adopt that shell). See `docs/12-ui-spec.md` § 3.1, § 3.2, § 2.4 |
+| **D4** | **Add the specification-aligned responsive product expansion in `docs/12-ui-spec.md` § 13; no code or mockup is authorized by this decision.** | Jay: “add things that make sense,” after the conformance review. The expansion preserves D3’s Field navigation; defines the three Field / Desk / Console surfaces; closes G-23 with a vehicle icon and plate as secondary identity; adds the ninth category root Vehicles and the already-approved reservation surfaces; requires independent state-axis presentation; and inventories the missing Recover, fault, inventory administration, reporting and feature-011 Data Management screens. It creates no new business authority and does not change the implementation sequence |
 
 **Why A rather than B.** B ("move the phone onto the Console's system") better answers the "plain
 and boring" complaint, and that complaint is real. But it requires formally amending the one

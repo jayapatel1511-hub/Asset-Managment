@@ -11,7 +11,7 @@
  * Every route below names its guard between the path and the handler, so the matrix can be read
  * top to bottom:
  *
- *   `/api/health`                     open — a liveness probe cannot hold a session
+ *   `/health`, `/api/health`          open — see observability/health.ts (liveness / readiness)
  *   `/api/auth/*`                     see routes/session.ts
  *   every other read                  any authenticated, enabled role
  *   `/api/office-admins`              OfficeAdmin or SystemOwner — it is an administrative surface
@@ -35,7 +35,7 @@
  * the query. Same reason the read model gives for its own predicates: one filter that everything
  * passes through cannot drift out of agreement with a second one that some things pass through.
  */
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import type { AssetFilter } from "../../../app/src/api/AmsBackend";
 import type { Asset, CalibrationCounts } from "../../../app/src/api/types";
@@ -111,10 +111,20 @@ function refuseUnscopedAggregate(user: AuthUser, filter: AssetFilter): { error: 
 export function registerReadRoutes(app: FastifyInstance, ctx: AppContext): void {
   const read = ctx.readModel;
 
-  // Open: a container probe has no session, and the answer discloses nothing but liveness and
-  // which dataset is loaded — which the deployment tests already assert is never real data in a
-  // synthetic environment and vice versa.
-  app.get("/api/health", async () => ({ ok: true, dataset: ctx.dataset, now: new Date().toISOString() }));
+  /**
+   * Asset-keyed sub-resources must 404 the same way GET /api/assets/:id does for an office-scoped
+   * reader. History, relationships, calibrations and installations used to answer for any id the
+   * caller guessed, which is the insecure-direct-object-reference the detail route already closes.
+   */
+  async function requireVisibleAsset(req: FastifyRequest, reply: FastifyReply, assetId: string) {
+    const user = authOf(req);
+    const asset = await read.getAsset(assetId, user);
+    if (!asset || scopeAssetRows([asset], user).length === 0) {
+      reply.code(404).send({ error: "not_found", assetId, correlationId: req.id });
+      return null;
+    }
+    return asset;
+  }
 
   // Deliberately the resolved principal and nothing else: `publicUser` in auth/roles.ts drops
   // tenant, session and `via`, which are server-side facts.
@@ -135,27 +145,33 @@ export function registerReadRoutes(app: FastifyInstance, ctx: AppContext): void 
     const asset = await read.getAsset(assetId, user);
     // 404 rather than 403 for a row outside an office-scoped reader's scope: a 403 would confirm
     // the asset exists, which is the one bit the insecure-direct-object-reference attack wants.
-    if (!asset || scopeAssetRows([asset], user).length === 0) return reply.code(404).send({ error: "not_found", assetId });
+    if (!asset || scopeAssetRows([asset], user).length === 0) {
+      return reply.code(404).send({ error: "not_found", assetId, correlationId: req.id });
+    }
     return scopeRestrictedFields(asset, user);
   });
 
-  app.get("/api/assets/:assetId/history", requireAnyRole(), async (req) => {
+  app.get("/api/assets/:assetId/history", requireAnyRole(), async (req, reply) => {
     const { assetId } = req.params as { assetId: string };
+    if (!(await requireVisibleAsset(req, reply, assetId))) return;
     return read.getAssetHistory(assetId);
   });
 
-  app.get("/api/assets/:assetId/relationships", requireAnyRole(), async (req) => {
+  app.get("/api/assets/:assetId/relationships", requireAnyRole(), async (req, reply) => {
     const { assetId } = req.params as { assetId: string };
+    if (!(await requireVisibleAsset(req, reply, assetId))) return;
     return read.getAssetRelationships(assetId);
   });
 
-  app.get("/api/assets/:assetId/calibrations", requireAnyRole(), async (req) => {
+  app.get("/api/assets/:assetId/calibrations", requireAnyRole(), async (req, reply) => {
     const { assetId } = req.params as { assetId: string };
+    if (!(await requireVisibleAsset(req, reply, assetId))) return;
     return read.getCalibrationHistory(assetId);
   });
 
-  app.get("/api/assets/:assetId/installations", requireAnyRole(), async (req) => {
+  app.get("/api/assets/:assetId/installations", requireAnyRole(), async (req, reply) => {
     const { assetId } = req.params as { assetId: string };
+    if (!(await requireVisibleAsset(req, reply, assetId))) return;
     return read.getAssetInstallations(assetId);
   });
 

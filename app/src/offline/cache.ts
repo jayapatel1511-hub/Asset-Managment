@@ -111,12 +111,30 @@ export async function searchCachedAssets(db: OfflineDb, query: string, limit = 5
 
 /** How stale the cache is, for the "last synced" line the UI should show rather than implying the
  * cached view is live. */
-export async function cacheAgeMs(db: OfflineDb, nowMs = Date.now()): Promise<number | null> {
+export interface CacheFreshness {
+  ageMs: number;
+  lastSyncIso: string;
+}
+
+export async function cacheFreshness(db: OfflineDb, nowMs = Date.now()): Promise<CacheFreshness | null> {
   const rows = await db.getAllFromIndex<ProjectionRow>(STORE.PROJECTIONS, "by-kind", "asset");
   if (rows.length === 0) return null;
-  let newest = 0;
-  for (const row of rows) newest = Math.max(newest, Date.parse(row.cachedAt) || 0);
-  return newest === 0 ? null : nowMs - newest;
+  let newestMs = 0;
+  let newestIso: string | null = null;
+  for (const row of rows) {
+    const ms = Date.parse(row.cachedAt) || 0;
+    if (ms > newestMs) {
+      newestMs = ms;
+      newestIso = row.cachedAt;
+    }
+  }
+  if (!newestIso) return null;
+  return { ageMs: nowMs - newestMs, lastSyncIso: newestIso };
+}
+
+export async function cacheAgeMs(db: OfflineDb, nowMs = Date.now()): Promise<number | null> {
+  const freshness = await cacheFreshness(db, nowMs);
+  return freshness?.ageMs ?? null;
 }
 
 /** Drop the oldest projections once the cache exceeds `limit`. Commands and drafts are never

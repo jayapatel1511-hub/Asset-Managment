@@ -329,6 +329,9 @@ const READ_ENDPOINTS: Array<{ url: string; allowed: DevUser[] }> = [
   { url: "/api/reports/calibration-counts", allowed: ["field", "admin", "owner", "reader", "toronto"] },
   // Administrative surface: who administers which office.
   { url: "/api/office-admins", allowed: ["admin", "owner", "toronto"] },
+  // Reference stewardship — admin console, not a field read.
+  { url: "/api/data-management/reference/Manufacturer", allowed: ["admin", "owner", "toronto"] },
+  { url: "/api/data-management/reference/Location", allowed: ["admin", "owner", "toronto"] },
 ];
 
 /** Every write, as (path, body, the roles that may call it). A refusal here is 401/403 — never a
@@ -394,6 +397,23 @@ describe("WS-W3 — role × endpoint matrix, called directly", () => {
 
     const asAdmin = await put(devApp, "/api/office-admins/Ottawa", { adminUpns: [], clientSubmissionId: sid("oa") }, "admin");
     expect(asAdmin.statusCode).toBe(200);
+
+    const refField = await post(
+      devApp,
+      "/api/data-management/reference/commands/create",
+      { domain: "Manufacturer", clientSubmissionId: sid("rf"), reason: "no", attributes: { name: "Nope" } },
+      "field"
+    );
+    expect(refField.statusCode).toBe(403);
+    expect(refField.json().error).toBe("forbidden_role");
+
+    const refAdmin = await post(
+      devApp,
+      "/api/data-management/reference/commands/create",
+      { domain: "Manufacturer", clientSubmissionId: sid("ra"), reason: "yes", attributes: { name: `AuthMfr-${sid("am")}` } },
+      "admin"
+    );
+    expect(refAdmin.statusCode).toBe(200);
   });
 });
 
@@ -482,7 +502,18 @@ describe("WS-W3 — insecure direct object access", () => {
     expect(guessed.statusCode).toBe(404);
     const nonsense = await get(devApp, "/api/assets/NOT-AN-ASSET-9999", "reader");
     expect(nonsense.statusCode).toBe(404);
-    expect(guessed.json()).toEqual({ error: "not_found", assetId: torontoAsset });
+    expect(guessed.json()).toMatchObject({ error: "not_found", assetId: torontoAsset });
+    expect(typeof (guessed.json() as { correlationId?: string }).correlationId).toBe("string");
+  });
+
+  it("gives the same 404, not history, for another office's asset-keyed sub-resources", async () => {
+    for (const suffix of ["history", "relationships", "calibrations", "installations"]) {
+      const guessed = await get(devApp, `/api/assets/${torontoAsset}/${suffix}`, "reader");
+      expect(guessed.statusCode, suffix).toBe(404);
+      expect(guessed.json()).toMatchObject({ error: "not_found", assetId: torontoAsset });
+      const own = await get(devApp, `/api/assets/${ottawaAsset}/${suffix}`, "reader");
+      expect(own.statusCode, `${suffix} own office`).toBe(200);
+    }
   });
 
   it("returns another office's asset to an administrator but strips its credentials", async () => {

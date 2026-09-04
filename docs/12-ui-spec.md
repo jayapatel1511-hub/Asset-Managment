@@ -1,6 +1,6 @@
 # 12 — UI specification (for design tooling)
 
-**Purpose.** Enough detail to rebuild every screen of the Englobe AMS Code App in a design tool
+**Purpose.** Enough detail to rebuild every screen of the Englobe AMS web application in a design tool
 (Figma, Claude Design, Penpot, Sketch…) as frames, components and variants — without reading code.
 
 **Source of truth.** This document was derived on 2026-09-02 from the built app under `app/src/`
@@ -8,9 +8,14 @@
 difference is called out in § 10. All copy is quoted verbatim from `app/src/i18n/en.json`; the key
 is shown in `code` so a designer can request a wording change against one file.
 
-**What this is not.** It is not a visual redesign brief. The app today is stock Fluent UI v9 with
-almost no bespoke styling. § 10 lists the places where a designer's judgement is explicitly invited;
-everything else is a constraint to honour.
+**Amended 2026-09-03 (rule 13).** The working tree ran ahead of § 3.1 / § 3.2 / G-24's four-variable
+brand isolation. Those deviations are now the specified Field IA and token layer — decision **D3**
+in `docs/08-decisions.md`. `docs/mockups/ams-ui/` (GOVERN, desktop 1440×900 with a 232 px rail) is
+a **proposal**, not an amendment of this file.
+
+**What this is not.** It is not a visual redesign brief. The app is Fluent UI v9 with an Englobe green
+brand ramp and a documented token layer in `app/src/styles/ams.css` (§ 2.4). § 10 lists the places
+where a designer's judgement is explicitly invited; everything else is a constraint to honour.
 
 ---
 
@@ -34,7 +39,7 @@ These are decided in `CLAUDE.md` and `docs/02-app.md`. Do not re-litigate in the
 
 | Constraint | Value |
 |---|---|
-| Primary device | **Two surfaces, one app** *(decided 2026-09-03 — this row previously read "phone")*. **Desktop** is the full-function surface and needs designing. **Mobile** is a deliberate slice: find an asset, see where/who it is, check out, return, transfer, report a fault, deploy/recover, book a vehicle — one-handed, on a construction site or in a vehicle, sometimes offline. Which screens belong to which surface is fixed in `docs/02-app.md` § Surfaces; it is a decision, not a design choice |
+| Product surfaces | **Three surfaces, one coherent app** *(decided 2026-09-03)*. **Field** is the deliberate mobile slice: home, find/scan, trimmed asset detail, checkout, return, transfer, report fault, deploy/recover, reservations and offline attention. **Desk** is the full-width operational and read-heavy experience. **Console** is the desktop administration and data-management workspace. Console is table-first and is not Desk with extra buttons. Which routes belong to each surface is fixed in `docs/02-app.md` § Surfaces |
 | Design width | Mobile **390 px**, content capped 480 px, centred. Desktop **≥ 768 px**, two-pane above 900 px. G-01 is resolved and inverted: the desktop layout is not optional polish on a canonical phone design, it is where most of the function lives |
 | Component library | Fluent UI v9 (`@fluentui/react-components`), web theme. Icons: Fluent UI System Icons, *Regular* weight |
 | Theme | `webLightTheme` / `webDarkTheme`. Dark follows the OS; there is no in-app toggle |
@@ -125,8 +130,16 @@ pixel-matching only.
 | `colorPaletteBlueBackground2` | `#a9d3f2` | — | Utilisation bar — In use segment |
 | `colorPaletteRedBackground2` | `#f1bbbc` | — | Utilisation bar — Out of service segment |
 
-Brand ramp (Fluent "web" blue): 80 `#0f6cbd` · 90 `#2886de` · 100 `#479ef5` · 160 `#ebf3fc`.
-Englobe brand colours are **not** applied anywhere today (G-03).
+Brand ramp: Englobe green `#14713a` remaps Fluent `colorBrand*` (G-24 / D1, option A). Neutrals and
+status colours are **not** left as stock Fluent defaults.
+
+**Token layer (D3, 2026-09-03).** G-24 / D1 isolated brand to four CSS variables
+(`--brandFg` / `--brandBg` / `--brandTint` / `--brandOn`, formerly `--brandFgOn`). The working tree
+widened that: `app/src/styles/ams.css` declares ~40 custom properties (canvas, strokes, foregrounds,
+status fill/text pairs, radii, header/nav heights) and `app/src/theme.ts` overrides Fluent's
+`colorNeutral*` ramp so leftover Fluent defaults do not fight the mockup. Brand is still Englobe
+green on Fluent v9 / Segoe UI. The four brand variables remain the place the hex is swapped; they
+are no longer the *only* tokens the app owns. G-03 is implemented.
 
 ### 2.5 Status colours — the `StatusPill`
 
@@ -166,13 +179,13 @@ Fluent UI System Icons, Regular weight, 20 px in buttons, 14 px inline in text.
 
 | Icon | Where |
 |---|---|
-| `Search` | Bottom nav; search input prefix |
-| `CalendarClock` | Bottom nav "Cal Due"; inline overdue marker on AssetRow |
-| `ArrowExport` | Bottom nav "Checkout" |
-| `ArrowImport` | Bottom nav "Return" |
-| `Location` | Bottom nav "Sites"; "Deploy" button on Sites; "Use device location" |
-| `Settings` | Bottom nav "Admin" |
-| `Camera` | "Scan" button on Search |
+| Home | Bottom nav "Home" |
+| Assets (grid) | Bottom nav "Assets"; search input prefix |
+| Scan (viewfinder) | Bottom nav "Scan" (opens D01; not a route) |
+| Calendar | Bottom nav "Due soon"; inline overdue marker on AssetRow |
+| More (three dots) | Bottom nav "More" |
+| `Location` | "Deploy" on Sites; "Use device location" |
+| `Camera` | Scan on Search / Home when not using the nav Scan action |
 | `Delete` | Remove-from-cart icon button (subtle, small) |
 | `Warning` | Inline marker on temporary / prefix-only Asset IDs (marigold) |
 
@@ -204,64 +217,78 @@ Fluent UI System Icons, Regular weight, 20 px in buttons, 14 px inline in text.
 
 ### 3.1 Bottom navigation
 
-Six items maximum; the sixth appears only for administrators. Active item is brand blue, others
-Foreground3. Icon above 11 px label, 8 px vertical padding, equal flex widths.
+**Amended 2026-09-03 (D3).** Five items for every role — the working tree, not the previous six-item
+Search / Cal Due / Checkout / Return / Sites / Admin bar. Checkout, Return, Sites and Admin are
+reached from S01 quick actions or from S21 More. Active item is brand green (`--brandFg`). Scan is
+an **action** (opens D01), not a route.
 
 | Order | Label (`key`) | Route | Roles |
 |---|---|---|---|
-| 1 | Search (`nav.search`) | `/` | all |
-| 2 | Cal Due (`nav.calibration`) | `/calibration` | all |
-| 3 | Checkout (`nav.checkout`) | `/checkout` | all |
-| 4 | Return (`nav.return`) | `/return` | all |
-| 5 | Sites (`nav.sites`) | `/sites` | all |
-| 6 | Admin (`nav.admin`) | `/admin` | Office Admin, System Owner |
+| 1 | Home (`nav.home`) | `/` | all |
+| 2 | Assets (`nav.assets`) | `/search` | all |
+| 3 | Scan (`nav.scan`) | — (D01) | all |
+| 4 | Due soon (`nav.dueSoon`) | `/calibration` | all |
+| 5 | More (`nav.more`) | `/more` | all; Admin / New asset rows on S21 are admin-only |
+
+A pending-sync count badges More when the offline queue is non-empty (FR-027 partial: cache age and
+last successful sync are still not displayed).
+
+Desk / Console left-rail IA, GOVERN, and the 1440×900 / 232 px shell in `docs/mockups/ams-ui/` are a
+**proposal** in § 13 — not this section, and not authorization to build feature 011 screens.
 
 ### 3.2 Screen inventory
 
 | ID | Screen | Route | Roles | Reached from | Wireframe |
 |---|---|---|---|---|---|
-| S01 | Search / Home | `/` | all | nav | § 5.1 |
-| D01 | Scan a tag (dialog) | — | all | S01 Scan button | § 5.2 |
+| S01 | Field home | `/` | all | nav | § 5.1 (D2) |
+| S02 | Search / Assets | `/search` | all | nav, S01 Search action, D01 | § 5.1 (search layout, moved off `/`) |
+| S21 | More | `/more` | all | nav, header avatar | § 5.22 |
+| D01 | Scan a tag (dialog) | — | all | nav Scan, S01 Scan, S02 Scan | § 5.2 |
 | S03 | Asset detail | `/asset/:assetId` | all | any AssetRow, scan | § 5.3 |
 | D02 | Report fault / Mark missing (notes dialog) | — | all | S03 | § 5.4 |
 | D03 | Send to calibration | — | admin | S03 | § 5.4 |
 | D04 | Record calibration | — | admin | S03 | § 5.4 |
 | D05 | Retire asset | — | admin | S03 | § 5.4 |
-| S04 | Checkout | `/checkout?asset=` | all | nav, S03 | § 5.5 |
-| S05 | Return | `/return?asset=` | all | nav, S03 | § 5.6 |
+| S04 | Checkout | `/checkout?asset=` | all | S01, S03 | § 5.5 |
+| S05 | Return | `/return?asset=` | all | S01, S03 | § 5.6 |
 | S06 | Transfer | `/transfer?asset=` | all | S03 only | § 5.7 |
 | S07 | Calibration due | `/calibration` | all | nav | § 5.8 |
-| S08 | Sites | `/sites` | all | nav, after Deploy | § 5.9 |
+| S08 | Sites | `/sites` | all | S21, after Deploy | § 5.9 |
 | S09 | Site detail | `/site/:site` | all | S08, S03 deployment row, after Recover | § 5.10 |
 | S10 | Deploy | `/deploy` | all | S08, S09 | § 5.11 |
 | S11 | Recover | `/recover/:installationId` | all | S09 | § 5.12 |
 | D06 | Swap component / Change configuration | — | all | S09 | § 5.13 |
-| S13 | Admin home | `/admin` | admin | nav | § 5.14 |
+| S13 | Admin home | `/admin` | admin | S21 | § 5.14 |
 | S14 | New asset | `/admin/new-asset` | admin | S13 | § 5.15 |
 | S15 | Office administrators | `/admin/office-admins` | admin | S13 | § 5.16 |
-| S16 | Needs attention | `/needs-attention` | all (linked from S13 only — G-06) | S13 | § 5.17 |
-| S17 | Reports home | `/reports` | all (linked from S13 only) | S13 | § 5.18 |
+| S16 | Needs attention | `/needs-attention` | all | S21, S13 | § 5.17 |
+| S17 | Reports home | `/reports` | all | S21, S13 | § 5.18 |
 | S18 | Calibration compliance | `/reports/compliance` | all | S17 | § 5.19 |
 | S19 | Asset timeline | `/reports/timeline/:assetId` | all | S17 | § 5.20 |
 | S20 | Utilisation | `/reports/utilisation` | all | S17 | § 5.21 |
 | X01 | Confirmation state | — | — | after any submit | § 6 |
 | X02 | Queued-offline state | — | — | after submit with no connection | § 6 |
 
+§ 13 records a **proposal** (Desk/Console rails, GOVERN, reservations, category browse). It is not
+an adopted screen inventory and does not authorize building those families ahead of feature 011.
+
 ### 3.3 Navigation map
 
 ```mermaid
 flowchart LR
-  NAV[Bottom nav] --> S01[S01 Search]
-  NAV --> S07[S07 Cal due]
-  NAV --> S04[S04 Checkout]
-  NAV --> S05[S05 Return]
-  NAV --> S08[S08 Sites]
-  NAV -. admin .-> S13[S13 Admin]
+  NAV[Bottom nav] --> S01[S01 Field home]
+  NAV --> S02[S02 Assets / Search]
+  NAV --> D01[D01 Scan]
+  NAV --> S07[S07 Due soon]
+  NAV --> S21[S21 More]
 
-  S01 --> D01[D01 Scan]
-  S01 --> S03[S03 Asset detail]
+  S01 --> S02
+  S01 --> S04[S04 Checkout]
+  S01 --> S05[S05 Return]
+  S02 --> S03[S03 Asset detail]
   S07 --> S03
   D01 --> S03
+  D01 --> S02
   S03 --> S04
   S03 --> S05
   S03 --> S06[S06 Transfer]
@@ -271,6 +298,12 @@ flowchart LR
   S03 -. admin .-> D05[D05 Retire]
   S03 --> S09[S09 Site detail]
 
+  S21 --> S08[S08 Sites]
+  S21 --> S16[S16 Needs attention]
+  S21 --> S17[S17 Reports]
+  S21 -. admin .-> S13[S13 Admin]
+  S21 -. admin .-> S14[S14 New asset]
+
   S08 --> S10[S10 Deploy]
   S08 --> S09
   S09 --> S10
@@ -279,10 +312,10 @@ flowchart LR
   S10 --> S08
   S11 --> S09
 
-  S13 --> S14[S14 New asset]
+  S13 --> S14
   S13 --> S15[S15 Office admins]
-  S13 --> S16[S16 Needs attention]
-  S13 --> S17[S17 Reports]
+  S13 --> S16
+  S13 --> S17
   S17 --> S18[S18 Compliance]
   S17 --> S19[S19 Timeline]
   S17 --> S20[S20 Utilisation]
@@ -292,11 +325,13 @@ flowchart LR
 
 | Role | Sees | Notes |
 |---|---|---|
-| Field User | Everything except Admin nav item, admin-only actions on S03, and secured SIM fields | Demo persona: "Sam Tech (demo Field User)", Ottawa |
-| Office Admin | + Admin nav, S13–S15, Send to calibration / Record calibration / Retire, SIM fields | Demo: "Alex Admin (demo Office Admin)" |
+| Field User | Everything except Admin / New asset rows on S21, admin-only actions on S03, and secured SIM fields | Demo persona: "Sam Tech (demo Field User)", Ottawa |
+| Office Admin | + Admin and New asset on S21, S13–S15, Send to calibration / Record calibration / Retire, SIM fields | Demo: "Alex Admin (demo Office Admin)" |
 | System Owner | Same UI as Office Admin | Demo: "System Owner (demo)" |
+| Report Reader | API role exists; **not** offered in the client's role switcher (FR-052 remainder) | Demo identity `reader@englobecorp.com` is server-only |
 
-There is no visible indication of the signed-in user or office anywhere in the production UI (G-02).
+The header shows an avatar that opens S21 (G-02 partially answered). The production header still has
+no signed-in name or home office. The role switcher on S21 is **dev-only**.
 
 ---
 
@@ -478,14 +513,14 @@ invited (G-09).
 
 ### 5.2 — D01 Scan a tag (dialog)
 
-The camera is a Power Apps SDK feature and cannot run in the local build, so this dialog is a typed
-stand-in. Design the **camera version**: full-screen viewfinder, torch toggle, manual-entry fallback,
-and the three outcomes below.
+The local development scanner is a typed stand-in. Design the production **browser-camera version**:
+full-screen viewfinder, permission and unavailable states, torch toggle where supported,
+manual-entry fallback, and the outcomes below.
 
 | Element | Copy (hard-coded today, not in `en.json`) |
 |---|---|
 | Title | "Scan a tag" |
-| Body | "Camera scanning needs the Power Apps SDK, not available outside Power Apps. Type or paste a scanned code to test the same resolution logic." |
+| Body | Development-only explanation that camera scanning is unavailable; offer typed or pasted code through the same resolution path |
 | Field | label "Asset ID or serial" — Input, autofocus, Enter submits |
 | Actions | Cancel (secondary) · **Resolve** (primary, disabled while empty) |
 
@@ -603,7 +638,8 @@ calibration lab." (hard-coded). Actions Cancel · Confirm.
 | Result | `calibration.record.result` | Select — / Pass / Fail / Adjusted |
 | Warning | `calibration.record.duplicateWarning` | "Another calibration is already recorded for this asset on this date." |
 
-Certificate PDF upload to SharePoint is specified (`docs/02-app.md`) but not in this dialog yet (G-14).
+Certificate upload to private Azure Blob Storage through the authorized API is specified but not in
+this dialog yet (G-14).
 Actions Cancel · Save (`common.save`).
 
 **D05 Retire asset** (admin) — title `admin.retire.title` "Retire asset". Field `admin.retire.reason`
@@ -909,7 +945,7 @@ icon button; `admin.officeAdmins.addAdmin` "Add administrator" field = Input (pl
 
 ### 5.17 — S16 Needs attention
 
-Route `/needs-attention` · all roles, linked from S13 only (G-06)
+Route `/needs-attention` · all roles, linked from S21 More (and still from S13)
 
 Title2 `offline.needsAttention.title` "Needs attention". Two sections using C4:
 
@@ -1006,6 +1042,25 @@ Otherwise cards: **By equipment type** (C12 rows) · **By office** (C12 rows) ·
 **Idle** (`reports.utilisation.idle`; count badge; framed scrollable AssetRow list, max 300 px, of
 Active assets with no transaction in the period). Footer `reports.notPublished`.
 
+### 5.22 — S21 More
+
+Route `/more` · all roles · `app/src/features/more/MorePage.tsx`
+
+Overflow list for destinations that left the tab bar (D3). Header title `nav.more` "More", subtitle
+`more.subtitle`. Rows are full-width list buttons; disabled rows show `more.comingSoon`.
+
+| Row | Copy key | Route | Who |
+|---|---|---|---|
+| Sites | `site.title` | `/sites` | all |
+| Needs attention | `offline.needsAttention.title` | `/needs-attention` | all |
+| Reports | `reports.title` | `/reports` | all |
+| Admin | `admin.title` | `/admin` | admin |
+| New asset | `admin.newAsset` | `/admin/new-asset` | admin |
+| Reservations | `more.reservations` | — | all; coming soon |
+| Settings | `more.settings` | — | all; coming soon |
+
+A **dev-only** role switcher sits under `admin.roleSwitcher`. Production omits it.
+
 ---
 
 ## 6. Cross-cutting states and feedback
@@ -1017,11 +1072,11 @@ Active assets with no transaction in the period). Footer `reports.notPublished`.
 | Validation (client) | `error` MessageBar directly above the Submit button; the offending field is not highlighted (G-20) |
 | Refusal (server or re-check) | `error` MessageBar naming the asset and the reason; nothing partial is ever written |
 | Success | Form replaced by X01: `success` MessageBar + one primary button. Transaction names look like `TXN-000123` |
-| Offline, browsing | `warning` banner on Search only: "Showing cached data from {time}." |
-| Offline, submitting | X02 `warning` "No connection — queued. It will send automatically when you're back online." The item then appears under Pending sync on S16 and should badge the asset (C10) |
+| Offline, browsing | Persistent compact connection indicator plus cache age on every cached-data route |
+| Offline, submitting | X02 warning states that the command is queued, not accepted. Replay occurs while the authenticated app is active and may also be initiated manually. The item appears under Pending sync on S16 and badges the asset (C10) |
 | Replay rejected | Appears on S16 with reason, Retry, and the never-discarded fine print |
 | Draft restored | `info` MessageBar on Deploy |
-| Destructive confirm | Retire has a required reason but no second confirmation (string exists — G-15) |
+| Destructive confirm | Retire requires a reason and explicit second confirmation (G-15 closed) |
 
 Complete refusal copy catalogue (design the error MessageBar to fit the longest):
 
@@ -1053,16 +1108,18 @@ Complete refusal copy catalogue (design the error MessageBar to fit the longest)
 
 - **Built today:** one column, 390 px, content max 480 px centred. Above 480 px the page shows the phone
   column on a Background2 canvas, with all 20 screens inside it.
-- **Decided target:** two surfaces off one codebase and one URL. Below 768 px the phone slice
-  (`docs/02-app.md` § Surfaces) in the column above; at 768 px and up, the full screen set with
-  two-pane list + detail above 900 px and full-width tables for the four report screens. A route
-  reached on the surface it does not belong to renders "this screen is on the desktop app", not a 404 —
-  the URL stays valid on both.
+- **Decided target:** three role-responsive surfaces off one codebase and one URL. Below 768 px is
+  Field. At 768 px and up, Desk provides operational/read-heavy routes and Console provides the
+  table-first administration/data-management workspace. Above 900 px, Desk may use list + detail;
+  Console uses full-width tables and split panels. A route reached on a surface it does not belong
+  to renders "this screen is on the desktop app", not a 404 — the URL stays valid.
 - The surface split is **per-route data in one manifest** (`app/src/routes.ts`), never two nav
   components and never two codebases.
 - Bottom nav respects `env(safe-area-inset-bottom)`.
 - Native `<select>` and `<input type="date">` are used for pickers, so their look is OS-native on phones.
-- Runs inside Power Apps (mobile app or browser). The camera scanner (D01) is provided by the Power Apps SDK.
+- Runs as an installable Azure-hosted PWA. The production scanner uses approved browser camera APIs
+  with permission, torch support where available and manual-entry fallback; it does not depend on
+  the parked Power Apps SDK.
 
 ## 9. Copy rules
 
@@ -1105,10 +1162,10 @@ defaults to the Englobe ramp, the shots predate it.
 |---|---|---|---|
 | ~~G-01~~ | ~~No layout above 480 px~~ | shell | **RESOLVED 2026-09-03, and inverted.** Desktop is the full-function surface; the phone is a slice of it. Not optional. See § 1, § 8 and `docs/02-app.md` § Surfaces |
 | G-02 | No signed-in user / office shown; header right slot is dev-only | shell | Avatar or initials + home office in header, or on Admin/Search |
-| G-03 | Stock Fluent blue; no Englobe brand | tokens | Decide whether to re-map `colorBrand*` to an Englobe ramp. Keep status colours semantic |
+| ~~G-03~~ | ~~Stock Fluent blue; no Englobe brand~~ | tokens | **CLOSED 2026-09-03 (G-24 / D1), widened D3.** Englobe green `#14713a` remaps `colorBrand*`. Neutrals and status colours live in `ams.css` / `theme.ts` (~40 tokens), not only the four brand variables |
 | G-04 | Checked out ≡ Deployed (grey) and Needs repair ≡ Missing (red) pills | C1 | Give Deployed its own hue or icon; differentiate Missing |
 | G-05 | Retire is `outline`, not visibly destructive | S03 | Red outline/danger styling |
-| G-06 | Field Users cannot reach Needs attention or Reports from the nav | IA | Surface a pending/rejected count on Search or in the header; consider a "More" nav item |
+| ~~G-06~~ | ~~Field Users cannot reach Needs attention or Reports from the nav~~ | IA | **CLOSED 2026-09-03 (D3).** Five-item nav is Home / Assets / Scan / Due soon / More. S21 More carries Sites, Needs attention, Reports; Admin / New asset for admins. Pending-sync badges More |
 | ~~G-07~~ | ~~Label reuse: Deploy primary picker button says "Add component"; Recover date says "Deployment date"; Compliance card title "Reports"; "Record calibration" badge means In calibration; "365" unlabeled; Back button on Checkout reads "Checkout — Back"~~ | several | **CLOSED 2026-09-03** (`7b37683`). Was: Add the missing keys |
 | ~~G-08~~ | ~~"Pending sync" badge not placed on assets~~ | C10 | **CLOSED 2026-09-03** (`7b37683`). Was: Badge beside StatusPill on AssetRow and S03 |
 | ~~G-09~~ | ~~Raw enum labels ("DataLogger", "SoundLevelMeter", "CheckedOut → Deployed")~~ | S01, S03, S19 | **CLOSED 2026-09-03** (`7b37683`). Was: Humanised display names with spaces |
@@ -1116,7 +1173,7 @@ defaults to the Englobe ramp, the shots predate it.
 | ~~G-11~~ | ~~Attached items, Last calibrated, and admin-only SIM fields not on Asset detail~~ | S03 | **CLOSED 2026-09-03** (`f09f0ee + 7b37683`). Was: Add an "Attached items" list and a secured "SIM" section (Office Admin+) |
 | G-12 | Invalid actions hidden rather than disabled with a reason | S03 | Decide: hide (less clutter) vs disable + tooltip "Not available from {status}" (more learnable). Spec asked for disable |
 | ~~G-13~~ | ~~Mark found / Repair complete failures use a browser alert~~ | S03 | **CLOSED 2026-09-03** (`7b37683`). Was: Inline `error` MessageBar |
-| G-14 | No certificate PDF upload on Record calibration | D04 | File picker → SharePoint `AMS Documents/{AssetID}/` |
+| G-14 | No certificate upload on Record calibration | D04 | Authorized file picker/upload through the API to private Blob Storage; show scan/upload state and attach-later path |
 | ~~G-15~~ | ~~Retire has no second confirmation~~ | D05 | **CLOSED 2026-09-03** (`7b37683`). Was: Use `admin.retire.confirm` as a confirm step |
 | G-16 | Checkout has no "Assigned to" and no per-line kit role | S04 | Add people picker (default me) and optional Role select per line |
 | G-17 | No Scan button on Checkout / Transfer / Deploy add rows | C11 | Camera icon button beside "Add" |
@@ -1124,9 +1181,9 @@ defaults to the Englobe ramp, the shots predate it.
 | G-19 | Admin home cards carry developer copy (FR numbers, "Q3") | S13 | Plain-language card text |
 | G-20 | Validation error is a banner only; field not highlighted | forms | Fluent `Field validationMessage` on the offending control as well |
 | G-21 | Most screens have no Back affordance; rely on nav / browser back | S03, S04… | Consistent Back in a page header |
-| G-22 | No desktop screens exist to design against — the four report screens, the reservation calendar and the admin screens are the ones that most need width | shell, S13–S20 | **Partially answered 2026-09-03.** A desktop Console now exists in the mockup package (`Assets Console.dc.html`): entity rail grouped OPERATIONS / REFERENCE DATA, sortable table, filter chips, multi-select revealing a bulk bar with a separated destructive action, pagination. **Still missing:** the four report screens, the reservation calendar, and the rest of the Console family (`docs/02-app.md` § Surfaces). Note the Console is drawn in a *different design system* — see G-24 |
-| G-23 | Vehicles have no visual identity — a pickup truck renders identically to a data logger (same row, same pills, plate hidden in the identifier field) | C1, C2, S01, S03 | Give the Vehicles asset group an icon and surface the plate on the row; decide whether a vehicle's Asset ID reads as a plate *(added 2026-09-03)*. **Still open** — the mockup's Console sample data now contains a vehicle (`VEH-1042`, Ford F-250) but renders it with the same treatment as a data logger and shows no plate |
-| G-24 | **Three design systems now exist, with three token vocabularies for the same four concepts.** The phone mockup: `--brandFg/Bg/Tint/FgOn`, Englobe green `#14713a`, Segoe UI, Fluent neutrals. Both Console files: **zero brand tokens**, hardcoded warm stone, teal `#0F5F55`, Inter + IBM Plex Mono, a separate status ramp. `docs/mockups/ams-field-ui.html`: `--brand/-fg/-soft`, **stock Fluent blue `#0f6cbd`** — Fluent neutrals and semantic pills, but G-03 not implemented at all | tokens, all screens | **DECIDED 2026-09-03 — option (A). No longer blocking.** Fluent v9 + Englobe green wins; the Console mockups are layout references, not visual ones, and § 1's fixed constraint stands unamended. See `docs/08-decisions.md` § UI decisions. *(A)* Retrofit the Console onto Fluent + Englobe green — honours this file's fixed constraint in § 1, cheapest, keeps mockup and built app aligned. *(B)* Move the phone onto the Console's system — better answers the "plain and boring" complaint, but requires formally amending § 1 and restyling Fluent v9 rather than using it stock. Detail and evidence: `docs/20-mockup-review.md` § D1 *(added 2026-09-03)* |
+| G-22 | No desktop screens exist to design against — the reports, reservation calendar and admin/data-management screens are the ones that most need width | shell, S13–S20 | **Design contract added 2026-09-03.** § 13 defines the Desk and Console IA, responsive behaviour and complete screen families. Frames are still required before implementation; the old Console file remains a layout reference only |
+| ~~G-23~~ | ~~Vehicles have no visual identity~~ | C1, C2, S01, S03 | **RESOLVED 2026-09-03.** Vehicle rows use a restrained category icon and show licence plate as secondary identity. Canonical Asset ID remains the primary monospaced identity; plate does not replace it |
+| G-24 | **Three design systems now exist, with three token vocabularies for the same four concepts.** The phone mockup: `--brandFg/Bg/Tint/FgOn`, Englobe green `#14713a`, Segoe UI, Fluent neutrals. Both Console files: **zero brand tokens**, hardcoded warm stone, teal `#0F5F55`, Inter + IBM Plex Mono, a separate status ramp. `docs/mockups/ams-field-ui.html`: `--brand/-fg/-soft`, **stock Fluent blue `#0f6cbd`** — Fluent neutrals and semantic pills, but G-03 not implemented at all | tokens, all screens | **DECIDED 2026-09-03 — option (A). No longer blocking.** Fluent v9 + Englobe green wins; Console mockups are layout references. **D3 (same day):** the built app widened isolation beyond the four brand variables — `ams.css` ~40 tokens and `theme.ts` `colorNeutral*` overrides. Option A and Englobe green stand. `docs/mockups/ams-ui/` GOVERN + 232 px desktop rail remain a **proposal** (§ 13), not an adopted shell |
 
 ## 11. Open questions that change the UI
 
@@ -1146,10 +1203,232 @@ mockup was built, which still renders both as undecided. The rows below carry th
 
 ## 12. Handoff checklist
 
-- [ ] § 4 components built with variants (StatusPill ×7, AssetRow ×4, Cart line ×4, MessageBar ×4, Badge set)
+- [ ] § 4 components built with variants (disposition, serviceability and calibration indicators; AssetRow; Cart line; MessageBar; Badge set)
 - [ ] One frame per screen state listed under each § 5 "States"
 - [ ] X01 / X02 designed once, referenced from every form
 - [ ] Both themes rendered for S01, S03, S04, S10, S17
 - [ ] Every string traced to an `en.json` key or listed in § 9 as provisional
 - [ ] Each G-item either resolved in the design or explicitly left as-is
 - [ ] Changes that alter behaviour (not just visuals) logged in `docs/08-decisions.md`
+- [ ] Every § 13 screen family has purpose, owner, primary action, hierarchy, states, permissions and responsive behaviour
+
+---
+
+## 13. Responsive product expansion brief
+
+**Accepted design direction — 2026-09-03 (D4).** This is the design contract for the missing
+Field/Desk/Console and Data Management screen families. It preserves D3's implemented Field
+navigation and does not authorize code, mockups or building feature 011 ahead of the delivery
+sequence. The four-axis presentation reflects the approved product model; resolving the separate
+A-STATE / DC-22 implementation conflict remains outside this UI decision.
+
+### 13.1 Product hierarchy
+
+The application optimizes the seven acceptance questions in `docs/00-brief.md`, not generic
+dashboard engagement:
+
+1. Find and identify an asset.
+2. Understand its authoritative current state.
+3. Perform a permitted business event.
+4. Review past state and installed relationships.
+5. Operate an office fleet.
+6. Govern reference/master data and data quality.
+7. Read approved reports.
+
+Search, scan and current state are the strongest visual hierarchy. Counts and charts are secondary
+and must link to the records behind them.
+
+### 13.2 Home by role
+
+#### Field and Desk user home
+
+The accepted S01 home (D2) is greeting + custody, Scan / Check out / Return, due-soon counts, recent
+activity and my equipment. Its next design pass adds:
+
+- a search hero: “Find any asset in seconds”, search by Asset ID, serial, alias or model,
+  with an integrated scan action;
+- **My work:** checked-out assets, expected returns, relevant attention and offline submissions;
+- large labelled quick actions: Checkout, Return, Transfer, Deploy and Report issue;
+- **Browse equipment:** a two-column Field grid and wider Desk grid of category roots;
+- role-scoped **Needs attention** and compact recent activity.
+
+Search is also a first-class `/search` route; the hero is not the only way to find an asset.
+Field content is personal. Office Admin content is office-scoped. System Owner content may be
+organization-wide. Report Reader home is read-only.
+
+#### Console home
+
+Console opens at **AMS Administration**, with restrained summaries for active assets, availability,
+checkout/deployment, calibration and data quality. Its primary areas are Operational health, Data
+quality and Recent admin activity, with commands for New asset, Import, Add equipment model,
+Add office and Review data issues. It is not a wall of charts.
+
+### 13.3 Category browse
+
+Category tiles represent rows from the admin-managed category hierarchy, never a hard-coded enum.
+The initial root presentation is:
+
+- Seismographs;
+- Acoustics;
+- Geotechnical Monitoring;
+- Geomatics / Survey;
+- Communications;
+- Imaging;
+- Air Quality;
+- General Equipment;
+- Vehicles.
+
+Each tile shows only icon, category name, total assets and available count. A newly created root
+category appears without a code release. Deactivated categories remain legible in history but are
+not offered for new classification.
+
+Selecting a category opens a filtered asset list. Field uses rows/cards and simple chips; Desk uses
+a sortable table and advanced filters. Empty categories explain that no active assets currently use
+the category and, for authorized Console users, link to its models or stewardship detail.
+
+### 13.4 Authoritative asset state
+
+No screen presents one mutually exclusive “status” as the complete truth. Current state is shown as
+independent facts:
+
+- **Lifecycle:** Active / Retired.
+- **Disposition:** At office / Checked out / Deployed / In transit / At calibration lab / Missing.
+- **Serviceability:** Serviceable / Needs repair / Out of service.
+- **Calibration currency:** Not required / Unknown / Current / Due soon / Overdue /
+  In calibration / Failed.
+
+Disposition is the primary compact pill in lists. Serviceability and calibration warnings appear
+alongside it only when relevant. Asset detail shows all applicable axes in its NOW section. Reporting
+a fault must not hide custody, location, project or deployment.
+
+The browser never edits these values directly. Actions are capability-driven responses from the API,
+not client-invented role/status tests.
+
+### 13.5 Asset identity, vehicles and reservations
+
+- Asset ID remains the primary monospaced identity. Serial is searchable and non-unique.
+- A shared serial opens an explanatory disambiguation picker; it never implies a duplicate.
+- Temporary and legacy IDs remain searchable aliases after completion.
+- Vehicles are ordinary assets and use the same custody transactions.
+- Vehicle rows add a restrained vehicle icon and show licence plate as useful secondary identity;
+  the plate does not replace the canonical Asset ID.
+- Reservability belongs to the equipment model and is admin-managed; it is not hard-coded to
+  Vehicles.
+- A reservation is a future claim, never a current-state value. The UI must not display “Reserved”
+  as disposition.
+
+Field adds **Reserve asset** and **My reservations**. Console adds the organization/office reservation
+calendar, conflict review, cancellation and approved override controls. Concurrent overlap refusal
+names the reservation that won. Override and no-show policy remain governed by Q20.
+
+### 13.6 Required screen families
+
+Every screen below must specify purpose, primary user, primary action, hierarchy, components,
+empty/loading/error states, permission differences, and Field/Desk/Console behaviour before a frame
+is accepted.
+
+| Family | Required screens | Surface |
+|---|---|---|
+| Start and find | User Home, Console Home, Search / Scan, Category Asset List | Field + Desk; Console Home desktop |
+| Asset | Trimmed Asset Detail, full Asset Detail, Assets Table, Admin Asset Detail | Field; Desk; Console |
+| Custody | Checkout, Return, Transfer, confirmation, refusal/conflict | Field + Desk |
+| Issues | Report Fault / Mark Missing, Repair completion, Offline Needs Attention | Field + Desk; office queues in Console |
+| Sites | Deploy, Recover, Sites list, Site / Installation Detail, Swap Component / Change Configuration | Deploy/Recover on Field + Desk; browsing/configuration on Desk |
+| Calibration | Calibration Due, Send to Calibration, Record Calibration, certificate attach-later and history | Desk; admin actions permission-gated |
+| Reservations | Reserve Asset, My Reservations, Reservation Calendar | Field + Desk; Calendar in Console |
+| Inventory administration | New Asset, Retire, Reinstate, Temporary Tag Completion, Audit / Return Sweep | Console |
+| Reports | Reports Home, Fleet, Availability, Calibration, Projects, Utilisation, Asset Timeline, Site History | Desk + Console; read-only |
+| Data Management | Home, Data Quality Issues, Data Dictionary, Imports / Dry Run, Bulk Job Detail, Duplicate Review, Reference Data, Data Correction, Data Lineage, Reconciliation, Exports, Retention / Legal Hold | Console |
+| Administration | People & Roles, Offices & Locations, Equipment Models, System Settings, Audit Log, System Health | Console |
+
+### 13.7 Workflow requirements that frames must not omit
+
+#### Checkout, return and transfer
+
+- Checkout is one multi-asset cart and one atomic submission.
+- Assigned to defaults to the caller but uses an authorized people picker.
+- Expected return is optional, prefilled to +14 days and clearable.
+- Kit role uses fixed role type plus optional 1..N index; do not cap sensors at four.
+- Office Admin and System Owner may set an effective date up to 30 days in the past. Field User
+  cannot. A date at or before a later transaction is refused and names the conflict.
+- Return starts from equipment held by the user, supports Return all / Select items, condition per
+  item and an office default location.
+- Transfer clearly shows current → new user/project/office and requires a reason. It is not simulated
+  by Return followed by Checkout.
+
+#### Deploy, recover and components
+
+- Deploy captures site/project, primary logger, N components, role/index, orientation where required,
+  position, power and communications.
+- Recover is a separate Field workflow. Recovered assets enter the recovering user’s custody unless
+  another accepted event says otherwise; the interface must not claim they are at an office.
+- Permanent components cannot be deployed independently.
+- Attach/detach, swap and configuration changes are recorded events with history, not direct parent
+  edits.
+
+#### Calibration and documents
+
+- Calibration queues support Overdue, Due 30/60/90, Unknown and At calibration lab, with office
+  grouping on Desk.
+- Record Calibration captures date, next due, result, lab, cost, certificate and audit metadata.
+- A certificate upload failure does not discard the calibration record; attach-later is explicit.
+- Documents are private and downloaded only after server authorization.
+
+### 13.8 Console and Data Management behaviour
+
+- Assets use a dense, readable table with search, filters, sorting, saved views, column choice,
+  pagination, selection and a separate bulk-action bar.
+- Opening a record uses a detail panel when comparison context matters and a full page for complex
+  history or forms.
+- Reference records support create, permitted edit, deactivate/reactivate, alias, re-parent and
+  governed merge. Usage and downstream impact appear before high-impact changes.
+- There is no generic database editor and no ordinary hard delete.
+- Imports always follow Upload → Validate → Dry run → Review → Approval when required → Apply →
+  row-level results. No row silently disappears.
+- Duplicate Review compares records side by side, identifies the survivor and previews effects.
+  Serial alone is never sufficient evidence.
+- Corrections show old/new values, reason, evidence, requester and approver, and refuse derived state,
+  immutable history and canonical Asset ID.
+- Lineage answers “Why does the system say this?” with source event/job, time and actor.
+- Exports are approved templates with server-side row/field scope, purpose, classification, private
+  expiring artifact and audit.
+- Retention uses policy, preview, legal-hold checks and approval. No broad “Delete records” action.
+
+### 13.9 People, roles and permissions
+
+The application manages AMS attributes for existing Entra identities: role assignment, home office,
+office scope and active access. It does not create an employee identity.
+
+Primary application roles are Field User, Office Admin, System Owner and Report Reader. Data Owner,
+Data Steward, Platform Operator and Auditor are governance responsibilities or constrained permission
+sets until their exact Entra mapping is approved.
+
+Permission differences are enforced by the API. Hiding navigation improves comprehension but is not
+authorization. Secured SIM/network fields never appear in Field responses, Field offline storage,
+general reports or unauthorized exports.
+
+### 13.10 Responsive, offline and state rules
+
+- Field target is 390 × 844, one main scroll region, sticky header and bottom navigation, controls
+  at least 44 px, one visually dominant primary action and no administration tables.
+- Desk/Console target is 1440 × 900, persistent left navigation, top command/search area, dense
+  tables, filters and split panels. Below 900 px, panels stack; they do not become the Field shell.
+- Connection state is always visible. Offline views show cache age and pending count.
+- Pending means proposed, not accepted. Assets and submissions may show **Pending sync** separately
+  from authoritative state.
+- Rejected offline work enters Needs Attention with reason and View asset / Remove request /
+  Try again actions. It is never silently discarded or replayed under a different identity.
+- Loading preserves page structure with skeleton rows where practical. Errors keep entered data and
+  identify the failing field or asset. Empty states explain scope/filtering and offer only permitted
+  next actions.
+- A direct link opened on an unsupported surface renders a desktop-route handoff, not a 404.
+
+### 13.11 Visual restraint
+
+All three surfaces use Fluent UI v9, Segoe UI, Fluent regular icons and the Englobe green brand ramp.
+Asset IDs use the established monospace stack. Prefer warm/light neutral surfaces, subtle separators,
+minimal shadow, compact semantic pills and moderate radius. Avoid decorative KPI walls, giant cards,
+gradients, glass effects, stock imagery and colour-coded tables.
+
+Visible copy must be added to `en.json` before implementation and leave approximately 30% width slack
+for future French labels.

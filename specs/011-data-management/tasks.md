@@ -10,6 +10,13 @@ description: "Task list for feature 011 — Data Management & Stewardship"
 
 **Tests**: Required at each story. Prefer failing tests before implementation. Direct API role/office tests for every write path.
 
+**Status (reconciled 2026-09-03):** **2 of 90 checked.** Dictionary, quality rules, issue queue,
+reference create/edit/deactivate, corrections, import, duplicates, retention: **not in the tree**
+(`server/src/modules/data-management/` does not exist; no `data_dictionary_*` / `data_quality_*`
+migrations). A local governed-export *shape* lives under feature 010
+(`server/src/routes/reports.ts`, process-local `Map`, no `export_artifact` table / Blob / Console
+UI) — T068–T075 stay open. T002 and T089 are confirmations from the tree, not new implementation.
+
 **Organization**: Phases follow CLAUDE.md order — read-only dictionary + quality first; high-impact writes after 010 foundations.
 
 **Read first**: `specs/_planning/MULTI-AGENT-OWNERSHIP.md`, `.specify/memory/constitution.md`, `CLAUDE.md` (rules 14–20; sequence 6, 10–13), `docs/16-data-management.md`, `docs/15-postgres-data-model.md`.
@@ -39,7 +46,7 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 ## Phase 1: Setup / read docs
 
 - [ ] T001 Read `specs/_planning/MULTI-AGENT-OWNERSHIP.md`, `.specify/memory/constitution.md`, `CLAUDE.md` (data-management rules 14–20 and sequence steps 6, 10–13), `docs/16-data-management.md`, `docs/15-postgres-data-model.md` §1–2 and open decisions, `specs/011-data-management/spec.md`, `checklists/requirements.md`, `specs/REMAINING-WORK.md` (WS-W2–W8, surfaces/Console note), and all files under `specs/011-data-management/contracts/`
-- [ ] T002 [P] Confirm Power Platform and Zite are parked — no tasks may target `solution/`, `app/src/api/dataverse/`, or `zite/`
+- [x] T002 [P] Confirm Power Platform and Zite are parked — no tasks may target `solution/`, `app/src/api/dataverse/`, or `zite/`
 - [ ] T003 [P] Record baseline: existing `app/` tests still green (`cd app && npm test`); do not claim monorepo `test:integration` until 010/WS-W1 creates it
 
 **Checkpoint**: Planning inputs understood; no code changes required in Phase 1.
@@ -283,7 +290,7 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 - [ ] T086 [P] Sensitive-value redaction review across job messages, logs, unauthorized artifacts (FR-079)
 - [ ] T087 Direct API security matrix for all data-management routes (roles × offices) — feeds WS-W12
 - [ ] T088 Scale smoke: overview + issue search at 5,000 assets / 100k lines without full client download (SC-017)
-- [ ] T089 Confirm no generic PATCH/SQL editor landed — grep/CI deny-list
+- [x] T089 Confirm no generic PATCH/SQL editor landed — grep/CI deny-list. **Confirm from tree 2026-09-03:** no `PATCH /table/{id}` and no SQL editor; writes are named commands. No CI deny-list job yet
 - [ ] T090 Pilot evidence checklist: SC-001, SC-006, SC-010, SC-011, SC-013–SC-016, SC-018–SC-019 mapped to dated test runs; migration sign-offs remain 009/WS-W11
 
 ---
@@ -316,3 +323,13 @@ T011–T015 test authoring in parallel before T016–T018
 3. Deliver US2 → US3 → US4 → US5 before US6–US8.
 4. Keep Console UI behind WS-W5 shell; 011 owns data-admin capability only.
 5. Every phase leaves independently testable API behaviour even if UI waits on Console.
+
+## Ledger reconcile — 2026-09-03
+
+| | Before | After |
+|---|---|---|
+| Checked | 0 of 90 | **2 of 90** (T002 parked-platforms; T089 no generic PATCH) |
+
+US7 export *tests* exist in `server/tests/reports.test.ts` under 010. They do not close T068–T075:
+no Data Steward role, no second-approval SoD, no Blob/expiry worker, no Console UI, artifacts are
+process-local. Dictionary / quality / Rule 7 reference commands remain unchecked on purpose.

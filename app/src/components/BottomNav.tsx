@@ -1,71 +1,101 @@
-import { tokens } from "@fluentui/react-components";
-import {
-  ArrowExportRegular,
-  ArrowImportRegular,
-  CalendarClockRegular,
-  LocationRegular,
-  HomeRegular,
-  SettingsRegular,
-} from "@fluentui/react-icons";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
+import { useScan } from "../chrome/ScanContext";
+import { usePendingSyncIds } from "../hooks/usePendingSync";
 import { t } from "../i18n";
 
 interface NavItem {
-  to: string;
+  to?: string;
   label: string;
   icon: ReactNode;
-  adminOnly?: boolean;
+  action?: "scan";
+  badge?: boolean;
 }
 
 const ITEMS: NavItem[] = [
-    // D2: "/" is the Field home now, not search. Search did not lose its place in the nav so much
-  // as change what the first tab means — the home's own Search action and the scan flow both land
-  // on /search, and a technician who knows the tag is still two taps from it.
-  { to: "/", label: t("nav.home"), icon: <HomeRegular /> },
-  { to: "/calibration", label: t("nav.calibration"), icon: <CalendarClockRegular /> },
-  { to: "/checkout", label: t("nav.checkout"), icon: <ArrowExportRegular /> },
-  { to: "/return", label: t("nav.return"), icon: <ArrowImportRegular /> },
-  // Feature 005 (WS-A): deploying/recovering a station is a field workflow, not admin-only —
-  // entry point for both is the sites list (its own "deploy here" / "recover" actions).
-  { to: "/sites", label: t("nav.sites"), icon: <LocationRegular /> },
-  { to: "/admin", label: t("nav.admin"), icon: <SettingsRegular />, adminOnly: true },
+  { to: "/", label: t("nav.home"), icon: <HomeIcon /> },
+  { to: "/search", label: t("nav.assets"), icon: <AssetsIcon /> },
+  { action: "scan", label: t("nav.scan"), icon: <ScanIcon /> },
+  { to: "/calibration", label: t("nav.dueSoon"), icon: <CalIcon /> },
+  { to: "/more", label: t("nav.more"), icon: <MoreIcon />, badge: true },
 ];
 
-export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
-  const items = ITEMS.filter((i) => !i.adminOnly || isAdmin);
+function HomeIcon() {
   return (
-    <nav
-      style={{
-        position: "sticky",
-        bottom: 0,
-        display: "flex",
-        borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-        background: tokens.colorNeutralBackground1,
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-      }}
-    >
-      {items.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          end={item.to === "/"}
-          style={({ isActive }) => ({
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 2,
-            padding: "8px 0",
-            textDecoration: "none",
-            color: isActive ? tokens.colorBrandForeground1 : tokens.colorNeutralForeground3,
-            fontSize: 11,
-          })}
-        >
-          {item.icon}
-          {item.label}
-        </NavLink>
-      ))}
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2.5 8 8 2.8 13.5 8V13a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1V8z" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M6.2 14V9.4h3.6V14" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+function AssetsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M3 4.2h10v8.2H3zM3 7.2h10M8 4.2v8.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+function ScanIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        d="M2.6 5.6V3.4a.8.8 0 0 1 .8-.8h2.2M13.4 5.6V3.4a.8.8 0 0 0-.8-.8h-2.2M2.6 10.4v2.2a.8.8 0 0 0 .8.8h2.2M13.4 10.4v2.2a.8.8 0 0 1-.8.8h-2.2M4 8h8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.35"
+      />
+    </svg>
+  );
+}
+
+function CalIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="2.4" y="3.4" width="11.2" height="10.2" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M2.4 6.4h11.2M5.2 2.4v2.2M10.8 2.4v2.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+function MoreIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="4" cy="8" r="1.15" fill="currentColor" />
+      <circle cx="8" cy="8" r="1.15" fill="currentColor" />
+      <circle cx="12" cy="8" r="1.15" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function BottomNav() {
+  const { openScan } = useScan();
+  const pending = usePendingSyncIds().size;
+
+  return (
+    <nav className="ams-nav" aria-label="Primary">
+      {ITEMS.map((item) =>
+        item.action === "scan" ? (
+          <button key="scan" type="button" className="ams-nav-item" onClick={openScan}>
+            {item.icon}
+            {item.label}
+          </button>
+        ) : (
+          <NavLink
+            key={item.to}
+            to={item.to!}
+            end={item.to === "/"}
+            className={({ isActive }) =>
+              `ams-nav-item${isActive ? " on" : ""}${item.badge && pending > 0 ? " ams-nav-badge" : ""}`
+            }
+            {...(item.badge && pending > 0 ? { "data-n": pending > 9 ? "9+" : String(pending) } : {})}
+          >
+            {item.icon}
+            {item.label}
+          </NavLink>
+        ),
+      )}
     </nav>
   );
 }

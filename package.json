@@ -23,7 +23,8 @@
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d --wait",
     "db:migrate": "npm --prefix server run db:migrate",
-    "db:check": "npm --prefix server run db:check"
+    "db:check": "npm --prefix server run db:check",
+    "data:dictionary:check": "npm --prefix server run data:dictionary:check"
   },
   "engines": {
     "node": ">=22"

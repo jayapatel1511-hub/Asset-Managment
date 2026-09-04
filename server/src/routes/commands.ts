@@ -42,6 +42,7 @@ import type { CurrentUser } from "../../../app/src/api/types";
 import {
   checkout,
   completeRepair,
+  completeTemporaryTag,
   markFound,
   markMissing,
   previewNextAssetId,
@@ -222,7 +223,10 @@ const COMMANDS: Record<string, { schema: z.ZodType; run: CommandHandler }> = {
 function badRequest(reply: FastifyReply, error: z.ZodError): FastifyReply {
   return reply.code(400).send({
     error: "invalid_request",
+    code: "command.error.validation",
+    messageKey: "command.error.validation",
     message: error.issues.map((i) => `${i.path.join(".") || "(body)"}: ${i.message}`).join("; "),
+    correlationId: reply.request.id,
   });
 }
 
@@ -272,6 +276,13 @@ export function registerCommandRoutes(app: FastifyInstance, ctx: AppContext): vo
   // ---- feature 001: register an asset, and preview the tag it would be given ----
   app.post("/api/assets", requireWriteAccess(), async (req, reply) =>
     submit(reply, req.user, "RegisterAsset", registerSchema, req.body, (tx, input) => registerAsset(tx, req.user, input))
+  );
+
+  const completeTagSchema = z.object({ assetId, clientSubmissionId: submissionId });
+  app.post("/api/assets/complete-temporary-tag", requireAdminRole(), async (req, reply) =>
+    submit(reply, req.user, "CompleteTemporaryTag", completeTagSchema, req.body, (tx, input) =>
+      completeTemporaryTag(tx, req.user, input)
+    )
   );
 
   // Registered as a static segment, which Fastify's router prefers over read.ts's

@@ -128,6 +128,26 @@ export function guardOfflineQueueBoot(): void {
   guardQueueSnapshotForIdentity(cached?.objectId ?? null, { queueKey: QUEUE_STORAGE_KEY });
 }
 
+let currentRuntime: OfflineRuntime | null = null;
+
+/** The runtime last started on this page. Screens that cannot be handed a handle (the shell) read here. */
+export function getOfflineRuntime(): OfflineRuntime | null {
+  return currentRuntime;
+}
+
+function remember(runtime: OfflineRuntime): OfflineRuntime {
+  const previousStop = runtime.stop.bind(runtime);
+  const wrapped: OfflineRuntime = {
+    ...runtime,
+    stop() {
+      previousStop();
+      if (currentRuntime === wrapped) currentRuntime = null;
+    },
+  };
+  currentRuntime = wrapped;
+  return wrapped;
+}
+
 /** Asynchronous half. Never throws; returns a degraded runtime instead. */
 export async function startOfflineRuntime(options: StartOfflineRuntimeOptions = {}): Promise<OfflineRuntime> {
   const cached = readCachedIdentity();
@@ -135,7 +155,7 @@ export async function startOfflineRuntime(options: StartOfflineRuntimeOptions = 
     // First ever run, or Storage is unusable. There is no queue to protect and no partition to
     // open yet; step 7 below (running for its side effect) will seed the identity for next time.
     void confirmIdentity(options).catch(() => undefined);
-    return inertRuntime("no-identity");
+    return remember(inertRuntime("no-identity"));
   }
 
   const partition = resolvePartition(cached, { tenant: options.tenant ?? cached.tenant ?? DEFAULT_TENANT, environment: options.environment });
@@ -146,7 +166,7 @@ export async function startOfflineRuntime(options: StartOfflineRuntimeOptions = 
   } catch (error) {
     console.warn("offline: storage unavailable, running online-only", error);
     void confirmIdentity(options).catch(() => undefined);
-    return inertRuntime("storage-unavailable");
+    return remember(inertRuntime("storage-unavailable"));
   }
 
   await requestPersistentStorage();
@@ -275,7 +295,7 @@ export async function startOfflineRuntime(options: StartOfflineRuntimeOptions = 
     })
     .catch(() => undefined);
 
-  return {
+  return remember({
     partition,
     db,
     store,
@@ -290,7 +310,7 @@ export async function startOfflineRuntime(options: StartOfflineRuntimeOptions = 
       mirror.uninstall();
       db.close();
     },
-  };
+  });
 }
 
 /**

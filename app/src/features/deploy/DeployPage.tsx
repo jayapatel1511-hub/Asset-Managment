@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Field, Input, MessageBar, MessageBarBody, Select, Text, Title2, tokens } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset, Location, Project } from "../../api/types";
+import { Banner } from "../../components/Banner";
+import { Page } from "../../components/Page";
+import { SearchField } from "../../components/SearchField";
+import { SectionLabel } from "../../components/SectionLabel";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { t } from "../../i18n";
 import { ComponentPicker, type ComponentEntry } from "./ComponentPicker";
@@ -174,29 +177,25 @@ export function DeployPage() {
 
   if (confirmation) {
     return (
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-        <MessageBar intent="success">
-          <MessageBarBody>{confirmation}</MessageBarBody>
-        </MessageBar>
-        <Button appearance="primary" onClick={() => navigate("/sites")}>
+      <Page>
+        <div className="ams-success">
+          <Banner intent="ok">{confirmation}</Banner>
+          <div className="txn">{confirmation}</div>
+        </div>
+        <button type="button" className="ams-btn ams-btn-primary ams-btn-block" onClick={() => navigate("/sites")}>
           {t("site.title")}
-        </Button>
-      </div>
+        </button>
+      </Page>
     );
   }
 
   return (
-    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <Title2>{t("deploy.title")}</Title2>
+    <Page>
+      {restoredDraft && <Banner intent="info">{t("deploy.draftRestored")}</Banner>}
 
-      {restoredDraft && (
-        <MessageBar intent="info">
-          <MessageBarBody>{t("deploy.draftRestored")}</MessageBarBody>
-        </MessageBar>
-      )}
-
-      <Field label={t("deploy.project")} required>
-        <Select style={{ minWidth: 0, width: "100%" }} value={project} onChange={(_, d) => setProject(d.value)}>
+      <label className="ams-field">
+        {t("deploy.project")}
+        <select value={project} onChange={(e) => setProject(e.target.value)}>
           <option value="" disabled>
             —
           </option>
@@ -205,62 +204,62 @@ export function DeployPage() {
               {p.projectnumber} — {p.name}
             </option>
           ))}
-        </Select>
-      </Field>
+        </select>
+      </label>
 
-      <Field label={t("deploy.primaryAsset")} required>
+      <section>
+        <SectionLabel>{t("deploy.primaryAsset")}</SectionLabel>
         {primary ? (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Text font="monospace" weight="semibold">
-              {primary.assetid}
-            </Text>
-            <Button size="small" appearance="subtle" onClick={() => setPrimary(null)}>
-              {t("cart.remove")}
-            </Button>
+          <div className="ams-list">
+            <div className="ams-cart">
+              <span className="t-id" style={{ flex: 1 }}>
+                {primary.assetid}
+              </span>
+              <button type="button" className="ams-btn" onClick={() => setPrimary(null)}>
+                {t("cart.remove")}
+              </button>
+            </div>
           </div>
         ) : (
-          <div style={{ display: "flex", gap: 8 }}>
-            <Input
-              style={{ flex: 1 }}
-              placeholder={t("search.placeholder")}
-              value={primaryQuery}
-              onChange={(_, d) => setPrimaryQuery(d.value)}
-              onKeyDown={(e) => e.key === "Enter" && pickPrimary()}
-            />
-            <Button appearance="primary" onClick={pickPrimary}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <SearchField
+                value={primaryQuery}
+                placeholder={t("search.placeholder")}
+                onChange={setPrimaryQuery}
+                onSubmit={() => primaryQuery.trim() && pickPrimary()}
+              />
+            </div>
+            <button type="button" className="ams-btn ams-btn-primary" onClick={pickPrimary}>
               {t("deploy.addPrimary")}
-            </Button>
+            </button>
           </div>
         )}
-      </Field>
-      {primaryError && (
-        <MessageBar intent="error">
-          <MessageBarBody>{primaryError}</MessageBarBody>
-        </MessageBar>
-      )}
+      </section>
+      {primaryError && <Banner intent="err">{primaryError}</Banner>}
 
-      <Text weight="semibold">{t("deploy.addComponent")}</Text>
-      <ComponentPicker components={components} onChange={setComponents} excludeAssetIds={primary ? [primary.assetid] : []} />
+      <section>
+        <SectionLabel>{t("deploy.addComponent")}</SectionLabel>
+        <ComponentPicker components={components} onChange={setComponents} excludeAssetIds={primary ? [primary.assetid] : []} />
+      </section>
 
       <SiteFields value={site} onChange={setSite} existingSites={existingSites} />
 
-      <Field label={t("deploy.deploymentDate")} required>
-        <Input type="date" value={deploymentDate} onChange={(_, d) => setDeploymentDate(d.value)} />
-      </Field>
+      <label className="ams-field">
+        {t("deploy.deploymentDate")}
+        <input type="date" value={deploymentDate} onChange={(e) => setDeploymentDate(e.target.value)} />
+      </label>
 
-      <Field label={t("deploy.notes")}>
-        <Input value={notes} onChange={(_, d) => setNotes(d.value)} />
-      </Field>
+      <label className="ams-field">
+        {t("deploy.notes")}
+        <input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </label>
 
-      {submitError && (
-        <MessageBar intent="error">
-          <MessageBarBody>{submitError}</MessageBarBody>
-        </MessageBar>
-      )}
+      {submitError && <Banner intent="err">{submitError}</Banner>}
 
-      <Button appearance="primary" size="large" disabled={submitting} onClick={submit} style={{ borderColor: tokens.colorNeutralStroke1 }}>
+      <button type="button" className="ams-btn ams-btn-primary ams-btn-block" disabled={submitting} onClick={submit}>
         {submitting ? t("cart.submitting") : t("cart.submit")}
-      </Button>
-    </div>
+      </button>
+    </Page>
   );
 }

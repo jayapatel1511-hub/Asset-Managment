@@ -24,7 +24,16 @@ import type { Asset, CurrentUser, RetirementReason } from "../../../app/src/api/
 import { isAdmin } from "../../../app/src/api/types";
 import { mintAssetId } from "../../../app/src/domain/assetId";
 import type { Queryable } from "../db/pglite";
-import { ASSET_COLUMNS, assetToValues, insertRows, type AssetRow, type ModelRow, type ProjectRow } from "../db/rows";
+import {
+  ASSET_COLUMNS,
+  IDENTIFIER_COLUMNS,
+  assetToValues,
+  identifierValuesForAsset,
+  insertRows,
+  type AssetRow,
+  type ModelRow,
+  type ProjectRow,
+} from "../db/rows";
 import { applyTransaction, refuse } from "./transactionService";
 
 const RETIREMENT_REASONS: readonly RetirementReason[] = ["Sold", "Lost", "Damaged", "Obsolete"];
@@ -38,7 +47,20 @@ function todayIso(): string {
 }
 
 export async function loadAsset(tx: Queryable, assetId: string): Promise<AssetRow | undefined> {
-  const res = await tx.query<AssetRow>("SELECT * FROM asset WHERE assetid = $1", [assetId]);
+  const trimmed = assetId.trim();
+  const res = await tx.query<AssetRow>(
+    `SELECT a.*
+       FROM asset a
+      WHERE a.assetid = $1
+         OR a.id IN (
+              SELECT i.asset_uuid FROM asset_identifier i
+               WHERE i.is_current
+                 AND (i.identifier_value = $1 OR i.normalized_value = lower($2))
+            )
+      ORDER BY (a.assetid = $1) DESC
+      LIMIT 1`,
+    [trimmed, trimmed]
+  );
   return res.rows[0];
 }
 
@@ -326,6 +348,7 @@ export async function recordCalibration(
       transactiontype: "ReturnFromCalibration",
       performedby: user.upn,
       date: nowIso(),
+      calibrationResult: input.result ?? "Pass",
       lines: [{ assetId: input.assetId }],
     });
     if (!result.ok) return result;
@@ -349,6 +372,9 @@ export async function previewNextAssetId(
   const found = await findModel(tx, manufacturer, model, equipmenttype);
   if (!found) {
     return { ok: false, reason: `Unknown model ${manufacturer} ${model} (${equipmenttype}) — pick one from the catalogue.` };
+  }
+  if (found.isactive === false) {
+    return { ok: false, reason: "reference.inactiveNotSelectable: That equipment model is deactivated." };
   }
   if (found.isserialised) {
     if (!serial?.trim()) return { ok: false, reason: "This model requires a serial number." };
@@ -382,6 +408,9 @@ export async function registerAsset(
   const model = await findModel(tx, input.manufacturer, input.model, input.equipmenttype);
   if (!model) {
     return refuse("Pick a model from the catalogue — free-text models are not permitted (Principle IV).");
+  }
+  if (model.isactive === false) {
+    return refuse("reference.inactiveNotSelectable: That equipment model is deactivated.");
   }
 
   let assetid: string;
@@ -420,6 +449,7 @@ export async function registerAsset(
     staticip: null,
   };
   await insertRows(tx, "asset", ASSET_COLUMNS, [assetToValues(newAsset)]);
+  await insertRows(tx, "asset_identifier", IDENTIFIER_COLUMNS, identifierValuesForAsset(newAsset));
 
   const result = await applyTransaction(tx, {
     clientSubmissionId: input.clientSubmissionId,
@@ -436,4 +466,70 @@ export async function registerAsset(
   // The screen shows transactionName; the mock returns the new tag there rather than TXN-nnnnnn
   // because that is what the person who just registered an asset needs to see. Kept.
   return { ok: true, transactionId: result.transactionId, transactionName: assetid };
+}
+
+/**
+ * Rule 6: a TMP-* tag may be completed once. History lines keep the old tag; current pointers
+ * (calibration, open relationships, installations) move to the minted canonical id.
+ */
+export async function completeTemporaryTag(
+  tx: Queryable,
+  user: CurrentUser,
+  input: { assetId: string; clientSubmissionId: string }
+): Promise<SubmissionOutcome> {
+  if (!isAdmin(user)) {
+    return refuse("Only an administrator can complete a temporary tag.");
+  }
+  const row = await loadAsset(tx, input.assetId);
+  if (!row) return refuse(`Unknown asset ${input.assetId}.`, input.assetId);
+  if (!/^TMP-[^-]+$/.test(row.assetid.trim())) {
+    return refuse(`${row.assetid} is not a temporary tag.`, row.assetid);
+  }
+
+  const model = await findModel(tx, row.manufacturer, row.model, row.equipmenttype);
+  if (!model) return refuse(`Unknown model for ${row.assetid} — cannot mint a canonical id.`, row.assetid);
+
+  let canonical: string;
+  if (model.isserialised) {
+    if (!row.serialnumber?.trim()) return refuse("This model requires a serial number before the tag can be completed.", row.assetid);
+    canonical = mintAssetId(model, row.serialnumber, 0);
+  } else {
+    canonical = mintAssetId(model, null, await consumeSequence(tx, model.idprefix));
+  }
+
+  const clash = await loadAsset(tx, canonical);
+  if (clash && clash.id !== row.id) {
+    return refuse(`${canonical} already exists — cannot complete ${row.assetid} onto it.`, row.assetid);
+  }
+
+  const oldTag = row.assetid;
+  const existingTmp = await tx.query<{ c: number }>(
+    `SELECT count(*)::int AS c FROM asset_identifier
+      WHERE asset_uuid = $1 AND identifier_type = 'TemporaryTag' AND is_current
+        AND normalized_value = lower($2)`,
+    [row.id, oldTag]
+  );
+  if ((existingTmp.rows[0]?.c ?? 0) === 0) {
+    await tx.query(
+      `INSERT INTO asset_identifier (id, asset_uuid, identifier_type, identifier_value, normalized_value, is_current, is_sensitive, source)
+       VALUES ($1, $2, 'TemporaryTag', $3, lower($3), true, false, 'complete-temporary-tag')`,
+      [`id-tmp-${row.id}`, row.id, oldTag]
+    );
+  }
+
+  await tx.query(
+    `INSERT INTO asset_identifier (id, asset_uuid, identifier_type, identifier_value, normalized_value, is_current, is_sensitive, source)
+     VALUES ($1, $2, 'CanonicalAssetId', $3, lower($3), true, false, 'complete-temporary-tag')`,
+    [`id-canon-${row.id}`, row.id, canonical]
+  );
+
+  await tx.query("UPDATE asset SET assetid = $1 WHERE id = $2", [canonical, row.id]);
+  await tx.query("UPDATE calibration_record SET asset = $1 WHERE asset = $2", [canonical, oldTag]);
+  await tx.query("UPDATE asset_relationship SET parentasset = $1 WHERE parentasset = $2", [canonical, oldTag]);
+  await tx.query("UPDATE asset_relationship SET childasset = $1 WHERE childasset = $2", [canonical, oldTag]);
+  await tx.query("UPDATE installation SET primaryasset = $1 WHERE primaryasset = $2", [canonical, oldTag]);
+  await tx.query("UPDATE installation_component SET asset = $1 WHERE asset = $2", [canonical, oldTag]);
+  await tx.query("UPDATE asset SET parentasset = $1 WHERE parentasset = $2", [canonical, oldTag]);
+
+  return { ok: true, transactionId: input.clientSubmissionId, transactionName: canonical };
 }

@@ -1447,7 +1447,7 @@ export class Simulation {
         if (a.status !== "Missing" || this.frozen.has(assetId)) return;
         const admin = this.admin(a.homeoffice!, this.today, rng);
         const ts = this.at(this.today, this.rngs.time);
-        this.ledger.apply({ type: "Found", ts, performedby: admin, notes: "Located and recovered.", lines: [{ assetId }] });
+        this.ledger.apply({ type: "Found", ts, performedby: admin, notes: "Located and recovered.", tolocation: a.homeoffice!, lines: [{ assetId }] });
         if (a.currentlocation !== a.homeoffice) {
           this.ledger.apply({ type: "Transfer", ts: plusSeconds(ts, 120), performedby: admin, tolocation: a.homeoffice!, notes: "Brought back to the office after being found.", lines: [{ assetId }] });
         }

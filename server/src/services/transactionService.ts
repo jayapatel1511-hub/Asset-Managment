@@ -236,6 +236,8 @@ export interface ApplyTransactionParams {
   touser?: string | null;
   fromproject?: string | null;
   toproject?: string | null;
+  toLocationKind?: "Office" | "Site" | "CalibrationLab" | "Other" | null;
+  calibrationResult?: "Pass" | "Fail" | "Adjusted" | null;
   primaryAssetId?: string | null;
   expectedreturn?: string | null;
   notes?: string | null;
@@ -248,6 +250,8 @@ function snapshotOf(row: AssetRow): AssetSnapshot {
     assetId: asset.assetid,
     status: asset.status,
     lifecycle: asset.lifecycle,
+    disposition: row.disposition,
+    serviceability: row.serviceability,
     homeoffice: asset.homeoffice,
     currentlocation: asset.currentlocation,
     custodian: asset.custodian,
@@ -256,16 +260,45 @@ function snapshotOf(row: AssetRow): AssetSnapshot {
   };
 }
 
-/** Locks the named assets in a deterministic order (assetid) — see this file's header. */
+/** Locks the named assets in a deterministic order (current assetid) — see this file's header. */
 async function lockAssets(tx: Queryable, assetIds: string[]): Promise<Map<string, AssetRow>> {
-  const unique = [...new Set(assetIds)].sort();
+  const unique = [...new Set(assetIds)];
   if (unique.length === 0) return new Map();
-  const placeholders = unique.map((_, i) => `$${i + 1}`).join(",");
+  const lowered = unique.map((id) => id.trim().toLowerCase());
   const res = await tx.query<AssetRow>(
-    `SELECT * FROM asset WHERE assetid IN (${placeholders}) ORDER BY assetid FOR UPDATE`,
-    unique
+    `SELECT a.*
+       FROM asset a
+      WHERE a.assetid = ANY($1::text[])
+         OR a.id IN (
+              SELECT i.asset_uuid FROM asset_identifier i
+               WHERE i.is_current
+                 AND (i.identifier_value = ANY($1::text[]) OR i.normalized_value = ANY($2::text[]))
+            )
+      ORDER BY a.assetid
+      FOR UPDATE`,
+    [unique, lowered]
   );
-  return new Map(res.rows.map((r) => [r.assetid, r]));
+  const byCurrent = new Map(res.rows.map((r) => [r.assetid, r]));
+  const byUuid = new Map(res.rows.map((r) => [r.id, r]));
+  const aliases = await tx.query<{ identifier_value: string; normalized_value: string; asset_uuid: string }>(
+    `SELECT identifier_value, normalized_value, asset_uuid FROM asset_identifier
+      WHERE is_current AND (identifier_value = ANY($1::text[]) OR normalized_value = ANY($2::text[]))`,
+    [unique, lowered]
+  );
+  const out = new Map<string, AssetRow>();
+  for (const requested of unique) {
+    const direct = byCurrent.get(requested);
+    if (direct) {
+      out.set(requested, direct);
+      continue;
+    }
+    const alias = aliases.rows.find(
+      (a) => a.identifier_value === requested || a.normalized_value === requested.trim().toLowerCase()
+    );
+    const row = alias ? byUuid.get(alias.asset_uuid) : undefined;
+    if (row) out.set(requested, row);
+  }
+  return out;
 }
 
 async function nextTransactionName(tx: Queryable): Promise<string> {
@@ -298,19 +331,23 @@ export async function applyTransaction(tx: Queryable, params: ApplyTransactionPa
     // FR-026: a permanent Component child never carries a line of its own — it follows its
     // parent (see mirrorComponentChildren below). Refused here as well as in the UI.
     if (params.transactiontype === "Checkout" || params.transactiontype === "Deploy") {
-      if (await hasOpenComponentParent(tx, line.assetId)) {
+      if (await hasOpenComponentParent(tx, row.assetid)) {
         return refuse(
           `${line.assetId} is a permanent component of another asset and cannot be transacted on its own.`,
           line.assetId
         );
       }
     }
+    const foundDefaultsToHome =
+      params.transactiontype === "Found" && !params.tolocation && !params.touser && !params.toproject;
     const lineInput: TransactionLineInput = {
       type: params.transactiontype,
       date: params.date,
-      tolocation: params.tolocation,
+      tolocation: foundDefaultsToHome ? row.homeoffice : params.tolocation,
+      toLocationKind: foundDefaultsToHome ? "Office" : params.toLocationKind,
       touser: params.touser,
       toproject: params.toproject,
+      calibrationResult: params.calibrationResult,
       primaryAssetId: params.primaryAssetId,
       retirementReason: line.retirementReason,
       isPrimary: params.primaryAssetId === line.assetId,
@@ -358,8 +395,12 @@ export async function applyTransaction(tx: Queryable, params: ApplyTransactionPa
         randomUUID(),
         transactionId,
         plan.row.assetid,
-        plan.row.status,
-        fields.statusAfter,
+        plan.row.lifecycle,
+        fields.lifecycle,
+        plan.row.disposition,
+        fields.disposition,
+        plan.row.serviceability,
+        fields.serviceability,
         plan.line.kitRole ?? null,
         plan.line.orientation ?? null,
         plan.line.powersource ?? null,
@@ -370,16 +411,17 @@ export async function applyTransaction(tx: Queryable, params: ApplyTransactionPa
       ],
     ]);
 
-    // The ONE place asset current state is written (Principle I) — every value comes from
-    // deriveState's result, none from the request.
+    // The ONE place asset current state is written (Principle I) — axes are stored; status is generated.
     await tx.query(
       `UPDATE asset
-          SET status = $1, lifecycle = $2, custodian = $3, currentlocation = $4, currentproject = $5,
-              retirementreason = $6, row_version = row_version + 1
-        WHERE assetid = $7`,
+          SET lifecycle = $1, disposition = $2, serviceability = $3,
+              custodian = $4, currentlocation = $5, currentproject = $6,
+              retirementreason = $7, row_version = row_version + 1
+        WHERE assetid = $8`,
       [
-        fields.statusAfter,
         fields.lifecycle,
+        fields.disposition,
+        fields.serviceability,
         fields.custodian,
         fields.currentlocation,
         fields.currentproject,
@@ -476,7 +518,8 @@ async function applyRelationshipOps(tx: Queryable, ops: RelationshipOp[], transa
 async function mirrorComponentChildren(tx: Queryable, parentAssetId: string): Promise<void> {
   await tx.query(
     `UPDATE asset AS child
-        SET status = parent.status, currentlocation = parent.currentlocation,
+        SET lifecycle = parent.lifecycle, disposition = parent.disposition, serviceability = parent.serviceability,
+            currentlocation = parent.currentlocation,
             custodian = parent.custodian, currentproject = parent.currentproject,
             row_version = child.row_version + 1
        FROM asset AS parent, asset_relationship AS rel

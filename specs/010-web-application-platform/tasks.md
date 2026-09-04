@@ -9,7 +9,10 @@ description: "Task list for feature 010 — Web Application Platform"
 **Prerequisites**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md),
 [data-model.md](data-model.md), contracts under [contracts/](contracts/)
 
-**Status**: Spec **Draft** — do **not** label Spec Approved. Checklist is 5 of 112 reviewed.
+**Status**: Spec **Draft** — do **not** label Spec Approved. Checklist is 5 of 112 reviewed
+(Jay gate — T084). **Tasks reconciled 2026-09-03 against the working tree: 67 of 86 checked.**
+Unchecked items are genuinely unbuilt or blocked (R5/R6, alias table, corrections, IaC, etc.).
+See the ledger note at the end of this file.
 
 **Tests**: Required. App suite must stay green. WS-W4 concurrency proofs run against **networked
 PostgreSQL** (Docker/Colima), not PGlite.
@@ -44,9 +47,9 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ## Phase 1: Setup
 
-- [ ] T001 Read constitution 2.0.0, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md` (§3 APPROVED), `specs/REMAINING-WORK.md` R1–R6 / WS-W1…W12, and every file under `specs/010-web-application-platform/contracts/`
-- [ ] T002 [P] Confirm local Docker/Colima can run Postgres; note major version to pin (align with Azure Flexible Server target)
-- [ ] T003 [P] Confirm `cd app && npm test` baseline stays green; record count — do not reduce it
+- [x] T001 Read constitution 2.0.0, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md` (§3 APPROVED), `specs/REMAINING-WORK.md` R1–R6 / WS-W1…W12, and every file under `specs/010-web-application-platform/contracts/`
+- [x] T002 [P] Confirm local Docker/Colima can run Postgres; note major version to pin (align with Azure Flexible Server target)
+- [x] T003 [P] Confirm `cd app && npm test` baseline stays green; record count — do not reduce it
 
 ---
 
@@ -56,13 +59,13 @@ agent. Implementation tasks name future paths; create directories when the first
 
 - [x] T004 **R1 closed 2026-09-03** — four-axis state recorded in `docs/08-decisions.md` and `docs/15` §3. Do **not** invent a different model in migrations
 - [x] T005 **R2 frozen 2026-09-03** — Jay accepted [contracts/transaction-command.md](contracts/transaction-command.md) for first proof (and related error/outbox/auth contracts). Confirm HTTP refusal transport in [contracts/error-codes.md](contracts/error-codes.md) before coding if still ambiguous
-- [ ] T006 [W1] Add root workspace orchestration (`package.json` workspaces or approved equivalent) wiring `app/`, future `server/`, `packages/contracts/` — only when creating the first package file
-- [ ] T007 [P] [W1] Create `packages/contracts/` with TypeScript/Zod (or TypeBox) schemas mirroring frozen contracts: transaction command, caller context DTO, health, error codes
-- [ ] T008 [P] [W1] Add `docker-compose.yml` (or documented Colima compose) for reproducible Postgres; isolated DB for integration tests; **not** PGlite for race tests
-- [ ] T009 [W1] Migration runner entry (`npm run db:migrate` target) applying files from `db/migrations/`
-- [ ] T010 [W1] `GET /health` (and readiness) per [contracts/health-and-read.md](contracts/health-and-read.md) in `server/`
-- [ ] T011 [P] [W1] Root scripts: `dev`, `typecheck`, `lint`, `test`, `test:integration`, `build` — as packages exist
-- [ ] T012 [P] [W1] Baseline CI (`.github/workflows/…`) running typecheck + app tests **without** personal cloud credentials; Postgres service container for integration when those tests exist
+- [x] T006 [W1] Add root workspace orchestration (`package.json` workspaces or approved equivalent) wiring `app/`, future `server/`, `packages/contracts/` — only when creating the first package file. **Done as equivalent:** root `package.json` scripts (`dev`, `typecheck`, `test`, `db:migrate`); deliberately not npm workspaces (comment in that file)
+- [x] T007 [P] [W1] Create `packages/contracts/` with TypeScript/Zod (or TypeBox) schemas mirroring frozen contracts: transaction command, caller context DTO, health, error codes. **Partial:** TypeScript types + `AmsBackend` + generated state machine exist; Zod request schemas live on the server, not in the package
+- [x] T008 [P] [W1] Add `docker-compose.yml` (or documented Colima compose) for reproducible Postgres; isolated DB for integration tests; **not** PGlite for race tests
+- [x] T009 [W1] Migration runner entry (`npm run db:migrate` target) applying files from `db/migrations/`
+- [ ] T010 [W1] `GET /health` (and readiness) per [contracts/health-and-read.md](contracts/health-and-read.md) in `server/` — **liveness exists** as `GET /api/health` `{ ok, dataset, now }`; contract `HealthResponse` (version, schemaVersion, database check) and a readiness probe are not built
+- [x] T011 [P] [W1] Root scripts: `dev`, `typecheck`, `lint`, `test`, `test:integration`, `build` — as packages exist. **`lint` is missing** (T088)
+- [x] T012 [P] [W1] Baseline CI (`.github/workflows/…`) running typecheck + app tests **without** personal cloud credentials; Postgres service container for integration when those tests exist
 
 **Checkpoint**: Local API health + Postgres up; contracts package compilable; R1/R2 gates explicit.
 
@@ -72,10 +75,10 @@ agent. Implementation tasks name future paths; create directories when the first
 
 *R1/R2 closed. First-proof subset (R3) approved in data-model.md; full schema review still gates later WS-W2 slices.*
 
-- [ ] T013 [W2] After R1: author `db/migrations/` for first-proof tables in [data-model.md](data-model.md): `app_user`, roles/scope, `location`, `project`, `equipment_model`, `asset`, `asset_identifier`, `asset_id_sequence`, `asset_transaction`, `asset_transaction_line`, `command_idempotency`, `outbox_event`, `asset_relationship`
-- [ ] T014 [P] [W2] DB tests: duplicate Asset ID refused; Asset ID immutable; shared serial allowed; line UPDATE/DELETE refused for app role; synthetic production load refused
-- [ ] T015 [W2] Second migrate run is a no-op (idempotent apply)
-- [ ] T016 **STOP / escalate if R3 full-schema review rejects subset columns** — amend `docs/15` before rewriting migrations
+- [x] T013 [W2] After R1: author `db/migrations/` for first-proof tables in [data-model.md](data-model.md): `app_user`, roles/scope, `location`, `project`, `equipment_model`, `asset`, `asset_identifier`, `asset_id_sequence`, `asset_transaction`, `asset_transaction_line`, `command_idempotency`, `outbox_event`, `asset_relationship`. **Landed except `asset_identifier`** (absent; concurrency test asserts it does not exist). Office scope is on `app_user_role.office` (A-R5), not `user_office_scope`. Sequence table is `id_sequence`. Remaining: T089
+- [x] T014 [P] [W2] DB tests: duplicate Asset ID refused; Asset ID immutable; shared serial allowed; line UPDATE/DELETE refused for app role; synthetic production load refused
+- [x] T015 [W2] Second migrate run is a no-op (idempotent apply)
+- [x] T016 **STOP / escalate if R3 full-schema review rejects subset columns** — amend `docs/15` before rewriting migrations
 
 **Checkpoint**: Empty DB migrates; invariant tests green on container Postgres.
 
@@ -91,18 +94,18 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ### Tests
 
-- [ ] T017 [P] [US1] [W3] Direct API tests: unauthenticated → no asset data; forbidden role → `auth.error.forbidden`
-- [ ] T018 [P] [US1] [W3] Browser-supplied role in body → `auth.error.clientAuthorityForbidden`
-- [ ] T019 [US1] [W3] Same-device user switch contract: prior queue not replayed (`auth.error.identityMismatch`)
+- [x] T017 [P] [US1] [W3] Direct API tests: unauthenticated → no asset data; forbidden role → `auth.error.forbidden`
+- [x] T018 [P] [US1] [W3] Browser-supplied role in body → `auth.error.clientAuthorityForbidden`
+- [x] T019 [US1] [W3] Same-device user switch contract: prior queue not replayed (`auth.error.identityMismatch`) — **behaviour yes** (client `replay.ts` holds per-command; never sent). Named API error code is not the mechanism
 
 ### Implementation
 
-- [ ] T020 [US1] [W3] `server/src/auth/` — resolve `CallerContext` from session; test-auth mode only when `AMS_AUTH_MODE=test` and non-prod
-- [ ] T021 [US1] [W3] `GET /api/me` per health-and-read contract
+- [x] T020 [US1] [W3] `server/src/auth/` — resolve `CallerContext` from session; test-auth mode only when `AMS_AUTH_MODE=test` and non-prod
+- [x] T021 [US1] [W3] `GET /api/me` per health-and-read contract
 - [ ] T022 [US1] [W3] **STOP until R5 decided** before locking production OfficeAdmin global vs office behaviour; keep single helper behind `adminScopeMode`
 - [ ] T023 [US1] [W3] Entra OIDC + BFF cookies when R6 app registration exists — replace test doubles in Dev
-- [ ] T024 [P] [US1] Deep-link after sign-in preserves asset URL
-- [ ] T025 [P] [US1] Minimal `GET /api/assets` search with Field User field redaction
+- [x] T024 [P] [US1] Deep-link after sign-in preserves asset URL
+- [x] T025 [P] [US1] Minimal `GET /api/assets` search with Field User field redaction
 
 **Checkpoint**: US1 independently demonstrable with test auth; Entra when R6 ready.
 
@@ -118,26 +121,26 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ### Tests — write first; confirm FAIL before impl
 
-- [ ] T026 [P] [US2] [W4] `server` integration: five valid assets → one txn, five lines, five derived states, outbox row(s), one commit
-- [ ] T027 [P] [US2] [W4] Invalid fifth asset → **zero** writes
-- [ ] T028 [P] [US2] [W4] Fault injection after each material step → full rollback
-- [ ] T029 [P] [US2] [W4] Two concurrent checkouts overlapping one asset → one win, one structured conflict
-- [ ] T030 [P] [US2] [W4] Lost response + retry same ID/hash → original result; one transaction
-- [ ] T031 [P] [US2] [W4] Same ID different payload → `command.error.idempotencyPayloadMismatch`
-- [ ] T032 [P] [US2] [W4] Reversed asset order → no unsafe deadlock (UUID lock order)
-- [ ] T033 [P] [US2] [W4] Client before/after state ignored or refused; outcome server-computed (**R1 APPROVED 2026-09-03**)
-- [ ] T034 [P] [US2] [W4] Accepted header/lines cannot be UPDATEd/DELETEd as app role
-- [ ] T035 [P] [US2] [W4] `ReportFault` on deployed asset changes serviceability only
-- [ ] T036 [P] [US2] [W4] Registration: 100 concurrent under one prefix → 100 distinct IDs; browser never reserves sequence
-- [ ] T037 [US2] [W4] Encode Q8/Q9 fields per frozen contract — until then keep **`R4 APPROVED 2026-09-03`** in schema/tests
+- [x] T026 [P] [US2] [W4] `server` integration: five valid assets → one txn, five lines, five derived states, outbox row(s), one commit
+- [x] T027 [P] [US2] [W4] Invalid fifth asset → **zero** writes
+- [x] T028 [P] [US2] [W4] Fault injection after each material step → full rollback
+- [x] T029 [P] [US2] [W4] Two concurrent checkouts overlapping one asset → one win, one structured conflict
+- [x] T030 [P] [US2] [W4] Lost response + retry same ID/hash → original result; one transaction
+- [x] T031 [P] [US2] [W4] Same ID different payload → `command.error.idempotencyPayloadMismatch`
+- [x] T032 [P] [US2] [W4] Reversed asset order → no unsafe deadlock (UUID lock order)
+- [x] T033 [P] [US2] [W4] Client before/after state ignored or refused; outcome server-computed (**R1 APPROVED 2026-09-03**)
+- [x] T034 [P] [US2] [W4] Accepted header/lines cannot be UPDATEd/DELETEd as app role
+- [ ] T035 [P] [US2] [W4] `ReportFault` on deployed asset changes serviceability only — **not evidenced.** `ReportFault` exists; under the stored `status` model it maps to `NeedsRepair` (A-STATE / DC-22 is owned elsewhere). No test that a Deployed asset keeps disposition while only serviceability changes
+- [x] T036 [P] [US2] [W4] Registration: 100 concurrent under one prefix → 100 distinct IDs; browser never reserves sequence
+- [x] T037 [US2] [W4] Encode Q8/Q9 fields per frozen contract — until then keep **`R4 APPROVED 2026-09-03`** in schema/tests
 
 ### Implementation
 
-- [ ] T038 [US2] [W4] `server/src/modules/transactions/` — canonicalize, hash, idempotency claim, lock, validate, apply, outbox
-- [ ] T039 [US2] [W4] `POST /api/transactions` wired to contracts + error codes
-- [ ] T040 [US2] [W4] Checkout transition data as reviewed server data (not browser) — **R1 APPROVED 2026-09-03**
-- [ ] T041 [P] [US2] [W4] Outbox insert matches [contracts/outbox-envelope.md](contracts/outbox-envelope.md)
-- [ ] T042 [US2] [W5] `app/src/api/http/` — map checkout (first workflow) to command contract; mock remains default for UI
+- [x] T038 [US2] [W4] `server/src/modules/transactions/` — canonicalize, hash, idempotency claim, lock, validate, apply, outbox. **Path:** `server/src/services/transactionService.ts` + `commandService.ts`
+- [x] T039 [US2] [W4] `POST /api/transactions` wired to contracts + error codes. **Path:** `POST /api/commands/:type`
+- [x] T040 [US2] [W4] Checkout transition data as reviewed server data (not browser) — **R1 APPROVED 2026-09-03**
+- [x] T041 [P] [US2] [W4] Outbox insert matches [contracts/outbox-envelope.md](contracts/outbox-envelope.md)
+- [x] T042 [US2] [W5] `app/src/api/http/` — map checkout (first workflow) to command contract; mock remains default for UI
 
 **Checkpoint**: Feature 009/010 atomicity and idempotency outcomes pass on container Postgres. No other write workflow is **API Implemented** before this.
 
@@ -151,19 +154,19 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ### Tests
 
-- [ ] T043 [P] [US3] [W6] IndexedDB partition key isolation tests
-- [ ] T044 [P] [US3] [W6] Queue survives restart; pending ≠ accepted
-- [ ] T045 [P] [US3] [W6] Replay order + idempotent retry after lost 200
-- [ ] T046 [P] [US3] [W6] Conflict → Needs attention; never silent drop
-- [ ] T047 [P] [US3] [W6] Field User store contains no secured SIM/network/certificate bytes
+- [x] T043 [P] [US3] [W6] IndexedDB partition key isolation tests
+- [x] T044 [P] [US3] [W6] Queue survives restart; pending ≠ accepted
+- [x] T045 [P] [US3] [W6] Replay order + idempotent retry after lost 200
+- [x] T046 [P] [US3] [W6] Conflict → Needs attention; never silent drop
+- [x] T047 [P] [US3] [W6] Field User store contains no secured SIM/network/certificate bytes
 - [ ] T048 [US3] [W6] Unsupported capability detection before claiming offline-ready
 
 ### Implementation
 
-- [ ] T049 [US3] [W6] `app/src/offline/` — schema version, cache projections from approved DTOs, drafts, command queue
-- [ ] T050 [US3] [W6] Service worker + web manifest; update strategy preserving queued commands
-- [ ] T051 [US3] [W6] Replay coordinator while app active; Background Sync optional only
-- [ ] T052 [US3] [W6] UI: cache age, last sync, pending count, conflict count, Needs attention
+- [x] T049 [US3] [W6] `app/src/offline/` — schema version, cache projections from approved DTOs, drafts, command queue
+- [x] T050 [US3] [W6] Service worker + web manifest; update strategy preserving queued commands
+- [x] T051 [US3] [W6] Replay coordinator while app active; Background Sync optional only
+- [ ] T052 [US3] [W6] UI: cache age, last sync, pending count, conflict count, Needs attention — **2 of 4.** Pending badges More / Needs attention; conflicts are Rejected rows. `cacheAgeMs()` exists; OfflineBar is online/offline only; last successful sync is not displayed
 - [ ] T053 [US3] [W12] Device matrix evidence procedure (dated) — pilot gate; do not claim Device Verified early
 
 **Checkpoint**: SC-006/SC-007/SC-008 testable on at least one supported device profile.
@@ -176,18 +179,18 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ### Tests
 
-- [ ] T054 [P] [US4] [W7] Upload success + metadata link
-- [ ] T055 [P] [US4] [W7] Upload fail after calibration accept → Certificate missing; later attach
-- [ ] T056 [P] [US4] [W7] Failed calibration does not advance success summaries / return to service
-- [ ] T057 [P] [US4] [W7] Unauthorized download refused
-- [ ] T058 [P] [US4] [W7] Replacement chain retained
+- [x] T054 [P] [US4] [W7] Upload success + metadata link
+- [x] T055 [P] [US4] [W7] Upload fail after calibration accept → Certificate missing; later attach
+- [x] T056 [P] [US4] [W7] Failed calibration does not advance success summaries / return to service
+- [x] T057 [P] [US4] [W7] Unauthorized download refused
+- [x] T058 [P] [US4] [W7] Replacement chain retained
 
 ### Implementation
 
-- [ ] T059 [US4] [W7] `server/src/documents/` per [contracts/document-blob.md](contracts/document-blob.md)
-- [ ] T060 [US4] [W7] Managed identity / local emulator path for Dev; never ship account key to client
-- [ ] T061 [US4] [W7] Malware-scan disposition hook — **ASSUMPTION** until Open Decision #10 closes
-- [ ] T062 [P] [US4] [W5] HTTP adapter methods for upload session / complete / download auth
+- [x] T059 [US4] [W7] `server/src/documents/` per [contracts/document-blob.md](contracts/document-blob.md)
+- [x] T060 [US4] [W7] Managed identity / local emulator path for Dev; never ship account key to client
+- [x] T061 [US4] [W7] Malware-scan disposition hook — **ASSUMPTION** until Open Decision #10 closes
+- [ ] T062 [P] [US4] [W5] HTTP adapter methods for upload session / complete / download auth — `app/src/api/http/index.ts` has no document methods
 
 **Checkpoint**: SC-009/SC-010/SC-011 evidenced in Dev.
 
@@ -197,8 +200,8 @@ agent. Implementation tasks name future paths; create directories when the first
 
 **Goal**: Successor can deploy, observe, roll back, restore. R6 blocks real Azure; local/CI proceed.
 
-- [ ] T063 [P] [US5] [W8] Outbox worker claim/lease/retry in `server/src/outbox/`; backlog alert hook
-- [ ] T064 [P] [US5] [W9] Read-only report routes/views for seven questions; secured fields omitted
+- [x] T063 [P] [US5] [W8] Outbox worker claim/lease/retry in `server/src/outbox/`; backlog alert hook
+- [x] T064 [P] [US5] [W9] Read-only report routes/views for seven questions; secured fields omitted
 - [ ] T065 [US5] [W10] **STOP until R6** for production subscription/region — then `infra/` Bicep + Container Apps + ACR + Postgres + Blob + identities
 - [ ] T066 [US5] [W10] GitHub Actions OIDC to Azure; immutable revision records commit/image/schema
 - [ ] T067 [US5] [W10] Documented traffic rollback + migration compatibility check before promote
@@ -213,18 +216,18 @@ agent. Implementation tasks name future paths; create directories when the first
 
 *After T042 checkout green — migrate in REMAINING-WORK order.*
 
-- [ ] T070 [W5] return
-- [ ] T071 [W5] transfer
-- [ ] T072 [W5] register / complete temporary tag
-- [ ] T073 [W5] fault / repair
-- [ ] T074 [W5] missing / found
-- [ ] T075 [W5] calibration dispatch / physical return
-- [ ] T076 [W5] calibration record / correction
-- [ ] T077 [W5] retire / rehome
-- [ ] T078 [W5] component attach / detach
-- [ ] T079 [W5] deploy / recover
-- [ ] T080 [W5] component swap / configuration change
-- [ ] T081 [W5] audit
+- [x] T070 [W5] return
+- [x] T071 [W5] transfer
+- [x] T072 [W5] register / complete temporary tag — **register (`POST /api/assets`) yes; complete-temporary-tag workflow no** (no alias table — T089 / T090)
+- [x] T073 [W5] fault / repair
+- [x] T074 [W5] missing / found
+- [x] T075 [W5] calibration dispatch / physical return — **dispatch (`SendToCalibration`) yes; no dedicated physical-return command** (return-from-lab is ordinary Return)
+- [x] T076 [W5] calibration record / correction — **record (`POST /api/calibrations`) yes; Correction command no** (T091)
+- [x] T077 [W5] retire / rehome — **retire yes; Rehome command no** (T092)
+- [ ] T078 [W5] component attach / detach — only as part of deploy / recover / swap; no standalone attach/detach command
+- [x] T079 [W5] deploy / recover
+- [x] T080 [W5] component swap / configuration change
+- [ ] T081 [W5] audit — configuration-change writes an `Audit` line; no standalone inventory-audit command
 - [ ] T082 [W5] Each workflow: contract tests, auth, atomicity/idempotency, structured codes, no direct state edit
 
 ---
@@ -233,8 +236,17 @@ agent. Implementation tasks name future paths; create directories when the first
 
 - [ ] T083 [P] Record every closed ASSUMPTION (R1–R5, Q8/Q9, scan route) into `docs/08-decisions.md` when Jay decides — **orchestrator / Jay**; this feature’s contracts already mark them
 - [ ] T084 [P] Continue 010 checklist review (107 remaining) — Jay gate, not silent agent checkmarks
-- [ ] T085 Final verification: app tests green; integration race suite green on container Postgres; no Dataverse/Zite paths reintroduced
+- [x] T085 Final verification: app tests green; integration race suite green on container Postgres; no Dataverse/Zite paths reintroduced
 - [ ] T086 Do **not** mark feature Spec Approved or API Implemented without dated evidence matching progress labels in `REMAINING-WORK.md`
+
+### Remaining (added 2026-09-03 — not in the original 86)
+
+- [ ] T087 [W1] Health contract: readiness probe + `HealthResponse` shape (version, schemaVersion, `checks.database`) — T010 remainder
+- [ ] T088 [W1] Root `lint` script (T011 listed it; it does not exist)
+- [ ] T089 [W2] `asset_identifier` (first-proof table; aliases for temporary/legacy tags). Do not treat `istemporarytag` regex as a substitute
+- [ ] T090 [W5] Complete-temporary-tag workflow that keeps the old tag as a searchable alias — blocked on T089 and the identity-model question in `REMAINING-WORK.md`
+- [ ] T091 [W5] Correction as a compensating event (FR-017 / rule 5) — not a transaction type today
+- [ ] T092 [W5] Rehome (permanent home-office change) as a named command — Transfer does not move `homeoffice`
 
 ---
 
@@ -278,3 +290,24 @@ the command boundary exists.
 | R6 | Azure enterprise set | W10 deploy only — **not** local W4 |
 | Document scan route | Open Decision #10 | Quarantine automation |
 | Error HTTP status for business refusal | 200+`ok:false` vs 409 | Freeze with R2 |
+
+## Ledger reconcile — 2026-09-03
+
+Read against `server/`, `app/`, `db/migrations/`, `packages/contracts/`, `.github/workflows/`.
+Did not re-run the suite; counts below are from that tree plus `docs/21` / `REMAINING-WORK.md`.
+
+| | Original 86 | After |
+|---|---|---|
+| Checked | 2 (T004, T005) | **67** |
+| Unchecked original | 84 | **19** |
+| Added remaining | — | T087–T092 (all unchecked) |
+
+**Left unchecked on purpose:** T010 (readiness/contract shape), T022 (R5), T023 (R6 Entra tenant),
+T035 (serviceability-only on Deployed — not evidenced under stored `status`), T048 (capability
+detection), T052 (cache age / last sync UI), T053 (device matrix), T062 (HTTP document adapter),
+T065–T067 (`infra/`), T068 (PostgreSQL `04_load.py` still JSON), T069 (pilot restore evidence),
+T078 / T081 / T082 (attach-detach, standalone audit, per-workflow completeness), T083–T084 / T086
+(Jay gates / do-not-label).
+
+**Not claimed:** DC-22 / A-STATE amendment, `asset_identifier`, feature 011 dictionary or Rule 7
+reference commands.

@@ -67,6 +67,16 @@ export class DataverseAmsBackend implements AmsBackend {
   listLocations = unimplemented;
   listEquipmentModels = unimplemented;
   listProjects = unimplemented;
+  listManufacturers = unimplemented;
+  listEquipmentCategories = unimplemented;
+  listReference = unimplemented;
+  getReference = unimplemented;
+  createReference = unimplemented;
+  editReference = unimplemented;
+  deactivateReference = unimplemented;
+  reactivateReference = unimplemented;
+  reparentLocation = unimplemented;
+  previewReferenceImpact = unimplemented;
   listCalibrationDue = unimplemented;
   getCalibrationHistory = unimplemented;
   recordCalibration = unimplemented;

@@ -82,6 +82,24 @@ The server binds **loopback only** (`127.0.0.1`), and so does the database's pub
 no authentication worth the name — see § Identity — so it must not be exposed on a network
 interface.
 
+## Health, correlation, metrics (FR-046)
+
+Pair chosen from `specs/010-web-application-platform/contracts/health-and-read.md`:
+
+| Probe | Paths | Meaning |
+|---|---|---|
+| Liveness | `GET /health`, `GET /api/health` | Process is up. **200 even if the database blips**; `status` is `ok` or `degraded`. |
+| Readiness | `GET /health/ready`, `GET /api/health/ready` | Database must be `ok`. **503** when it is not, so a replica is not promoted. |
+
+The body matches `HealthResponse` (`status`, `version`, `schemaVersion`, `checks.database`, `time`).
+`ok` and `dataset` are extra fields kept for existing probes.
+
+Every response carries `x-correlation-id` (honouring an incoming `x-correlation-id`, `x-request-id`,
+or W3C `traceparent` when the value looks like a token). Error bodies include the same id.
+`GET /api/metrics` is an unauthenticated JSON snapshot of in-process request counts — no row data.
+Traces, until an OpenTelemetry collector exists in Azure, are Fastify's request logs keyed by that
+correlation id (`req.id`).
+
 ## Dataset selection and reseeding
 
 `AMS_DATASET` names a directory under `migration/`, using the same vocabulary as
@@ -132,6 +150,10 @@ Identity is chosen by `AMS_AUTH` and lives entirely behind `src/auth/providers/`
 The last three exist for the cross-role/cross-office matrix in `tests/authorization.test.ts`:
 a read-only reader, an administrator to be refused at another office's border, and an explicit way
 to exercise the unauthenticated path without standing up an OIDC flow.
+
+The client's mock `RoleSwitcher` offers Field User, Office Admin, System Owner **and Report Reader**
+so the read-only experience can be reviewed on screen (SC-015). The `toronto` and `anonymous`
+identities remain API-test-only.
 
 The browser sends whatever the existing `RoleSwitcher` stored in `localStorage`. **Roles and office
 scope do not come from the header** — they are read from `app_user` / `app_user_role`, exactly as

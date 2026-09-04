@@ -116,9 +116,20 @@ export async function seedDevIdentities(db: Database): Promise<IdentitySeedResul
         [row.upn, row.objectId, row.tenantId, row.displayName, row.homeoffice]
       );
       await tx.query("DELETE FROM app_user_role WHERE upn = $1", [row.upn]);
+      const hasScope = await tx.query<{ reg: string | null }>("SELECT to_regclass('public.user_office_scope') AS reg");
+      if (hasScope.rows[0]?.reg) {
+        await tx.query("DELETE FROM user_office_scope WHERE user_upn = $1", [row.upn]);
+      }
       for (const { role, office } of row.roles) {
         await tx.query("INSERT INTO app_user_role (upn, role, office) VALUES ($1, $2, $3)", [row.upn, role, office]);
         roles += 1;
+        if (office && hasScope.rows[0]?.reg) {
+          const scopeType = role === "OfficeAdmin" ? "Administer" : role === "ReportReader" ? "Report" : "Member";
+          await tx.query(
+            "INSERT INTO user_office_scope (id, user_upn, office, scope_type) VALUES ($1, $2, $3, $4)",
+            [`scope-${row.upn}-${role}-${office}`, row.upn, office, scopeType]
+          );
+        }
       }
     }
   });

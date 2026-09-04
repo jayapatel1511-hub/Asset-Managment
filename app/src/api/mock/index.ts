@@ -18,6 +18,7 @@ import type {
   OfflineMethods,
   RecordCalibrationInput,
   RecoveryInput,
+  ReferenceMethods,
   RegisterAssetInput,
   ReportingMethods,
   ReturnInput,
@@ -27,6 +28,7 @@ import type {
 import type { Asset, AssetRelationship, CalibrationRecord, CurrentUser, DatasetInfo, EquipmentModel, HistoryEntry, Location, Project } from "../types";
 import { createAdminMethods } from "./admin";
 import { createDeploymentMethods } from "./deployment";
+import { createReferenceMethods } from "./reference";
 import { createOfflineMethods } from "./offline";
 import { createReportingMethods } from "./reporting";
 import { getMockStore, type MockStore } from "./store";
@@ -37,6 +39,7 @@ const DEMO_USERS: Record<string, CurrentUser> = {
   field: { upn: "tech@englobecorp.com", displayName: "Sam Tech (demo Field User)", homeoffice: "Ottawa", roles: ["FieldUser"] },
   admin: { upn: "admin@englobecorp.com", displayName: "Alex Admin (demo Office Admin)", homeoffice: "Ottawa", roles: ["FieldUser", "OfficeAdmin"] },
   owner: { upn: "svc-ams@englobecorp.com", displayName: "System Owner (demo)", homeoffice: "Ottawa", roles: ["FieldUser", "OfficeAdmin", "SystemOwner"] },
+  reader: { upn: "reader@englobecorp.com", displayName: "Riya Reader (demo Report Reader)", homeoffice: "Ottawa", roles: ["ReportReader"] },
 };
 
 export function getMockCurrentUserKey(): keyof typeof DEMO_USERS {
@@ -80,6 +83,7 @@ export class MockAmsBackend implements AmsBackend {
   private reporting: ReportingMethods;
   private offline: OfflineMethods;
   private officeAdmins: AdminAssignmentMethods;
+  private reference: ReferenceMethods;
 
   constructor(private store: MockStore = getMockStore()) {
     const getUser = () => this.getCurrentUser();
@@ -87,6 +91,7 @@ export class MockAmsBackend implements AmsBackend {
     this.reporting = createReportingMethods(store, getUser);
     this.offline = createOfflineMethods(store, getUser);
     this.officeAdmins = createAdminMethods(store, getUser);
+    this.reference = createReferenceMethods(store);
   }
 
   private async ready(): Promise<MockStore> {
@@ -186,6 +191,36 @@ export class MockAmsBackend implements AmsBackend {
   async listProjects(): Promise<Project[]> {
     return (await this.ready()).projects;
   }
+  listManufacturers() {
+    return this.reference.listManufacturers();
+  }
+  listEquipmentCategories() {
+    return this.reference.listEquipmentCategories();
+  }
+  listReference(domain: Parameters<ReferenceMethods["listReference"]>[0]) {
+    return this.reference.listReference(domain);
+  }
+  getReference(domain: Parameters<ReferenceMethods["getReference"]>[0], id: string) {
+    return this.reference.getReference(domain, id);
+  }
+  createReference(input: Parameters<ReferenceMethods["createReference"]>[0]) {
+    return this.reference.createReference(input);
+  }
+  editReference(input: Parameters<ReferenceMethods["editReference"]>[0]) {
+    return this.reference.editReference(input);
+  }
+  deactivateReference(input: Parameters<ReferenceMethods["deactivateReference"]>[0]) {
+    return this.reference.deactivateReference(input);
+  }
+  reactivateReference(input: Parameters<ReferenceMethods["reactivateReference"]>[0]) {
+    return this.reference.reactivateReference(input);
+  }
+  reparentLocation(input: Parameters<ReferenceMethods["reparentLocation"]>[0]) {
+    return this.reference.reparentLocation(input);
+  }
+  previewReferenceImpact(domain: Parameters<ReferenceMethods["previewReferenceImpact"]>[0], id: string) {
+    return this.reference.previewReferenceImpact(domain, id);
+  }
 
   async listCalibrationDue(horizonDays: number): Promise<Asset[]> {
     const store = await this.ready();
@@ -263,6 +298,7 @@ export class MockAmsBackend implements AmsBackend {
         transactiontype: "ReturnFromCalibration",
         performedby: currentUser.upn,
         date: new Date().toISOString(),
+        calibrationResult: input.result ?? "Pass",
         lines: [{ assetId: asset.assetid }],
       });
       if (!result.ok) return result;
@@ -454,6 +490,9 @@ export class MockAmsBackend implements AmsBackend {
       (m) => m.manufacturer === input.manufacturer && m.model === input.model && m.equipmenttype === input.equipmenttype
     );
     if (!model) return { ok: false, reason: "Pick a model from the catalogue — free-text models are not permitted (Principle IV)." };
+    if (model.isactive === false) {
+      return { ok: false, reason: "reference.inactiveNotSelectable: That equipment model is deactivated." };
+    }
 
     let assetid: string;
     if (model.isserialised) {

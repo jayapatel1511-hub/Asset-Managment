@@ -100,6 +100,21 @@ function isMissingTable(err: unknown): boolean {
   return /relation .*app_user.* does not exist|no such table/i.test(e.message ?? "");
 }
 
+/** Prefer `user_office_scope` when it has open rows; otherwise callers keep the role-table offices. */
+async function officesFromScopeTable(db: Queryable, upn: string): Promise<string[] | null> {
+  try {
+    const res = await db.query<{ office: string }>(
+      "SELECT office FROM user_office_scope WHERE user_upn = $1 AND valid_to IS NULL",
+      [upn]
+    );
+    if (res.rows.length === 0) return null;
+    return [...new Set(res.rows.map((r) => r.office))];
+  } catch (err) {
+    if (isMissingTable(err)) return null;
+    throw err;
+  }
+}
+
 function foldRows(rows: UserRoleRow[]): DirectoryRecord | null {
   const first = rows[0];
   if (!first) return null;
@@ -184,6 +199,10 @@ export async function lookupDirectoryUser(
     try {
       const res = await db.query<UserRoleRow>(LOOKUP_SQL, [key.objectId ?? null, key.upn ?? null]);
       record = foldRows(res.rows);
+      if (record && record.scopedOffices !== null) {
+        const fromScope = await officesFromScopeTable(db, record.upn);
+        if (fromScope) record = { ...record, scopedOffices: fromScope };
+      }
     } catch (err) {
       if (!isMissingTable(err)) throw err;
       withoutIdentityTables.add(db as object);

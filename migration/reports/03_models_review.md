@@ -84,3 +84,39 @@ Columns: **old** = exactly as drafted from the raw registry export (including it
 - Several Geotechnical Monitoring rows have a blank source model (Encardio Rite, Loadsensing, RST, RST Model 23600) — classified by best judgement per the brief's instruction, flagged `needs field confirmation` in their correction note above. None of this blocks migration (FR-005 only requires a resolvable model, which these have); it affects catalogue accuracy, not load success.
 - Calibration intervals for total stations, geotechnical VW/tilt/MEMS instruments, acoustic gear and dust monitors are all best-judgement defaults (12 or 24 months) with no source evidence — flagged individually above. Instantel/Sigicom seismograph loggers, geophones and sound level meters use the requested 12 months.
 - 'Settop M1' (5 Automated Total Station assets) had its single source field split into manufacturer 'Settop' / model 'M1' rather than guessed as a known brand — flagged for field verification.
+
+## Production gate (sign-off required before production load)
+
+Named as a hard gate by `specs/README.md` and `specs/REMAINING-WORK.md`, same footing as `02_conflicts.md`. A development load may proceed. A **production** load must not.
+
+**Status: awaiting review.** No box in this section is checked. No approval is recorded. Agents must not tick these boxes or fill the approver line.
+
+### Scope
+
+This gate covers the 64-row equipment-model catalogue review (Q4) in this file: the **35 corrections**, the two Q5 component models (Larson Davis 831C Pre-Amp / Element), the Q6 server-versus-configuration calls, prefix assignments, and every best-judgement calibration interval or blank-model classification flagged in the notes above.
+
+It does **not** cover `02_conflicts.md` (cross-office duplicates, same-office collapses, FR-013 pairs, ownership/loss notes) — that file has its own sign-off.
+
+### Review checklist (unchecked)
+
+- [ ] Every row in the 64-row table has been read; the 35 corrections are accepted or a named correction is recorded in `docs/08-decisions.md`.
+- [ ] Q6 (servers): 'Microsoft / Azure' (13 rows) remain excluded; Instantel Vision / Vision II and Sigicom INFRANet remain physical Server assets — or the reverse is written in `docs/08-decisions.md` and `data/reference/equipment_models.csv` is edited and the pipeline re-run.
+- [ ] Blank-model Geotechnical rows (Encardio Rite, Loadsensing, RST, and flagged siblings) are accepted as classified, or field-confirmed values replace them.
+- [ ] Best-judgement calibration intervals (12 or 24 months where the source had none) are accepted for production, or replacements are listed in `docs/08-decisions.md`.
+- [ ] The Settop / M1 split and the Sony CoolPix L32 manufacturer flag are accepted or reversed.
+- [ ] The two Q5 component models are accepted as permanent Component catalogue rows.
+
+### Approver
+
+| Field | Value |
+|---|---|
+| Approver | Jay Patel (System Owner). Data Owner if distinct — second line below. |
+| Decision | _awaiting_ (Approved / Approved with corrections recorded in `docs/08-decisions.md` / Rejected — re-run required) |
+| Name | _awaiting_ |
+| Date | _awaiting_ |
+| Notes | |
+
+- [ ] Jay Patel has reviewed every item in this file and approves the catalogue for a production load (`docs/08-decisions.md` gets the date and any corrections requested).
+- [ ] Data Owner sign-off (if a Data Owner is designated distinct from Jay) — or Jay has recorded in `docs/08-decisions.md` that this gate does not require a second signature.
+
+**Date signed:** _awaiting_

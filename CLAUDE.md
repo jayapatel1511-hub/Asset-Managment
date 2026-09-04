@@ -148,18 +148,18 @@ Do not begin by adding more operational screens.
 1. ~~Approve state model~~ **Done 2026-09-03 (R1).** Approve remaining `docs/15` tables beyond the first-proof subset, including additions required by `docs/16-data-management.md`.
 2. Close remaining product decisions (R5 admin scope, Q18, data ownership, classification, approval, retention). **R4 (Q8/Q9) closed 2026-09-03.**
 3. Create shared TypeScript contracts from `specs/010…/contracts/` (**R2 frozen**) and first-proof migrations from `specs/010…/data-model.md` (**R3 subset approved**).
-4. Implement identity, health and read-only API paths.
+4. Implement identity, health and read-only API paths. **Health contract remainder (T010: `HealthResponse`, readiness, request-scoped correlation IDs) filled 2026-09-03.**
 5. Implement the atomic transaction command and concurrency/idempotency tests (five-asset race).
-6. Build the read-only data dictionary, data-quality rule engine, dashboard and issue queue.
-7. Replace the production frontend adapter with HTTP.
-8. Add PWA shell caching, IndexedDB data, drafts, queue and conflict resolution.
-9. Add private certificate upload/download.
-10. Add controlled corrections and reference-data management.
+6. Build the read-only data dictionary, data-quality rule engine, dashboard and issue queue. **In flight 2026-09-03 — do not claim done.**
+7. Replace the production frontend adapter with HTTP. **HTTP adapter is in use.**
+8. Add PWA shell caching, IndexedDB data, drafts, queue and conflict resolution. **Partial — queue/cache exist; FR-027 cache-age/last-sync display filled 2026-09-03; device matrix remains.**
+9. Add private certificate upload/download. **Local document module exists; Azure Blob remains hosting work.**
+10. Add controlled corrections and reference-data management. **Reference commands in flight; corrections not started (feature 011 / DC-16).**
 11. Add import dry run, bulk apply and row-level job results.
 12. Add duplicate review/redirect merge and external reconciliation.
-13. Add governed exports, retention register, legal holds and purge preview.
-14. Add outbox workers and scheduled jobs.
-15. Bind reports to approved SQL views.
+13. Add governed exports, retention register, legal holds and purge preview. **Governed-export local shape exists; `export_artifact` table + DocumentStore remain.**
+14. Add outbox workers and scheduled jobs. **Outbox rows commit with the event; workers not started.**
+15. Bind reports to approved SQL views. **In-app read-only reports exist.**
 16. Adapt and rehearse the migration loader.
 17. Complete tenant, security, data-management, device, recovery and load verification before pilot.
 

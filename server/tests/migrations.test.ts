@@ -133,7 +133,8 @@ describe("applying to an empty database", () => {
       "meta", "location", "equipment_model", "project", "asset", "asset_transaction",
       "asset_transaction_line", "asset_relationship", "calibration_record", "id_sequence",
       "installation", "installation_component", "office_admin_assignment", "command_idempotency",
-      "app_user", "app_user_role", "schema_migration",
+      "app_user", "app_user_role", "user_office_scope", "asset_identifier",
+      "manufacturer", "equipment_category", "schema_migration",
     ];
     for (const t of tables) {
       const res = await db.query<{ reg: string | null }>("SELECT to_regclass($1) AS reg", [`public.${t}`]);
@@ -152,6 +153,8 @@ describe("applying to an empty database", () => {
     for (const t of [
       "asset_identity_immutable", "header_immutable", "header_truncate_immutable", "line_immutable",
       "line_truncate_immutable", "meta_refuses_synthetic_in_production", "relationship_acyclic",
+      "manufacturer_no_delete", "equipment_category_no_delete", "location_no_delete",
+      "equipment_model_no_delete", "project_no_delete",
     ]) {
       expect(names, `trigger ${t} is missing`).toContain(t);
     }

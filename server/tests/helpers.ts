@@ -39,7 +39,7 @@ export async function createTestApp(): Promise<TestApp> {
 }
 
 /** Demo identities resolved by server/src/auth/devAuth.ts from the x-ams-dev-user header. */
-export type DevUser = "field" | "admin" | "owner";
+export type DevUser = "field" | "admin" | "owner" | "reader" | "toronto";
 
 export async function post(app: FastifyInstance, url: string, body: unknown, as: DevUser = "field") {
   return app.inject({ method: "POST", url, payload: body as object, headers: { "x-ams-dev-user": as } });

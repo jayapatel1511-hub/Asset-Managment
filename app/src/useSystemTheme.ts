@@ -1,17 +1,12 @@
-import { useEffect, useState } from "react";
-import { webDarkTheme, webLightTheme, type Theme } from "@fluentui/react-components";
+import type { Theme } from "@fluentui/react-components";
+import { englobeLightTheme } from "./theme";
 
-/** docs/02-app.md: "dark mode follows OS." No manual toggle — Phase 1 scope is exactly this. */
+/**
+ * The Field mockup (`docs/mockups/ams-ui/`) is light-only. Forcing the product column onto
+ * that theme stops Fluent inputs/selects from flipping to OS dark and reading as a different
+ * product. `docs/02-app.md` still wants OS-follow dark later — restore `englobeDarkTheme`
+ * when a dark mockup exists.
+ */
 export function useSystemTheme(): Theme {
-  const query = "(prefers-color-scheme: dark)";
-  const [isDark, setIsDark] = useState(() => window.matchMedia(query).matches);
-
-  useEffect(() => {
-    const mql = window.matchMedia(query);
-    const listener = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mql.addEventListener("change", listener);
-    return () => mql.removeEventListener("change", listener);
-  }, []);
-
-  return isDark ? webDarkTheme : webLightTheme;
+  return englobeLightTheme;
 }

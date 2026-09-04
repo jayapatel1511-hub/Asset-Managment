@@ -12,12 +12,12 @@ The contract is the thing both sides implement. It belongs to neither of them.
 
 ## What lives here
 
-- **`src/stateMachine.ts`** — the transition matrix, **generated** from
-  `data/reference/state_machine.json` by `app/scripts/generate-state-machine.mjs`. Never edit it by
-  hand; edit the JSON. It lives here rather than in the client because `AssetStatus` is part of the
-  wire contract, and constitution Principle V — "invalid transitions refused at every layer" —
-  only means anything if both layers refuse the *same* transitions. The generator's output path
-  moved with the file; `predev`, `prebuild` and `pretest` still run it.
+- **`src/stateMachine.ts`** — the axis transition machine, **generated** from
+  `specs/010-web-application-platform/contracts/transition-table.md` by
+  `app/scripts/generate-state-machine.mjs`. Never edit it by hand; edit the contract markdown.
+  `TRANSITION_RULES` is the allow/deny authority. `STATE_MACHINE` is a seven-value compatibility
+  projection for screens that still grey actions by pill. The JSON sibling is
+  `data/reference/state_machine.json`.
 - **`src/types.ts`** — every entity shape crossing the boundary.
 - **`src/backend.ts`** — the `AmsBackend` interface: one method per operation the client can perform,
   implemented by `app/src/api/mock/` (deterministic tests and UI development) and by

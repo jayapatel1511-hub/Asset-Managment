@@ -82,3 +82,12 @@ export function splitCalibration(due: readonly Asset[], today: string): Calibrat
 export function isoDay(now: Date): string {
   return now.toISOString().slice(0, 10);
 }
+
+/** Quality rules Field home attention numbers belong to. */
+export const QUALITY_RULE_OVERDUE = "DQ-CAL-OVERDUE";
+export const QUALITY_RULE_UNKNOWN_DUE = "DQ-CAL-UNKNOWN-DUE";
+
+/** Issue-queue path for a quality rule — where Field home overdue/unknown counts go. */
+export function qualityIssuesPath(ruleKey: string): string {
+  return `/data-management/quality/issues?ruleKey=${encodeURIComponent(ruleKey)}`;
+}

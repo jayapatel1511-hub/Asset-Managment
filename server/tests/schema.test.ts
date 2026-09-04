@@ -16,6 +16,8 @@
  * `app.ts` keeps this file meaningful while the API lanes are still moving.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { AssetStatus } from "../../app/src/domain/stateMachine";
+import { axesFromStatus, type Lifecycle } from "../../app/src/domain/stateAxes";
 import type { Database, Tx } from "../src/db/database";
 import { DATASET_DIR } from "../src/config";
 import { DEMO_USERS } from "../src/auth/devAuth";
@@ -48,10 +50,11 @@ async function insertAsset(
 ): Promise<{ id: string; assetid: string }> {
   const id = over.id ?? uid("uuid");
   const assetid = over.assetid ?? uid("TEST").toUpperCase();
+  const axes = axesFromStatus((over.status ?? "Available") as AssetStatus, (over.lifecycle ?? "Active") as Lifecycle);
   await q.query(
-    `INSERT INTO asset (id, assetid, manufacturer, model, equipmenttype, serialnumber, lifecycle, status)
-     VALUES ($1, $2, 'TestCo', 'M1', 'Logger', $3, $4, $5)`,
-    [id, assetid, over.serialnumber ?? null, over.lifecycle ?? "Active", over.status ?? "Available"]
+    `INSERT INTO asset (id, assetid, manufacturer, model, equipmenttype, serialnumber, lifecycle, disposition, serviceability)
+     VALUES ($1, $2, 'TestCo', 'M1', 'Logger', $3, $4, $5, $6)`,
+    [id, assetid, over.serialnumber ?? null, axes.lifecycle, axes.disposition, axes.serviceability]
   );
   return { id, assetid };
 }
@@ -69,8 +72,10 @@ async function insertTransaction(q: Tx | Database): Promise<string> {
 async function insertLine(q: Tx | Database, transactionId: string, asset: string, lineNumber = 1): Promise<string> {
   const id = uid("line");
   await q.query(
-    `INSERT INTO asset_transaction_line (id, transaction_id, asset, statusbefore, statusafter, line_number)
-     VALUES ($1, $2, $3, 'Available', 'Available', $4)`,
+    `INSERT INTO asset_transaction_line (id, transaction_id, asset,
+        lifecycle_before, lifecycle_after, disposition_before, disposition_after,
+        serviceability_before, serviceability_after, line_number)
+     VALUES ($1, $2, $3, 'Active', 'Active', 'AtOffice', 'AtOffice', 'Serviceable', 'Serviceable', $4)`,
     [id, transactionId, asset, lineNumber]
   );
   return id;
@@ -242,8 +247,12 @@ describe("asset identity is stable (rule 6)", () => {
 
   it("still allows an ordinary state write on the same row", async () => {
     const a = await insertAsset(db);
-    await db.query("UPDATE asset SET status = 'CheckedOut', custodian = 'tech@englobecorp.com' WHERE id = $1", [a.id]);
-    const res = await db.query<{ status: string }>("SELECT status FROM asset WHERE id = $1", [a.id]);
+    await db.query("UPDATE asset SET disposition = 'CheckedOut', custodian = 'tech@englobecorp.com' WHERE id = $1", [a.id]);
+    const res = await db.query<{ status: string; disposition: string }>(
+      "SELECT status, disposition FROM asset WHERE id = $1",
+      [a.id]
+    );
+    expect(res.rows[0].disposition).toBe("CheckedOut");
     expect(res.rows[0].status).toBe("CheckedOut");
   });
 
@@ -492,31 +501,34 @@ const AXIS_MAP: Array<{ status: string; lifecycle: string; expected: [string, st
   { status: "Retired", lifecycle: "Retired", expected: ["Retired", "AtOffice", "OutOfService"] },
 ];
 
-describe("four-axis state, derived not rewritten (rule 9, assumption A-STATE)", () => {
-  it("maps all seven compatibility statuses to a coherent tuple", async () => {
+describe("three stored axes; status is generated (rule 9, DC-22)", () => {
+  it("maps all seven compatibility statuses to a coherent stored tuple", async () => {
     for (const row of AXIS_MAP) {
       const a = await insertAsset(db, { status: row.status, lifecycle: row.lifecycle });
-      const res = await db.query<{ axis_lifecycle: string; axis_disposition: string; axis_serviceability: string }>(
-        "SELECT axis_lifecycle, axis_disposition, axis_serviceability FROM asset WHERE id = $1",
+      const res = await db.query<{ lifecycle: string; disposition: string; serviceability: string; status: string }>(
+        "SELECT lifecycle, disposition, serviceability, status FROM asset WHERE id = $1",
         [a.id]
       );
-      expect([res.rows[0].axis_lifecycle, res.rows[0].axis_disposition, res.rows[0].axis_serviceability], row.status).toEqual(
-        row.expected
-      );
+      expect([res.rows[0].lifecycle, res.rows[0].disposition, res.rows[0].serviceability], row.status).toEqual(row.expected);
+      expect(res.rows[0].status, row.status).toBe(row.status);
     }
   });
 
-  it("treats status Retired as retired even when lifecycle disagrees — the demo dataset has such a row", async () => {
+  it("stores lifecycle Retired when the compatibility pill is Retired, even if the caller passed Active", async () => {
     const a = await insertAsset(db, { status: "Retired", lifecycle: "Active" });
-    const res = await db.query<{ axis_lifecycle: string }>("SELECT axis_lifecycle FROM asset WHERE id = $1", [a.id]);
-    expect(res.rows[0].axis_lifecycle).toBe("Retired");
+    const res = await db.query<{ lifecycle: string; status: string }>(
+      "SELECT lifecycle, status FROM asset WHERE id = $1",
+      [a.id]
+    );
+    expect(res.rows[0].lifecycle).toBe("Retired");
+    expect(res.rows[0].status).toBe("Retired");
   });
 
   it("EVERY asset in the database has a complete, in-vocabulary tuple", async () => {
     const res = await db.query<{ total: number; bad: number }>(
       `SELECT count(*)::int AS total,
               count(*) FILTER (
-                WHERE axis_lifecycle IS NULL OR axis_disposition IS NULL OR axis_serviceability IS NULL
+                WHERE lifecycle IS NULL OR disposition IS NULL OR serviceability IS NULL
               )::int AS bad
          FROM asset`
     );
@@ -524,28 +536,67 @@ describe("four-axis state, derived not rewritten (rule 9, assumption A-STATE)", 
     expect(res.rows[0].bad).toBe(0);
   });
 
-  it("refuses a status the axes cannot map — no silent fallback bucket", async () => {
-    await expect(insertAsset(db, { status: "Teleported" })).rejects.toThrow(/null value|not-null|violates/i);
-  });
-
-  it("refuses a direct write to a derived axis", async () => {
+  it("refuses a disposition the CHECK cannot map — no silent fallback bucket", async () => {
     await expect(
       db.query(
-        `INSERT INTO asset (id, assetid, manufacturer, model, equipmenttype, lifecycle, status, axis_disposition)
-         VALUES ($1, $2, 'TestCo', 'M1', 'Logger', 'Active', 'Available', 'Deployed')`,
+        `INSERT INTO asset (id, assetid, manufacturer, model, equipmenttype, lifecycle, disposition, serviceability)
+         VALUES ($1, $2, 'TestCo', 'M1', 'Logger', 'Active', 'Teleported', 'Serviceable')`,
+        [uid("uuid"), uid("TEST").toUpperCase()]
+      )
+    ).rejects.toThrow(/check|violates/i);
+  });
+
+  it("refuses a direct write to generated status", async () => {
+    await expect(
+      db.query(
+        `INSERT INTO asset (id, assetid, manufacturer, model, equipmenttype, lifecycle, disposition, serviceability, status)
+         VALUES ($1, $2, 'TestCo', 'M1', 'Logger', 'Active', 'AtOffice', 'Serviceable', 'Available')`,
         [uid("uuid"), uid("TEST").toUpperCase()]
       )
     ).rejects.toThrow(/generated|non-DEFAULT/i);
   });
 
-  it("recomputes the axes when the status changes, without a second write", async () => {
+  it("recomputes status when an axis changes, without a second write", async () => {
     const a = await insertAsset(db, { status: "Available" });
-    await db.query("UPDATE asset SET status = 'NeedsRepair' WHERE id = $1", [a.id]);
-    const res = await db.query<{ axis_disposition: string; axis_serviceability: string }>(
-      "SELECT axis_disposition, axis_serviceability FROM asset WHERE id = $1",
+    await db.query("UPDATE asset SET serviceability = 'NeedsRepair' WHERE id = $1", [a.id]);
+    const res = await db.query<{ status: string; serviceability: string }>(
+      "SELECT status, serviceability FROM asset WHERE id = $1",
       [a.id]
     );
-    expect(res.rows[0].axis_serviceability).toBe("NeedsRepair");
+    expect(res.rows[0].serviceability).toBe("NeedsRepair");
+    expect(res.rows[0].status).toBe("NeedsRepair");
+  });
+
+  it("stores six axis columns on every transaction line and generates the compatibility pair", async () => {
+    const asset = await insertAsset(db);
+    const txn = await insertTransaction(db);
+    const line = await insertLine(db, txn, asset.assetid);
+    const res = await db.query<{
+      lifecycle_before: string;
+      disposition_after: string;
+      statusbefore: string;
+      statusafter: string;
+    }>(
+      `SELECT lifecycle_before, disposition_after, statusbefore, statusafter
+         FROM asset_transaction_line WHERE id = $1`,
+      [line]
+    );
+    expect(res.rows[0].lifecycle_before).toBe("Active");
+    expect(res.rows[0].disposition_after).toBe("AtOffice");
+    expect(res.rows[0].statusbefore).toBe("Available");
+    expect(res.rows[0].statusafter).toBe("Available");
+  });
+
+  it("refuses a direct write to generated line status columns", async () => {
+    const asset = await insertAsset(db);
+    const txn = await insertTransaction(db);
+    await expect(
+      db.query(
+        `INSERT INTO asset_transaction_line (id, transaction_id, asset, statusbefore, statusafter, line_number)
+         VALUES ($1, $2, $3, 'Available', 'CheckedOut', 1)`,
+        [uid("line"), txn, asset.assetid]
+      )
+    ).rejects.toThrow(/generated|non-DEFAULT|not-null|violates/i);
   });
 });
 
@@ -583,10 +634,11 @@ describe("asset_state — the fourth axis and the compatibility pill", () => {
     );
     const id = uid("uuid");
     const assetid = uid("CAL").toUpperCase();
+    const axes = axesFromStatus((opts.status ?? "Available") as AssetStatus);
     await db.query(
-      `INSERT INTO asset (id, assetid, manufacturer, model, equipmenttype, lifecycle, status, nextcaldue, lastcaldate)
-       VALUES ($1, $2, 'TestCo', $3, 'Logger', 'Active', $4, $5, $6)`,
-      [id, assetid, model, opts.status ?? "Available", opts.nextcaldue ?? null, opts.lastcaldate ?? null]
+      `INSERT INTO asset (id, assetid, manufacturer, model, equipmenttype, lifecycle, disposition, serviceability, nextcaldue, lastcaldate)
+       VALUES ($1, $2, 'TestCo', $3, 'Logger', $4, $5, $6, $7, $8)`,
+      [id, assetid, model, axes.lifecycle, axes.disposition, axes.serviceability, opts.nextcaldue ?? null, opts.lastcaldate ?? null]
     );
     if (opts.result) {
       await db.query(
@@ -693,6 +745,88 @@ describe("asset_state — the fourth axis and the compatibility pill", () => {
       const a = await insertAsset(db, { status: row.status, lifecycle: row.lifecycle });
       const res = await db.query<{ display_status: string }>("SELECT display_status FROM asset_state WHERE id = $1", [a.id]);
       expect(res.rows[0].display_status, row.status).toBe(expected[row.status]);
+    }
+  });
+});
+
+// ================================================================ first-proof identity tables
+
+describe("asset_identifier — aliases, not empty scaffolding (rule 6)", () => {
+  it("every seeded asset has a current CanonicalAssetId or TemporaryTag", async () => {
+    const res = await db.query<{ total: number; tagged: number }>(
+      `SELECT count(*)::int AS total,
+              count(*) FILTER (
+                WHERE EXISTS (
+                  SELECT 1 FROM asset_identifier i
+                   WHERE i.asset_uuid = a.id AND i.is_current
+                     AND i.identifier_type IN ('CanonicalAssetId','TemporaryTag')
+                )
+              )::int AS tagged
+         FROM asset a
+        WHERE a.manufacturer <> 'TestCo'`
+    );
+    expect(res.rows[0].total).toBeGreaterThan(1000);
+    expect(res.rows[0].tagged).toBe(res.rows[0].total);
+  });
+
+  it("refuses two current tag values that collide (Canonical / Temporary / Legacy)", async () => {
+    const a = await insertAsset(db);
+    await db.query(
+      `INSERT INTO asset_identifier (id, asset_uuid, identifier_type, identifier_value, normalized_value, is_current)
+       VALUES ($1, $2, 'CanonicalAssetId', $3, lower($3), true)`,
+      [uid("id"), a.id, a.assetid]
+    );
+    const b = await insertAsset(db);
+    await expect(
+      db.query(
+        `INSERT INTO asset_identifier (id, asset_uuid, identifier_type, identifier_value, normalized_value, is_current)
+         VALUES ($1, $2, 'CanonicalAssetId', $3, lower($3), true)`,
+        [uid("id"), b.id, a.assetid]
+      )
+    ).rejects.toThrow(/duplicate|unique/i);
+  });
+
+  it("allows completing a TMP tag once a TemporaryTag alias exists, and does not rewrite history lines", async () => {
+    const tmp = `TMP-${uid("T").replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase()}`;
+    const a = await insertAsset(db, { assetid: tmp });
+    const txn = await insertTransaction(db);
+    const line = await insertLine(db, txn, tmp);
+    await db.query(
+      `INSERT INTO asset_identifier (id, asset_uuid, identifier_type, identifier_value, normalized_value, is_current)
+       VALUES ($1, $2, 'TemporaryTag', $3, lower($3), true)`,
+      [uid("id"), a.id, tmp]
+    );
+    const canon = uid("CANON").toUpperCase();
+    await db.query("UPDATE asset SET assetid = $1 WHERE id = $2", [canon, a.id]);
+    const asset = await db.query<{ assetid: string }>("SELECT assetid FROM asset WHERE id = $1", [a.id]);
+    expect(asset.rows[0].assetid).toBe(canon);
+    const history = await db.query<{ asset: string }>("SELECT asset FROM asset_transaction_line WHERE id = $1", [line]);
+    expect(history.rows[0].asset).toBe(tmp);
+  });
+
+  it("still refuses renaming a non-TMP asset even when an alias exists", async () => {
+    const a = await insertAsset(db);
+    await db.query(
+      `INSERT INTO asset_identifier (id, asset_uuid, identifier_type, identifier_value, normalized_value, is_current)
+       VALUES ($1, $2, 'CanonicalAssetId', $3, lower($3), true)`,
+      [uid("id"), a.id, a.assetid]
+    );
+    await expect(
+      db.query("UPDATE asset SET assetid = $1 WHERE id = $2", [uid("RENAMED").toUpperCase(), a.id])
+    ).rejects.toThrow(/Asset ID is immutable/);
+  });
+});
+
+describe("user_office_scope — authorization reads office scope from its own table", () => {
+  it("has an open scope row for every scoped demo role", async () => {
+    for (const [, user] of Object.entries(DEMO_USERS)) {
+      if (user.roles.includes("SystemOwner")) continue;
+      const res = await db.query<{ office: string; scope_type: string }>(
+        "SELECT office, scope_type FROM user_office_scope WHERE user_upn = $1 AND valid_to IS NULL ORDER BY scope_type",
+        [user.upn]
+      );
+      expect(res.rows.length).toBeGreaterThan(0);
+      expect(res.rows.every((r) => r.office === user.homeoffice)).toBe(true);
     }
   });
 });

@@ -231,7 +231,7 @@ describe("Calibration round trip — feature 004 FR-022/FR-024", () => {
     if (result.ok) {
       expect(result.fields.statusAfter).toBe("CheckedOut");
       expect(result.fields.custodian).toBe("tech@englobecorp.com");
-      expect(result.fields.currentproject).toBeNull();
+      expect(result.fields.currentproject).toBe("02208928");
     }
   });
 

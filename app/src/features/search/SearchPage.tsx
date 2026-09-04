@@ -1,51 +1,66 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Button,
-  Input,
-  MessageBar,
-  MessageBarBody,
-  Spinner,
-  Text,
-  ToggleButton,
-  tokens,
-} from "@fluentui/react-components";
-import { CameraRegular, SearchRegular } from "@fluentui/react-icons";
-import { useNavigate } from "react-router-dom";
+import { Spinner } from "@fluentui/react-components";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { backend } from "../../api";
 import type { Asset } from "../../api/types";
-import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useScan } from "../../chrome/ScanContext";
 import { AssetRow } from "../../components/AssetRow";
+import { Banner } from "../../components/Banner";
+import { categoryGlyph } from "../../components/categoryGlyph";
+import { Chip } from "../../components/Chip";
+import { EmptyState } from "../../components/EmptyState";
+import { Glyph } from "../../components/Glyph";
+import { Page } from "../../components/Page";
+import { SearchField } from "../../components/SearchField";
+import { SectionLabel } from "../../components/SectionLabel";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { t } from "../../i18n";
-import { equipmentTypeLabel } from "../../i18n/humanise";
-// Feature 008 T012: the typed-code stand-in for the SDK camera is excluded from a release
-// bundle by src/devStandins.tsx's build-time gate.
-import { DevScanDialog, MOCK_STANDINS_INCLUDED } from "../../devStandins";
+import { equipmentTypeLabel, humaniseEnum } from "../../i18n/humanise";
+import { MOCK_STANDINS_INCLUDED } from "../../devStandins";
 
 type QuickFilter = "mine" | "availableHere" | "calDue30" | null;
 
+interface GroupTile {
+  name: string;
+  total: number;
+  available: number;
+}
+
 export function SearchPage() {
   const [query, setQuery] = useState("");
-  // G-10: true only when a scan resolved to several assets sharing one serial, so the pick
-  // list can explain itself. Cleared as soon as the query changes — it describes THAT result.
   const [disambiguating, setDisambiguating] = useState(false);
   const [results, setResults] = useState<Asset[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<QuickFilter>(null);
-  const [scanOpen, setScanOpen] = useState(false);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [group, setGroup] = useState<string | null>(null);
+  const [groups, setGroups] = useState<GroupTile[] | null>(null);
   const { user } = useCurrentUser();
   const navigate = useNavigate();
+  const { openScan } = useScan();
+  const [params] = useSearchParams();
+  const scanned = params.get("q");
 
   useEffect(() => {
-    const on = () => setIsOnline(true);
-    const off = () => setIsOnline(false);
-    window.addEventListener("online", on);
-    window.addEventListener("offline", off);
+    let cancelled = false;
+    Promise.all([backend.getFleetCounts(), backend.getFleetCounts({ status: ["Available"] })]).then(([all, avail]) => {
+      if (cancelled) return;
+      setGroups(
+        Object.entries(all.byAssetGroup)
+          .map(([name, total]) => ({ name, total, available: avail.byAssetGroup[name] ?? 0 }))
+          .sort((a, b) => b.total - a.total),
+      );
+    });
     return () => {
-      window.removeEventListener("online", on);
-      window.removeEventListener("offline", off);
+      cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (scanned) {
+      void resolveCode(scanned);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanned]);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +75,15 @@ export function SearchPage() {
         } else {
           assets = await backend.listCalibrationDue(30);
         }
+        if (!cancelled) {
+          setResults(assets);
+          setLoading(false);
+        }
+        return;
+      }
+      if (group) {
+        setLoading(true);
+        const assets = await backend.listAssets({ assetgroup: group });
         if (!cancelled) {
           setResults(assets);
           setLoading(false);
@@ -84,7 +108,7 @@ export function SearchPage() {
     return () => {
       cancelled = true;
     };
-  }, [query, filter, user]);
+  }, [query, filter, group, user]);
 
   const grouped = useMemo(() => {
     if (!results) return null;
@@ -96,8 +120,7 @@ export function SearchPage() {
     return byType;
   }, [results]);
 
-  async function handleScanned(code: string) {
-    setScanOpen(false);
+  async function resolveCode(code: string) {
     const exact = await backend.getAsset(code);
     if (exact) {
       navigate(`/asset/${encodeURIComponent(exact.assetid)}`);
@@ -108,64 +131,76 @@ export function SearchPage() {
     if (bySerial.length === 1) {
       navigate(`/asset/${encodeURIComponent(bySerial[0].assetid)}`);
     } else if (bySerial.length > 1) {
-      setResults(bySerial); // FR-021: present a choice rather than a guess
-      // UI spec G-10: say WHY there are two, rather than showing an unexplained pair of rows.
-      // This is Principle III's own worked example (DL-UM-16984 / GEO-UM-16984) on screen.
+      setResults(bySerial);
       setDisambiguating(true);
       setQuery(code);
+      setFilter(null);
+      setGroup(null);
     } else {
-      setQuery(code); // unknown tag — fall back to a prefilled search, per FR-021 / US6 scenario 3
+      setQuery(code);
+      setFilter(null);
+      setGroup(null);
     }
   }
 
+  function setQuick(next: QuickFilter) {
+    setFilter(next);
+    setGroup(null);
+    setDisambiguating(false);
+    if (next) setQuery("");
+  }
+
+  const idle = !filter && !group && query.trim().length < 3 && !disambiguating;
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {!isOnline && (
-        <MessageBar intent="warning">
-          <MessageBarBody>{t("search.cached", { time: new Date().toLocaleTimeString() })}</MessageBarBody>
-        </MessageBar>
-      )}
-      <div style={{ display: "flex", gap: 8, padding: 12 }}>
-        <Input
-          style={{ flex: 1 }}
-          contentBefore={<SearchRegular />}
-          placeholder={t("search.placeholder")}
-          value={query}
-          onChange={(_, data) => {
-            setQuery(data.value);
-            setFilter(null);
-            setDisambiguating(false);
-          }}
-        />
-        {/* The button goes with the dialog: in a release bundle there is no scanner behind it
-            yet (the SDK barcode scanner needs a Code App running inside Power Apps), and a
-            button that does nothing is worse than no button. Returns with the real camera. */}
-        {MOCK_STANDINS_INCLUDED && (
-          <Button icon={<CameraRegular />} onClick={() => setScanOpen(true)}>
-            {t("search.scan")}
-          </Button>
-        )}
+    <Page>
+      <SearchField
+        hero
+        value={query}
+        placeholder={t("search.placeholder")}
+        onScan={MOCK_STANDINS_INCLUDED ? openScan : undefined}
+        onChange={(value) => {
+          setQuery(value);
+          setFilter(null);
+          setGroup(null);
+          setDisambiguating(false);
+        }}
+      />
+
+      <div className="ams-chips">
+        <Chip on={filter === "mine"} onClick={() => setQuick(filter === "mine" ? null : "mine")}>
+          {t("search.filter.myEquipment")}
+        </Chip>
+        <Chip on={filter === "availableHere"} onClick={() => setQuick(filter === "availableHere" ? null : "availableHere")}>
+          {t("search.filter.availableHere")}
+        </Chip>
+        <Chip on={filter === "calDue30"} onClick={() => setQuick(filter === "calDue30" ? null : "calDue30")}>
+          {t("search.filter.calDue30")}
+        </Chip>
       </div>
 
-      <div style={{ display: "flex", gap: 8, padding: "0 12px 8px", flexWrap: "wrap" }}>
-        <ToggleButton size="small" checked={filter === "mine"} onClick={() => setFilter(filter === "mine" ? null : "mine")}>
-          {t("search.filter.myEquipment")}
-        </ToggleButton>
-        <ToggleButton
-          size="small"
-          checked={filter === "availableHere"}
-          onClick={() => setFilter(filter === "availableHere" ? null : "availableHere")}
-        >
-          {t("search.filter.availableHere")}
-        </ToggleButton>
-        <ToggleButton
-          size="small"
-          checked={filter === "calDue30"}
-          onClick={() => setFilter(filter === "calDue30" ? null : "calDue30")}
-        >
-          {t("search.filter.calDue30")}
-        </ToggleButton>
-      </div>
+      {group && (
+        <button type="button" className="ams-btn" onClick={() => setGroup(null)}>
+          {t("assets.backToCategories")}
+        </button>
+      )}
+
+      {idle && groups && groups.length > 0 && (
+        <section>
+          <SectionLabel>{t("assets.subtitle")}</SectionLabel>
+          <div className="ams-cat-grid">
+            {groups.map((g) => (
+              <button key={g.name} type="button" className="ams-cat" onClick={() => setGroup(g.name)}>
+                <Glyph name={categoryGlyph(g.name)} />
+                <span className="name">{humaniseEnum(g.name)}</span>
+                <span className="nums">
+                  {g.total} · <b>{t("assets.category.available", { available: g.available })}</b>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {loading && (
         <div style={{ padding: 24, display: "flex", justifyContent: "center" }}>
@@ -173,34 +208,31 @@ export function SearchPage() {
         </div>
       )}
 
-      {!loading && !filter && query.trim().length > 0 && query.trim().length < 3 && (
-        <Text style={{ padding: 12, color: tokens.colorNeutralForeground3 }}>{t("search.minChars")}</Text>
+      {!loading && !filter && !group && query.trim().length > 0 && query.trim().length < 3 && (
+        <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+          {t("search.minChars")}
+        </p>
       )}
 
       {!loading && results && results.length === 0 && (
-        <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-          <Text>{t("search.noResults", { query })}</Text>
-          <Button appearance="secondary" onClick={() => setQuery(query.split(/\s+/)[0] ?? "")}>
-            {t("search.searchByModelInstead")}
-          </Button>
-        </div>
+        <EmptyState icon="search" title={t("search.noResults", { query })}>
+          <div style={{ marginTop: 12 }}>
+            <button type="button" className="ams-btn ams-btn-sm" onClick={() => setQuery(query.split(/\s+/)[0] ?? "")}>
+              {t("search.searchByModelInstead")}
+            </button>
+          </div>
+        </EmptyState>
       )}
 
-      {disambiguating && results && results.length > 1 && (
-        <MessageBar intent="warning" style={{ margin: "0 12px 8px" }}>
-          <MessageBarBody>{t("asset.disambiguate")}</MessageBarBody>
-        </MessageBar>
-      )}
+      {disambiguating && results && results.length > 1 && <Banner intent="warn">{t("asset.disambiguate")}</Banner>}
 
       {!loading && grouped && results && results.length > 0 && (
         <div>
           {[...grouped.entries()].map(([type, assets]) => (
-            <div key={type}>
-              <div style={{ padding: "6px 12px", background: tokens.colorNeutralBackground3, display: "flex", justifyContent: "space-between" }}>
-                <Text weight="semibold" size={200}>
-                  {equipmentTypeLabel(type)}
-                </Text>
-                <Text size={200}>{assets.length}</Text>
+            <div key={type} className="ams-list" style={{ marginBottom: 12 }}>
+              <div className="ams-group-head">
+                <span>{equipmentTypeLabel(type)}</span>
+                <span>{assets.length}</span>
               </div>
               {assets.map((a) => (
                 <AssetRow key={a.id} asset={a} />
@@ -209,8 +241,6 @@ export function SearchPage() {
           ))}
         </div>
       )}
-
-      <DevScanDialog open={scanOpen} onClose={() => setScanOpen(false)} onSubmit={handleScanned} />
-    </div>
+    </Page>
   );
 }

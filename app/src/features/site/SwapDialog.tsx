@@ -1,23 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogBody,
-  DialogContent,
-  DialogSurface,
-  DialogTitle,
-  DialogTrigger,
-  Field,
-  Input,
-  MessageBar,
-  MessageBarBody,
-  Select,
-  TabList,
-  Tab,
-} from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Installation, InstallationSnapshot, KitRole, Orientation, PowerSource, Project } from "../../api/types";
+import { Banner } from "../../components/Banner";
+import { Sheet } from "../../components/Sheet";
 import { requiresOrientation } from "../../domain/installation";
 import { t } from "../../i18n";
 import { describeRefusal } from "../deploy/refusals";
@@ -129,106 +114,116 @@ export function SwapDialog({ installation, onClose, onDone }: { installation: In
   }
 
   return (
-    <Dialog open onOpenChange={(_, d) => !d.open && onClose()}>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle>{t("swap.title")}</DialogTitle>
-          <DialogContent style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <TabList selectedValue={mode} onTabSelect={(_, d) => setMode(d.value as "swap" | "config")}>
-              <Tab value="swap">{t("swap.title")}</Tab>
-              <Tab value="config">{t("config.title")}</Tab>
-            </TabList>
+    <Sheet
+      title={mode === "swap" ? t("swap.title") : t("config.title")}
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="ams-btn" onClick={onClose}>
+            {t("common.cancel")}
+          </button>
+          <button type="button" className="ams-btn ams-btn-primary" disabled={busy} onClick={mode === "swap" ? submitSwap : submitConfig}>
+            {t("common.save")}
+          </button>
+        </>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="ams-tabs">
+          <button type="button" className={`ams-tab${mode === "swap" ? " on" : ""}`} onClick={() => setMode("swap")}>
+            {t("swap.title")}
+          </button>
+          <button type="button" className={`ams-tab${mode === "config" ? " on" : ""}`} onClick={() => setMode("config")}>
+            {t("config.title")}
+          </button>
+        </div>
 
-            {error && (
-              <MessageBar intent="error">
-                <MessageBarBody>{error}</MessageBarBody>
-              </MessageBar>
-            )}
+        {error && <Banner intent="err">{error}</Banner>}
 
-            {mode === "swap" && (
-              <>
-                <Field label={t("swap.outgoing")} required>
-                  <Select style={{ minWidth: 0, width: "100%" }} value={outgoingAssetId} onChange={(_, d) => setOutgoingAssetId(d.value)}>
-                    <option value="" disabled>
-                      —
+        {mode === "swap" && (
+          <>
+            <label className="ams-field">
+              {t("swap.outgoing")}
+              <select value={outgoingAssetId} onChange={(e) => setOutgoingAssetId(e.target.value)}>
+                <option value="" disabled>
+                  —
+                </option>
+                {swappableComponents.map((c) => (
+                  <option key={c.asset} value={c.asset}>
+                    {c.asset} ({c.kitrole})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="ams-field">
+              {t("swap.incoming")}
+              <input value={incomingQuery} onChange={(e) => setIncomingQuery(e.target.value)} placeholder={t("search.placeholder")} />
+            </label>
+            {requiresOrientation(kitRole) && (
+              <label className="ams-field">
+                {t("deploy.orientation")}
+                <select value={orientation} onChange={(e) => setOrientation(e.target.value as Orientation)}>
+                  <option value="" disabled>
+                    —
+                  </option>
+                  {ORIENTATIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
                     </option>
-                    {swappableComponents.map((c) => (
-                      <option key={c.asset} value={c.asset}>
-                        {c.asset} ({c.kitrole})
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label={t("swap.incoming")} required>
-                  <Input value={incomingQuery} onChange={(_, d) => setIncomingQuery(d.value)} placeholder={t("search.placeholder")} />
-                </Field>
-                {requiresOrientation(kitRole) && (
-                  <Field label={t("deploy.orientation")} required>
-                    <Select style={{ minWidth: 0, width: "100%" }} value={orientation} onChange={(_, d) => setOrientation(d.value as Orientation)}>
-                      <option value="" disabled>
-                        —
-                      </option>
-                      {ORIENTATIONS.map((o) => (
-                        <option key={o} value={o}>
-                          {o}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-                )}
-                <Field label={t("swap.effectiveDate")} required>
-                  <Input type="date" value={swapDate} onChange={(_, d) => setSwapDate(d.value)} />
-                </Field>
-                <Field label={t("swap.reason")} required>
-                  <Input value={swapReason} onChange={(_, d) => setSwapReason(d.value)} />
-                </Field>
-              </>
+                  ))}
+                </select>
+              </label>
             )}
+            <label className="ams-field">
+              {t("swap.effectiveDate")}
+              <input type="date" value={swapDate} onChange={(e) => setSwapDate(e.target.value)} />
+            </label>
+            <label className="ams-field">
+              {t("swap.reason")}
+              <input value={swapReason} onChange={(e) => setSwapReason(e.target.value)} />
+            </label>
+          </>
+        )}
 
-            {mode === "config" && (
-              <>
-                <Field label={t("config.powerSourceChange")}>
-                  <Select style={{ minWidth: 0, width: "100%" }} value={powersource} onChange={(_, d) => setPowersource(d.value as PowerSource)}>
-                    <option value="">—</option>
-                    {POWER_SOURCES.map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label={t("config.positionChange")}>
-                  <Input value={position} onChange={(_, d) => setPosition(d.value)} />
-                </Field>
-                <Field label={t("config.projectChange")}>
-                  <Select style={{ minWidth: 0, width: "100%" }} value={toproject} onChange={(_, d) => setToproject(d.value)}>
-                    <option value="">—</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.projectnumber}>
-                        {p.projectnumber} — {p.name}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label={t("swap.effectiveDate")} required>
-                  <Input type="date" value={configDate} onChange={(_, d) => setConfigDate(d.value)} />
-                </Field>
-                <Field label={t("config.reason")} required>
-                  <Input value={configReason} onChange={(_, d) => setConfigReason(d.value)} />
-                </Field>
-              </>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <DialogTrigger disableButtonEnhancement>
-              <Button appearance="secondary">{t("common.cancel")}</Button>
-            </DialogTrigger>
-            <Button appearance="primary" disabled={busy} onClick={mode === "swap" ? submitSwap : submitConfig}>
-              {t("common.save")}
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+        {mode === "config" && (
+          <>
+            <label className="ams-field">
+              {t("config.powerSourceChange")}
+              <select value={powersource} onChange={(e) => setPowersource(e.target.value as PowerSource)}>
+                <option value="">—</option>
+                {POWER_SOURCES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="ams-field">
+              {t("config.positionChange")}
+              <input value={position} onChange={(e) => setPosition(e.target.value)} />
+            </label>
+            <label className="ams-field">
+              {t("config.projectChange")}
+              <select value={toproject} onChange={(e) => setToproject(e.target.value)}>
+                <option value="">—</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.projectnumber}>
+                    {p.projectnumber} — {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="ams-field">
+              {t("swap.effectiveDate")}
+              <input type="date" value={configDate} onChange={(e) => setConfigDate(e.target.value)} />
+            </label>
+            <label className="ams-field">
+              {t("config.reason")}
+              <input value={configReason} onChange={(e) => setConfigReason(e.target.value)} />
+            </label>
+          </>
+        )}
+      </div>
+    </Sheet>
   );
 }

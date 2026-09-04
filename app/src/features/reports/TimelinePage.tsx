@@ -5,11 +5,13 @@
  * (FR-021). Read-only — this feature writes nothing (plan.md's Constitution Check).
  */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Button, Card, Input, Spinner, Text, Title2, tokens } from "@fluentui/react-components";
+import { useParams } from "react-router-dom";
+import { Spinner } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset, AssetRelationship, HistoryEntry } from "../../api/types";
 import { buildTimeline, stateAsOf, type TimelineEvent } from "../../domain/pointInTime";
+import { Banner } from "../../components/Banner";
+import { Page } from "../../components/Page";
 import { StatusPill } from "../../components/StatusPill";
 import { t } from "../../i18n";
 import { statusLabel } from "../../i18n/humanise";
@@ -17,7 +19,6 @@ import { governedExportsAvailable, runGovernedExport, saveTextFile, toCsv } from
 
 export function TimelinePage() {
   const { assetId = "" } = useParams();
-  const navigate = useNavigate();
   const [asset, setAsset] = useState<Asset | null | undefined>(undefined);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [relationships, setRelationships] = useState<AssetRelationship[]>([]);
@@ -58,9 +59,9 @@ export function TimelinePage() {
   if (asset === undefined) return <Spinner style={{ margin: 24 }} label={t("common.loading")} />;
   if (asset === null) {
     return (
-      <div style={{ padding: 16 }}>
-        <Text>{t("asset.notFound", { query: assetId })}</Text>
-      </div>
+      <Page>
+        <p className="muted">{t("asset.notFound", { query: assetId })}</p>
+      </Page>
     );
   }
 
@@ -105,96 +106,96 @@ export function TimelinePage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 12 }}>
-      <Button appearance="transparent" onClick={() => navigate(-1)} style={{ alignSelf: "flex-start", padding: 0 }}>
-        {t("common.back")}
-      </Button>
-
+    <Page>
       <div>
-        <Title2 style={{ fontFamily: tokens.fontFamilyMonospace }}>{asset.assetid}</Title2>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+        <span className="t-id-lg">{asset.assetid}</span>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4, flexWrap: "wrap" }}>
           <StatusPill status={asset.status} />
-          {asset.lifecycle === "Retired" && <Badge color="subtle">{t("asset.retired")}</Badge>}
+          {asset.lifecycle === "Retired" && <span className="ams-pill ams-pill-Retired">{t("asset.retired")}</span>}
         </div>
-        <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block", marginTop: 4 }}>
+        <p className="muted" style={{ margin: "4px 0 0", fontSize: 13 }}>
           {t("reports.dataAsOf", { time: loadedAt.toLocaleString() })}
-        </Text>
+        </p>
       </div>
 
-      <Card style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <Input type="date" value={from} onChange={(_, d) => setFrom(d.value)} />
-          <Text>–</Text>
-          <Input type="date" value={to} onChange={(_, d) => setTo(d.value)} />
+      <div className="ams-card" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="ams-field-row" style={{ flexWrap: "wrap", alignItems: "center" }}>
+          <div className="ams-field">
+            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label={t("reports.timeline.rangeStart")} />
+          </div>
+          <span className="muted">–</span>
+          <div className="ams-field">
+            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label={t("reports.timeline.title")} />
+          </div>
+        </div>
+        <div className="ams-actions">
           {(from || to) && (
-            <Button
-              appearance="transparent"
+            <button
+              type="button"
+              className="ams-btn"
               onClick={() => {
                 setFrom("");
                 setTo("");
               }}
             >
               {t("common.all")}
-            </Button>
+            </button>
           )}
-          <Button appearance="primary" onClick={() => void exportCsv()} disabled={exporting} style={{ marginLeft: "auto" }}>
+          <button type="button" className="ams-btn ams-btn-primary" onClick={() => void exportCsv()} disabled={exporting}>
             {t("reports.timeline.export")}
-          </Button>
+          </button>
         </div>
 
-        {exportError && (
-          <Text size={200} style={{ display: "block", color: tokens.colorPaletteRedForeground1 }}>
-            {exportError}
-          </Text>
-        )}
+        {exportError && <Banner intent="err">{exportError}</Banner>}
 
         {rangeStartState && (
-          <div style={{ background: tokens.colorNeutralBackground3, borderRadius: 6, padding: 8 }}>
-            <Text size={200} weight="semibold" style={{ display: "block" }}>
-              {t("reports.timeline.rangeStart")}
-            </Text>
-            <Text size={200}>
+          <div className="ams-banner ams-banner-info">
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>{t("reports.timeline.rangeStart")}</div>
               {rangeStartState.status} · {t("asset.location")}: {rangeStartState.currentlocation ?? t("common.unknown")} ·{" "}
               {t("asset.custodian")}: {rangeStartState.custodian ?? t("common.unknown")} · {t("asset.project")}:{" "}
               {rangeStartState.currentproject ?? t("common.none")}
-            </Text>
+            </div>
           </div>
         )}
-      </Card>
-
-      <div>
-        {filtered.length === 0 && <Text>{t("asset.history.empty")}</Text>}
-        {filtered.map((ev) => (
-          <TimelineRow key={ev.entry.id} event={ev} />
-        ))}
       </div>
-    </div>
+
+      {filtered.length === 0 ? (
+        <p className="muted" style={{ margin: 0 }}>{t("asset.history.empty")}</p>
+      ) : (
+        <ul className="ams-tl">
+          {filtered.map((ev) => (
+            <TimelineRow key={ev.entry.id} event={ev} />
+          ))}
+        </ul>
+      )}
+    </Page>
   );
 }
 
 function TimelineRow({ event }: { event: TimelineEvent }) {
   const h = event.entry;
   return (
-    <div style={{ padding: "8px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>
-      <Text weight="semibold" size={200} style={{ display: "block" }}>
+    <li>
+      <div style={{ fontWeight: 600, fontSize: 14 }}>
         {new Date(h.transactiondate).toLocaleString()} — {h.transactiontype}
-      </Text>
-      <Text size={200} style={{ display: "block" }}>
+      </div>
+      <div style={{ fontSize: 13 }}>
         {statusLabel(h.statusbefore)} → {statusLabel(h.statusafter)}
         {h.tolocation ? ` · ${h.tolocation}` : ""}
         {h.touser ? ` · ${h.touser}` : ""}
         {h.toproject ? ` · ${h.toproject}` : ""}
-      </Text>
+      </div>
       {event.attachments.map((a, i) => (
-        <Text key={i} size={200} style={{ display: "block", color: tokens.colorBrandForeground1 }}>
+        <div key={i} style={{ fontSize: 13, color: "var(--brandFg)" }}>
           {a.kind === "attach" ? "+" : "−"} {a.assetId}
           {a.role ? ` (${a.role})` : ""}
-        </Text>
+        </div>
       ))}
-      <Text size={200} style={{ display: "block", color: tokens.colorNeutralForeground3 }}>
+      <div className="when">
         {h.performedby}
         {h.notes ? ` · ${h.notes}` : ""}
-      </Text>
-    </div>
+      </div>
+    </li>
   );
 }

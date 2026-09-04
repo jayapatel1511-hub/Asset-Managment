@@ -1,21 +1,8 @@
 import { useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogBody,
-  DialogContent,
-  DialogSurface,
-  DialogTitle,
-  DialogTrigger,
-  Field,
-  Input,
-  MessageBar,
-  MessageBarBody,
-  Select,
-} from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset, CalibrationResult } from "../../api/types";
+import { Banner } from "../../components/Banner";
+import { Sheet } from "../../components/Sheet";
 import { t } from "../../i18n";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -53,50 +40,53 @@ export function RecordCalibrationDialog({ asset, onClose, onDone }: { asset: Ass
   }
 
   return (
-    <Dialog open onOpenChange={(_, d) => !d.open && onClose()}>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle>{t("calibration.record.title")}</DialogTitle>
-          <DialogContent style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {error && (
-              <MessageBar intent="error">
-                <MessageBarBody>{error}</MessageBarBody>
-              </MessageBar>
-            )}
-            <Field label={t("calibration.record.date")} required>
-              <Input type="date" value={calibrationdate} max={todayIso()} onChange={(_, d) => setDate(d.value)} />
-            </Field>
-            <Field label={t("calibration.record.nextDue")} hint="Prefilled from the model's interval if left blank">
-              <Input type="date" value={nextduedate} onChange={(_, d) => setNextDue(d.value)} />
-            </Field>
-            <Field label={t("calibration.record.lab")}>
-              <Input value={lab} onChange={(_, d) => setLab(d.value)} />
-            </Field>
-            <Field label={t("calibration.record.certNumber")}>
-              <Input value={certificatenumber} onChange={(_, d) => setCert(d.value)} />
-            </Field>
-            <Field label={t("calibration.record.cost")}>
-              <Input value={cost} onChange={(_, d) => setCost(d.value)} />
-            </Field>
-            <Field label={t("calibration.record.result")}>
-              <Select style={{ minWidth: 0, width: "100%" }} value={result} onChange={(_, d) => setResult(d.value as CalibrationResult | "")}>
-                <option value="">—</option>
-                <option value="Pass">Pass</option>
-                <option value="Fail">Fail</option>
-                <option value="Adjusted">Adjusted</option>
-              </Select>
-            </Field>
-          </DialogContent>
-          <DialogActions>
-            <DialogTrigger disableButtonEnhancement>
-              <Button appearance="secondary">{t("common.cancel")}</Button>
-            </DialogTrigger>
-            <Button appearance="primary" disabled={busy} onClick={submit}>
-              {t("common.save")}
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+    <Sheet
+      title={t("calibration.record.title")}
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="ams-btn" onClick={onClose}>
+            {t("common.cancel")}
+          </button>
+          <button type="button" className="ams-btn ams-btn-primary" disabled={busy} onClick={submit}>
+            {t("common.save")}
+          </button>
+        </>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {error && <Banner intent="err">{error}</Banner>}
+        <label className="ams-field">
+          {t("calibration.record.date")}
+          <input type="date" value={calibrationdate} max={todayIso()} onChange={(e) => setDate(e.target.value)} />
+        </label>
+        <label className="ams-field">
+          {t("calibration.record.nextDue")}
+          <input type="date" value={nextduedate} onChange={(e) => setNextDue(e.target.value)} />
+          <span className="hint">Prefilled from the model's interval if left blank</span>
+        </label>
+        <label className="ams-field">
+          {t("calibration.record.lab")}
+          <input value={lab} onChange={(e) => setLab(e.target.value)} />
+        </label>
+        <label className="ams-field">
+          {t("calibration.record.certNumber")}
+          <input value={certificatenumber} onChange={(e) => setCert(e.target.value)} />
+        </label>
+        <label className="ams-field">
+          {t("calibration.record.cost")}
+          <input value={cost} onChange={(e) => setCost(e.target.value)} />
+        </label>
+        <label className="ams-field">
+          {t("calibration.record.result")}
+          <select value={result} onChange={(e) => setResult(e.target.value as CalibrationResult | "")}>
+            <option value="">—</option>
+            <option value="Pass">Pass</option>
+            <option value="Fail">Fail</option>
+            <option value="Adjusted">Adjusted</option>
+          </select>
+        </label>
+      </div>
+    </Sheet>
   );
 }

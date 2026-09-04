@@ -1,61 +1,872 @@
 {
-  "_comment": "Single source of truth for allowed transitions. Consumed by app/src/domain/stateMachine.ts and flow F1. Missing key = not allowed.",
-  "statuses": [
-    "Available",
-    "CheckedOut",
-    "Deployed",
-    "InCalibration",
-    "NeedsRepair",
-    "Missing",
-    "Retired"
+  "version": "2026-09-03",
+  "source": "specs/010-web-application-platform/contracts/transition-table.md",
+  "generatedBy": "app/scripts/generate-state-machine.mjs",
+  "supersedes": "hand-maintained seven-value matrix",
+  "axes": {
+    "lifecycle": [
+      "Active",
+      "Retired"
+    ],
+    "disposition": [
+      "AtOffice",
+      "CheckedOut",
+      "Deployed",
+      "InTransit",
+      "AtCalibrationLab",
+      "Missing"
+    ],
+    "serviceability": [
+      "Serviceable",
+      "NeedsRepair",
+      "OutOfService"
+    ]
+  },
+  "derived": {
+    "calibrationCurrency": [
+      "NotRequired",
+      "Failed",
+      "Unknown",
+      "Overdue",
+      "DueSoon",
+      "Current"
+    ],
+    "calibrationCurrencyPrecedence": [
+      "NotRequired",
+      "Failed",
+      "Unknown",
+      "Overdue",
+      "DueSoon",
+      "Current"
+    ],
+    "dueSoonHorizonDays": 30,
+    "todayTimezone": "America/Toronto",
+    "displayPillPrecedence": [
+      {
+        "pill": "Retired",
+        "when": {
+          "lifecycle": [
+            "Retired"
+          ]
+        }
+      },
+      {
+        "pill": "Missing",
+        "when": {
+          "disposition": [
+            "Missing"
+          ]
+        }
+      },
+      {
+        "pill": "In calibration",
+        "when": {
+          "disposition": [
+            "AtCalibrationLab"
+          ]
+        }
+      },
+      {
+        "pill": "Needs repair",
+        "when": {
+          "serviceability": [
+            "NeedsRepair",
+            "OutOfService"
+          ]
+        }
+      },
+      {
+        "pill": "Deployed",
+        "when": {
+          "disposition": [
+            "Deployed"
+          ]
+        }
+      },
+      {
+        "pill": "Checked out",
+        "when": {
+          "disposition": [
+            "CheckedOut"
+          ]
+        }
+      },
+      {
+        "pill": "In transit",
+        "when": {
+          "disposition": [
+            "InTransit"
+          ]
+        }
+      },
+      {
+        "pill": "Available",
+        "when": {}
+      }
+    ]
+  },
+  "retiredIsTerminal": {
+    "allowedTypes": [
+      "Audit",
+      "Correction"
+    ],
+    "refusal": "transition.error.lifecycleRetired"
+  },
+  "rules": [
+    {
+      "requires": {
+        "lifecycle": null,
+        "disposition": null,
+        "serviceability": null
+      },
+      "sets": {
+        "lifecycle": "Active",
+        "disposition": "AtOffice",
+        "serviceability": "Serviceable"
+      },
+      "untouched": [],
+      "refusal": {},
+      "id": "R-01",
+      "type": "AddToInventory",
+      "creation": true
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice"
+        ],
+        "serviceability": [
+          "Serviceable"
+        ]
+      },
+      "sets": {
+        "disposition": "CheckedOut"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "serviceability": "transition.error.serviceability"
+      },
+      "id": "R-02",
+      "type": "Checkout"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "CheckedOut",
+          "Deployed"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "AtOffice"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "destination": "transition.error.destinationRequired"
+      },
+      "id": "R-03",
+      "type": "Return"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "InTransit"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "destination": "transition.error.destinationRequired"
+      },
+      "id": "R-04",
+      "type": "Transfer",
+      "guards": {
+        "toLocationIsOffice": true,
+        "toLocationDiffers": true
+      }
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "InTransit"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "AtOffice"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-05",
+      "type": "Transfer"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice",
+          "CheckedOut",
+          "Deployed",
+          "AtCalibrationLab"
+        ],
+        "serviceability": null
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-06",
+      "type": "Transfer",
+      "guards": {
+        "notInterOfficeDispatch": true
+      }
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice",
+          "CheckedOut"
+        ],
+        "serviceability": [
+          "Serviceable"
+        ]
+      },
+      "sets": {
+        "disposition": "Deployed"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "serviceability": "transition.error.serviceability",
+        "project": "transition.error.projectInactive"
+      },
+      "id": "R-07",
+      "type": "Deploy"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "Deployed"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "CheckedOut"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-08",
+      "type": "Undeploy"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice",
+          "CheckedOut"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "AtCalibrationLab"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-09",
+      "type": "SendToCalibration"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtCalibrationLab"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "AtOffice"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-10",
+      "type": "ReturnFromCalibration",
+      "guards": {
+        "calibrationPass": true
+      }
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtCalibrationLab"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "AtOffice",
+        "serviceability": "NeedsRepair"
+      },
+      "untouched": [
+        "lifecycle"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-11",
+      "type": "ReturnFromCalibration",
+      "guards": {
+        "calibrationFail": true
+      }
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice",
+          "CheckedOut",
+          "Deployed",
+          "InTransit",
+          "AtCalibrationLab"
+        ],
+        "serviceability": [
+          "Serviceable"
+        ]
+      },
+      "sets": {
+        "serviceability": "NeedsRepair"
+      },
+      "untouched": [
+        "lifecycle",
+        "disposition"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "serviceability": "transition.error.serviceability"
+      },
+      "id": "R-12",
+      "type": "ReportFault"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": null,
+        "serviceability": [
+          "NeedsRepair"
+        ]
+      },
+      "sets": {
+        "serviceability": "Serviceable"
+      },
+      "untouched": [
+        "lifecycle",
+        "disposition"
+      ],
+      "refusal": {
+        "serviceability": "transition.error.serviceability"
+      },
+      "id": "R-13",
+      "type": "RepairComplete"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": null,
+        "serviceability": [
+          "Serviceable",
+          "NeedsRepair"
+        ]
+      },
+      "sets": {
+        "serviceability": "OutOfService"
+      },
+      "untouched": [
+        "lifecycle",
+        "disposition"
+      ],
+      "refusal": {
+        "serviceability": "transition.error.serviceability",
+        "role": "auth.error.forbidden"
+      },
+      "id": "R-14",
+      "type": "MarkOutOfService",
+      "roleFloor": [
+        "OfficeAdmin",
+        "SystemOwner"
+      ]
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": null,
+        "serviceability": [
+          "OutOfService"
+        ]
+      },
+      "sets": {
+        "serviceability": "Serviceable"
+      },
+      "untouched": [
+        "lifecycle",
+        "disposition"
+      ],
+      "refusal": {
+        "serviceability": "transition.error.serviceability",
+        "role": "auth.error.forbidden"
+      },
+      "id": "R-15",
+      "type": "ReturnToService",
+      "roleFloor": [
+        "OfficeAdmin",
+        "SystemOwner"
+      ]
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice",
+          "CheckedOut",
+          "Deployed",
+          "InTransit",
+          "AtCalibrationLab"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "Missing"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-16",
+      "type": "MarkMissing"
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "Missing"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "AtOffice"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "destination": "transition.error.destinationRequired"
+      },
+      "id": "R-17a",
+      "type": "Found",
+      "guards": {
+        "foundOffice": true
+      }
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "Missing"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "CheckedOut"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "destination": "transition.error.destinationRequired"
+      },
+      "id": "R-17b",
+      "type": "Found",
+      "guards": {
+        "foundCustody": true
+      }
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "Missing"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "disposition": "Deployed"
+      },
+      "untouched": [
+        "lifecycle",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "destination": "transition.error.destinationRequired"
+      },
+      "id": "R-17c",
+      "type": "Found",
+      "guards": {
+        "foundInstalled": true
+      }
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": null,
+        "serviceability": null
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "role": "auth.error.forbidden"
+      },
+      "id": "R-18",
+      "type": "RehomeAsset",
+      "roleFloor": [
+        "OfficeAdmin",
+        "SystemOwner"
+      ]
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice",
+          "AtCalibrationLab",
+          "Missing"
+        ],
+        "serviceability": null
+      },
+      "sets": {
+        "lifecycle": "Retired"
+      },
+      "untouched": [
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "disposition": "conflict.error.assetNotEligible",
+        "openObligation": "transition.error.openObligation",
+        "missingReason": "command.error.validation"
+      },
+      "id": "R-19",
+      "type": "Retire",
+      "freeze": [
+        "disposition",
+        "serviceability"
+      ],
+      "roleFloor": [
+        "OfficeAdmin",
+        "SystemOwner"
+      ]
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "AtOffice",
+          "CheckedOut",
+          "Deployed",
+          "InTransit",
+          "AtCalibrationLab"
+        ],
+        "serviceability": [
+          "Serviceable"
+        ]
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "component": "transition.error.componentRule",
+        "disposition": "conflict.error.assetNotEligible"
+      },
+      "id": "R-20",
+      "type": "AttachComponent",
+      "singleAsset": false
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": null,
+        "serviceability": null
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "component": "transition.error.componentRule",
+        "destination": "transition.error.destinationRequired"
+      },
+      "id": "R-21",
+      "type": "DetachComponent",
+      "singleAsset": false
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": null,
+        "serviceability": null
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "component": "transition.error.componentRule"
+      },
+      "id": "R-22",
+      "type": "SwapComponent",
+      "singleAsset": false,
+      "composedOf": [
+        "R-21",
+        "R-20"
+      ]
+    },
+    {
+      "requires": {
+        "lifecycle": [
+          "Active"
+        ],
+        "disposition": [
+          "Deployed"
+        ],
+        "serviceability": null
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "component": "transition.error.componentRule"
+      },
+      "id": "R-23",
+      "type": "ChangeInstallationConfiguration",
+      "singleAsset": false
+    },
+    {
+      "requires": {
+        "lifecycle": null,
+        "disposition": null,
+        "serviceability": null
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {},
+      "id": "R-24",
+      "type": "Audit"
+    },
+    {
+      "requires": {
+        "lifecycle": null,
+        "disposition": null,
+        "serviceability": null
+      },
+      "sets": {},
+      "untouched": [
+        "lifecycle",
+        "disposition",
+        "serviceability"
+      ],
+      "refusal": {
+        "validation": "command.error.validation",
+        "role": "auth.error.forbidden"
+      },
+      "id": "R-25",
+      "type": "Correction",
+      "roleFloor": [
+        "OfficeAdmin",
+        "SystemOwner"
+      ]
+    }
   ],
-  "transitions": {
-    "Available": {
-      "Checkout": "CheckedOut",
-      "Transfer": "Available",
-      "Deploy": "Deployed",
-      "SendToCalibration": "InCalibration",
-      "ReportFault": "NeedsRepair",
-      "MarkMissing": "Missing",
-      "Retire": "Retired",
-      "Audit": "Available",
-      "AddToInventory": "Available"
-    },
-    "CheckedOut": {
-      "Return": "Available",
-      "Transfer": "CheckedOut",
-      "Deploy": "Deployed",
-      "ReportFault": "NeedsRepair",
-      "MarkMissing": "Missing",
-      "Audit": "CheckedOut"
-    },
-    "Deployed": {
-      "Return": "Available",
-      "Undeploy": "CheckedOut",
-      "Transfer": "Deployed",
-      "ReportFault": "NeedsRepair",
-      "MarkMissing": "Missing",
-      "Audit": "Deployed"
-    },
-    "InCalibration": {
-      "ReturnFromCalibration": "Available",
-      "ReportFault": "NeedsRepair",
-      "Retire": "Retired",
-      "Audit": "InCalibration"
-    },
-    "NeedsRepair": {
-      "SendToCalibration": "InCalibration",
-      "RepairComplete": "Available",
-      "Retire": "Retired",
-      "Audit": "NeedsRepair"
-    },
-    "Missing": {
-      "Found": "Available",
-      "Retire": "Retired",
-      "Audit": "Missing"
-    },
-    "Retired": {
-      "Audit": "Retired"
+  "compatibility": {
+    "statuses": [
+      "Available",
+      "CheckedOut",
+      "Deployed",
+      "InCalibration",
+      "NeedsRepair",
+      "Missing",
+      "Retired"
+    ],
+    "transitions": {
+      "Available": {
+        "AddToInventory": "Available",
+        "Audit": "Available",
+        "Checkout": "CheckedOut",
+        "Deploy": "Deployed",
+        "MarkMissing": "Missing",
+        "ReportFault": "NeedsRepair",
+        "Retire": "Retired",
+        "SendToCalibration": "InCalibration",
+        "Transfer": "Available"
+      },
+      "CheckedOut": {
+        "Audit": "CheckedOut",
+        "Deploy": "Deployed",
+        "MarkMissing": "Missing",
+        "ReportFault": "NeedsRepair",
+        "Return": "Available",
+        "SendToCalibration": "InCalibration",
+        "Transfer": "CheckedOut"
+      },
+      "Deployed": {
+        "Audit": "Deployed",
+        "MarkMissing": "Missing",
+        "ReportFault": "NeedsRepair",
+        "Return": "Available",
+        "Transfer": "Deployed",
+        "Undeploy": "CheckedOut"
+      },
+      "InCalibration": {
+        "Audit": "InCalibration",
+        "MarkMissing": "Missing",
+        "ReportFault": "InCalibration",
+        "Retire": "Retired",
+        "ReturnFromCalibration": "Available",
+        "Transfer": "InCalibration"
+      },
+      "NeedsRepair": {
+        "Audit": "NeedsRepair",
+        "MarkMissing": "Missing",
+        "RepairComplete": "Available",
+        "Retire": "Retired",
+        "SendToCalibration": "InCalibration",
+        "Transfer": "NeedsRepair"
+      },
+      "Missing": {
+        "Audit": "Missing",
+        "Found": "Available",
+        "Retire": "Retired"
+      },
+      "Retired": {
+        "Audit": "Retired"
+      }
     }
   }
 }

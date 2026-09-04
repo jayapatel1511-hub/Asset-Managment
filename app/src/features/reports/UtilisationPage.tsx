@@ -11,7 +11,7 @@
  * same `getAssetHistory` the rest of the app calls.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Badge, Card, Dropdown, Option, Spinner, Text, Title2, Title3, tokens } from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
 import { backend } from "../../api";
 import type { Asset, HistoryEntry } from "../../api/types";
 import {
@@ -23,6 +23,11 @@ import {
   type UtilisationCategory,
 } from "../../domain/utilisation";
 import { AssetRow } from "../../components/AssetRow";
+import { Banner } from "../../components/Banner";
+import { Chip } from "../../components/Chip";
+import { ListFrame } from "../../components/ListFrame";
+import { Page } from "../../components/Page";
+import { SectionLabel } from "../../components/SectionLabel";
 import { t } from "../../i18n";
 
 type PeriodDays = 30 | 90 | 365;
@@ -59,25 +64,21 @@ function proportionBar(byCategory: Record<UtilisationCategory, number>) {
 function ProportionRow({ label, byCategory }: { label: string; byCategory: Record<UtilisationCategory, number> }) {
   const pct = proportionBar(byCategory);
   return (
-    <div style={{ marginBottom: 6 }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Text size={200}>{label || t("common.unknown")}</Text>
-        {pct && (
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-            {pct.available}%
-          </Text>
-        )}
+    <div style={{ marginBottom: 8 }}>
+      <div className="ams-breakdown-row">
+        <span className="k">{label || t("common.unknown")}</span>
+        {pct && <span className="n muted">{pct.available}%</span>}
       </div>
       {pct ? (
-        <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden", background: tokens.colorNeutralBackground3 }}>
-          <div style={{ width: `${pct.available}%`, background: tokens.colorPaletteGreenBackground3 }} title="Available" />
-          <div style={{ width: `${pct.inUse}%`, background: tokens.colorPaletteBlueBackground2 }} title="InUse" />
-          <div style={{ width: `${pct.outOfService}%`, background: tokens.colorPaletteRedBackground2 }} title="OutOfService" />
+        <div className="ams-chart-row">
+          <span style={{ width: `${pct.available}%`, background: "var(--avail)" }} title="Available" />
+          <span style={{ width: `${pct.inUse}%`, background: "var(--out)" }} title="InUse" />
+          <span style={{ width: `${pct.outOfService}%`, background: "var(--repair)" }} title="OutOfService" />
         </div>
       ) : (
-        <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+        <p className="muted" style={{ margin: 0, fontSize: 12 }}>
           {t("reports.utilisation.insufficientHistory")}
-        </Text>
+        </p>
       )}
     </div>
   );
@@ -173,100 +174,92 @@ export function UtilisationPage() {
   }, [rows, period]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-        <div>
-          <Title2>{t("reports.utilisation.title")}</Title2>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block", marginTop: 4 }}>
-            {t("reports.dataAsOf", { time: loadedAt.toLocaleString() })}
-          </Text>
-        </div>
-        <Dropdown
-          size="small"
-          value={period === 30 ? t("calibration.horizon30") : period === 90 ? t("calibration.horizon90") : t("reports.utilisation.period365")}
-          selectedOptions={[String(period)]}
-          onOptionSelect={(_, d) => setPeriod(Number(d.optionValue) as PeriodDays)}
-        >
-          <Option value="30">{t("calibration.horizon30")}</Option>
-          <Option value="90">{t("calibration.horizon90")}</Option>
-          <Option value="365">{t("reports.utilisation.period365")}</Option>
-        </Dropdown>
+    <Page>
+      <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+        {t("reports.dataAsOf", { time: loadedAt.toLocaleString() })}
+      </p>
+      <div className="ams-chips">
+        <Chip on={period === 30} onClick={() => setPeriod(30)}>
+          {t("calibration.horizon30")}
+        </Chip>
+        <Chip on={period === 90} onClick={() => setPeriod(90)}>
+          {t("calibration.horizon90")}
+        </Chip>
+        <Chip on={period === 365} onClick={() => setPeriod(365)}>
+          {t("reports.utilisation.period365")}
+        </Chip>
       </div>
 
       {!rows && <Spinner style={{ margin: 24 }} label={t("common.loading")} />}
 
       {rows && !anySufficient && (
-        <Card style={{ padding: 12 }}>
-          <Text>{t("reports.utilisation.insufficientHistory")}</Text>
-        </Card>
+        <Banner intent="info">{t("reports.utilisation.insufficientHistory")}</Banner>
       )}
 
       {rows && anySufficient && (clippedCount > 0 || notYetOwnedCount > 0) && (
-        <Card style={{ padding: 12 }}>
-          <Text size={200} style={{ display: "block" }}>
-            {clippedCount > 0 && t("reports.utilisation.clippedToAcquisition", { count: clippedCount })}
-          </Text>
-          <Text size={200} style={{ display: "block" }}>
-            {notYetOwnedCount > 0 && t("reports.utilisation.notYetOwned", { count: notYetOwnedCount })}
-          </Text>
-        </Card>
+        <Banner intent="info">
+          {clippedCount > 0 && <div>{t("reports.utilisation.clippedToAcquisition", { count: clippedCount })}</div>}
+          {notYetOwnedCount > 0 && <div>{t("reports.utilisation.notYetOwned", { count: notYetOwnedCount })}</div>}
+        </Banner>
       )}
 
       {rows && anySufficient && (
         <>
-          <Card style={{ padding: 12 }}>
-            <Title3>{t("reports.fleet.byType")}</Title3>
-            <div style={{ marginTop: 8 }}>
+          <section>
+            <SectionLabel>{t("reports.fleet.byType")}</SectionLabel>
+            <div className="ams-card">
               {[...byType.entries()].map(([key, cat]) => (
                 <ProportionRow key={key} label={key} byCategory={cat} />
               ))}
+              <div className="ams-legend">
+                <span><i style={{ background: "var(--avail)" }} />Available</span>
+                <span><i style={{ background: "var(--out)" }} />In use</span>
+                <span><i style={{ background: "var(--repair)" }} />Out of service</span>
+              </div>
             </div>
-          </Card>
+          </section>
 
-          <Card style={{ padding: 12 }}>
-            <Title3>{t("reports.fleet.byOffice")}</Title3>
-            <div style={{ marginTop: 8 }}>
+          <section>
+            <SectionLabel>{t("reports.fleet.byOffice")}</SectionLabel>
+            <div className="ams-card">
               {[...byOffice.entries()].map(([key, cat]) => (
                 <ProportionRow key={key} label={key} byCategory={cat} />
               ))}
             </div>
-          </Card>
+          </section>
 
-          <Card style={{ padding: 12 }}>
-            <Title3>{t("reports.utilisation.lowestAvailability")}</Title3>
-            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-              {lowestAvailability.length === 0 && <Text size={200}>{t("common.none")}</Text>}
+          <section>
+            <SectionLabel>{t("reports.utilisation.lowestAvailability")}</SectionLabel>
+            <div className="ams-list">
+              {lowestAvailability.length === 0 && <div className="ams-empty">{t("common.none")}</div>}
               {lowestAvailability.map((r) => (
-                <div key={r.key} style={{ display: "flex", justifyContent: "space-between" }}>
-                  <Text size={200}>{r.key}</Text>
-                  <Badge color={r.pct !== null && r.pct < 20 ? "danger" : "warning"}>{r.pct}%</Badge>
+                <div key={r.key} className="ams-attn">
+                  <span className="ams-attn-body">
+                    <div className="l">{r.key}</div>
+                  </span>
+                  <span className={`ams-pill ${r.pct !== null && r.pct < 20 ? "ams-pill-NeedsRepair" : "ams-pill-warn"}`}>
+                    {r.pct}%
+                  </span>
                 </div>
               ))}
             </div>
-          </Card>
+          </section>
         </>
       )}
 
-      <Card style={{ padding: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Title3>{t("reports.utilisation.idle")}</Title3>
-          <Badge>{idle.length}</Badge>
-        </div>
-        <div style={{ marginTop: 8, maxHeight: 300, overflowY: "auto", border: `1px solid ${tokens.colorNeutralStroke2}` }}>
-          {idle.length === 0 && (
-            <Text size={200} style={{ padding: 12, display: "block" }}>
-              {t("common.none")}
-            </Text>
-          )}
+      <section>
+        <SectionLabel count={idle.length}>{t("reports.utilisation.idle")}</SectionLabel>
+        <ListFrame>
+          {idle.length === 0 && <div className="ams-empty">{t("common.none")}</div>}
           {idle.slice(0, 100).map((a) => (
             <AssetRow key={a.id} asset={a} />
           ))}
-        </div>
-      </Card>
+        </ListFrame>
+      </section>
 
-      <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block" }}>
+      <p className="muted" style={{ margin: 0, fontSize: 12 }}>
         {t("reports.notPublished")}
-      </Text>
-    </div>
+      </p>
+    </Page>
   );
 }

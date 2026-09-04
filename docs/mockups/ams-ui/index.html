@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Englobe AMS — product UI</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/shell.css">
+  <link rel="stylesheet" href="css/screens.css">
+</head>
+<body>
+  <div class="studio">
+    <div class="studio-bar" aria-label="Prototype studio">
+      <strong>AMS UI</strong>
+      <span class="sep"></span>
+      <button type="button" data-role="field">Field</button>
+      <button type="button" data-role="office">Office Admin</button>
+      <button type="button" data-role="data">Data Admin</button>
+      <button type="button" data-role="manager">Manager</button>
+      <span class="sep"></span>
+      <button type="button" data-vp="auto">Auto</button>
+      <button type="button" data-vp="phone">Phone 390</button>
+      <button type="button" data-vp="desk">Desktop 1440</button>
+      <span class="sep"></span>
+      <button type="button" id="demo-offline">Offline</button>
+      <button type="button" data-ui="default">Default</button>
+      <button type="button" data-ui="empty">Empty</button>
+      <button type="button" data-ui="loading">Loading</button>
+      <button type="button" data-ui="error">Error</button>
+      <button type="button" id="demo-reset">Reset</button>
+      <span class="hint">Outside the product · see README</span>
+    </div>
+    <div class="stage" id="app-root"></div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

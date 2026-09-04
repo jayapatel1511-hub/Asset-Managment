@@ -31,6 +31,14 @@ import type {
   PendingSubmission,
   PowerSource,
   Project,
+  Manufacturer,
+  EquipmentCategory,
+  CreateReferenceInput,
+  EditReferenceInput,
+  DeactivateReferenceInput,
+  ReparentLocationInput,
+  ReferenceImpactPreview,
+  ReferenceDomain,
 } from "./types";
 
 export interface AssetFilter {
@@ -216,6 +224,19 @@ export interface AmsBackend {
   listLocations(): Promise<Location[]>;
   listEquipmentModels(): Promise<EquipmentModel[]>;
   listProjects(): Promise<Project[]>;
+  listManufacturers(): Promise<Manufacturer[]>;
+  listEquipmentCategories(): Promise<EquipmentCategory[]>;
+  listReference(domain: ReferenceDomain): Promise<unknown[]>;
+  getReference(domain: ReferenceDomain, id: string): Promise<unknown | null>;
+
+  // ---- reference stewardship (Rule 7 / FR-018–FR-021) ----
+  // Named commands — not a generic table editor. Deactivate, never delete.
+  createReference(input: CreateReferenceInput): Promise<SubmissionOutcome>;
+  editReference(input: EditReferenceInput): Promise<SubmissionOutcome>;
+  deactivateReference(input: DeactivateReferenceInput): Promise<SubmissionOutcome>;
+  reactivateReference(input: DeactivateReferenceInput): Promise<SubmissionOutcome>;
+  reparentLocation(input: ReparentLocationInput): Promise<SubmissionOutcome>;
+  previewReferenceImpact(domain: ReferenceDomain, id: string): Promise<ReferenceImpactPreview>;
 
   // ---- calibration (feature 004) ----
   listCalibrationDue(horizonDays: number): Promise<Asset[]>;
@@ -345,3 +366,17 @@ export type ReportingMethods = Pick<AmsBackend, "getFleetCounts" | "getCalibrati
 export type OfflineMethods = Pick<AmsBackend, "listPendingSubmissions">;
 
 export type AdminAssignmentMethods = Pick<AmsBackend, "listOfficeAdminAssignments" | "setOfficeAdmins">;
+
+export type ReferenceMethods = Pick<
+  AmsBackend,
+  | "listManufacturers"
+  | "listEquipmentCategories"
+  | "listReference"
+  | "getReference"
+  | "createReference"
+  | "editReference"
+  | "deactivateReference"
+  | "reactivateReference"
+  | "reparentLocation"
+  | "previewReferenceImpact"
+>;

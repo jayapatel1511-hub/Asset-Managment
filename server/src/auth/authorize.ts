@@ -33,10 +33,11 @@ export interface RefusalBody {
   /** The roles that would have been accepted. Present only on a role refusal, and safe: it
    * describes this endpoint, not this caller. */
   requiredRoles?: readonly AppRole[];
+  correlationId?: string;
 }
 
-function send(reply: FastifyReply, status: number, body: RefusalBody): FastifyReply {
-  return reply.code(status).send(body);
+function send(reply: FastifyReply, status: number, body: Omit<RefusalBody, "correlationId">): FastifyReply {
+  return reply.code(status).send({ ...body, correlationId: reply.request.id });
 }
 
 export function refuseUnauthenticated(reply: FastifyReply): FastifyReply {
