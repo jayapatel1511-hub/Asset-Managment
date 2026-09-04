@@ -1,42 +1,77 @@
 /**
- * Opens the in-process PostgreSQL (PGlite) database and applies schema.sql.
+ * The in-process PGlite driver (PostgreSQL compiled to WebAssembly), behind the same `Database`
+ * interface as the networked one.
  *
- * PGlite is single-connection: queries queue, and `db.transaction()` holds the connection for the
- * whole callback. That is what gives the command path its serialisation for free in this POC —
- * two overlapping checkouts are applied one after the other, each inside its own transaction,
- * and the second sees the first's result. On a networked PostgreSQL the same SQL would rely on
- * `SELECT ... FOR UPDATE` in deterministic order instead (server/README.md § Concurrency and
- * § Swapping in networked PostgreSQL); nothing in the SQL
- * itself would change.
+ * Kept working on purpose after the PostgreSQL transport landed. Two reasons:
+ *
+ *   1. It is the fallback when no database daemon is available — which is the situation this
+ *      proof of concept was originally written under, and could be again on a locked-down
+ *      machine.
+ *   2. Keeping both drivers green against the same 64 tests is the evidence that nothing above
+ *      this layer knows which one it has. The moment a service needs to care, the abstraction
+ *      has leaked and we want a failing test to say so.
+ *
+ * What it cannot do is prove concurrency. PGlite is single-connection: queries queue, and
+ * `transaction()` holds the one connection for the whole callback, so the command path
+ * serialises for free and `SELECT ... FOR UPDATE` never has to work. Anything racing belongs on
+ * the postgres driver (server/README.md § Concurrency).
+ *
+ * `Queryable` is re-exported here so the services that import it from this path keep compiling
+ * unchanged — its home is now database.ts.
  */
-import { PGlite } from "@electric-sql/pglite";
-import { mkdirSync, readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { PGlite, type Transaction } from "@electric-sql/pglite";
+import { mkdirSync } from "node:fs";
+import type { Database, Tx } from "./database";
+import { migrate } from "./migrate";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const SCHEMA_SQL = readFileSync(path.join(here, "schema.sql"), "utf8");
+export { readMeta, writeMeta, type Database, type Queryable, type Tx } from "./database";
 
-/** The subset of PGlite / PGlite Transaction that services depend on — so a service can run
- * against the database directly (reads) or inside a transaction (writes) with one signature. */
-export interface Queryable {
-  query<T>(query: string, params?: unknown[]): Promise<{ rows: T[] }>;
+class PgliteTx implements Tx {
+  constructor(private readonly tx: Transaction) {}
+
+  async query<T>(query: string, params?: unknown[]): Promise<{ rows: T[] }> {
+    const res = await this.tx.query<T>(query, params as unknown[] | undefined);
+    return { rows: res.rows };
+  }
+
+  async exec(query: string): Promise<void> {
+    await this.tx.exec(query);
+  }
 }
 
-/** `dir` undefined = in-memory (tests). */
-export async function openDatabase(dir?: string): Promise<PGlite> {
+class PgliteDatabase implements Database {
+  readonly driver = "pglite" as const;
+
+  constructor(private readonly db: PGlite) {}
+
+  async query<T>(query: string, params?: unknown[]): Promise<{ rows: T[] }> {
+    const res = await this.db.query<T>(query, params as unknown[] | undefined);
+    return { rows: res.rows };
+  }
+
+  async exec(query: string): Promise<void> {
+    await this.db.exec(query);
+  }
+
+  async transaction<T>(body: (tx: Tx) => Promise<T>): Promise<T> {
+    // PGlite types the callback's return as `T | undefined` because it resolves to undefined on
+    // rollback; a rollback here throws instead, so the value is present whenever we return.
+    const result = await this.db.transaction(async (tx) => body(new PgliteTx(tx)));
+    return result as T;
+  }
+
+  async close(): Promise<void> {
+    await this.db.close();
+  }
+}
+
+/** `dir` undefined = in-memory. `migrate: false` returns an empty database — the migration tests
+ * are the only caller that wants one. */
+export async function openPglite(dir?: string, opts: { migrate?: boolean } = {}): Promise<Database> {
   if (dir) mkdirSync(dir, { recursive: true });
-  const db = dir ? new PGlite(dir) : new PGlite();
+  const db = new PGlite(dir);
   await db.waitReady;
-  await db.exec(SCHEMA_SQL);
-  return db;
-}
-
-export async function readMeta(db: Queryable, key: string): Promise<string | null> {
-  const res = await db.query<{ value: string }>("SELECT value FROM meta WHERE key = $1", [key]);
-  return res.rows[0]?.value ?? null;
-}
-
-export async function writeMeta(db: Queryable, key: string, value: string): Promise<void> {
-  await db.query("INSERT INTO meta (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value", [key, value]);
+  const wrapped = new PgliteDatabase(db);
+  if (opts.migrate !== false) await migrate(wrapped);
+  return wrapped;
 }

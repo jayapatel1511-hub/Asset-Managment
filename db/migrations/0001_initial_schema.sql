@@ -1,15 +1,52 @@
--- Englobe AMS — local proof-of-concept schema (PGlite: real PostgreSQL, in-process).
+-- 0001 — initial schema (the frozen baseline).
+--
+-- This file IS the former `server/src/db/schema.sql`, moved here unchanged from
+-- `CREATE TABLE IF NOT EXISTS meta` onward. It is migration 0001 rather than a rewrite because
+-- databases already carry exactly these objects: the local `ams` container, every developer's
+-- PGlite directory under `server/data/`, and the staged-data load the 98 existing tests run
+-- against. A baseline that differed from what those databases hold would have to be reconciled
+-- by hand on first run; a baseline that is byte-identical does not.
+--
+-- Two consequences follow, and both are deliberate:
+--
+--   1. Every statement here stays idempotent (CREATE ... IF NOT EXISTS / CREATE OR REPLACE /
+--      DROP TRIGGER IF EXISTS). That is what lets 0001 be applied to an already-populated
+--      database as a no-op and have the ledger simply record it. Migrations 0002 onward are
+--      written the same way for the same reason, not because the runner re-applies them — it
+--      does not; `schema_migration` records each version once and refuses a changed checksum.
+--   2. This file is now IMMUTABLE. Editing it changes its checksum and the runner refuses to
+--      start (`server/src/db/migrate.ts`). Schema change is a NEW numbered file, forward-only,
+--      which is what CLAUDE.md's "database migrations are forward-safe" asks for.
+--
+-- The original header is preserved below, because its reasoning about the compatibility status
+-- column is still the reasoning that governs. Read `db/migrations/0008_state_axes.sql` next: it
+-- is where the approved four-axis model (docs/15 § 3) is derived from the columns below without
+-- rewriting them, per assumption A-STATE in specs/_planning/BUILD-FREEZE.md.
+--
+-- ---------------------------------------------------------------------------------------------
+-- Englobe AMS — local proof-of-concept schema. Runs on both drivers: networked PostgreSQL
+-- (docker-compose.yml, the default) and in-process PGlite. Verified unchanged on PostgreSQL
+-- 17.11 on 2026-09-03 — see server/README.md § Swapping in networked PostgreSQL.
 --
 -- Mirrors app/src/api/types.ts one for one so the existing React screens run unchanged: one
--- asset `status` (data/reference/state_machine.json), not the three-axis model proposed in
--- server/README.md § What this POC does not do — that split is a product decision still PROPOSED in
--- docs/08-decisions.md and is deliberately out of scope for the POC.
+-- asset `status` (data/reference/state_machine.json), not the multi-axis model.
+--
+-- THIS IS A COMPATIBILITY SCHEMA, NOT AN UP-TO-DATE ONE. When this header was written the
+-- axis split was still PROPOSED; it is not. R1 was approved on 2026-09-03 (docs/08-decisions.md):
+-- canonical asset state is `lifecycle` + `disposition` + `serviceability` stored, plus calibration
+-- currency DERIVED — four named axes, three columns. The same decision says the single `status`
+-- column "remains only in the local mock/`server/` POC until HTTP cutover", which is why this file
+-- still has one. Do not read this schema as the canonical model; the canonical model is
+-- docs/15-postgres-data-model.md plus specs/010-web-application-platform/data-model.md, and the
+-- consequences of the gap are analysed in docs/19-state-model-decision.md.
+--
+-- One trap that analysis names and this file cannot fix on its own: axes -> status is total, but
+-- status -> axes is NOT recoverable per row. Every transaction line written here carries two state
+-- columns; canonical lines carry six. Lines written during the compatibility window cannot be
+-- backfilled (docs/19 § 8.3).
 --
 -- Dates are ISO-8601 text, exactly the strings the app already exchanges. The database does no
 -- timezone arithmetic; display in America/Toronto stays a client concern (master CLAUDE.md rule).
---
--- Idempotent: every statement is CREATE ... IF NOT EXISTS / CREATE OR REPLACE, so it runs on
--- every start-up.
 
 CREATE TABLE IF NOT EXISTS meta (
   key   text PRIMARY KEY,
@@ -222,13 +259,24 @@ CREATE TABLE IF NOT EXISTS office_admin_assignment (
 
 -- One store for command idempotency, rather than the drift-prone two-table variant an earlier
 -- draft proposed (server/README.md § Idempotency). Rows are never expired: an accepted command
--- must return its original
--- outcome for as long as a device might replay it (Principle VIII).
+-- must return its original outcome for as long as a device might replay it (Principle VIII).
+--
+-- The PRIMARY KEY is the concurrency control, not just a uniqueness constraint. runCommand
+-- INSERTs this row FIRST, before it touches an asset; a second copy of the same submission
+-- blocks on the key until the first commits or rolls back. That is what makes a simultaneous
+-- duplicate return the original answer instead of running the command twice.
 CREATE TABLE IF NOT EXISTS command_idempotency (
   client_submission_id text PRIMARY KEY,
   request_hash         text NOT NULL,
   user_upn             text NOT NULL,
   command              text NOT NULL,
-  response             jsonb NOT NULL,
+  response             jsonb,               -- NULL only between the claim and the outcome, and
+                                            -- never visible to another session: the row is
+                                            -- uncommitted for that whole window.
   created_at           text NOT NULL
 );
+-- The column was NOT NULL when the claim was written at the END of the transaction rather than
+-- the start (finding WS-W4-F2). CREATE TABLE IF NOT EXISTS will not alter an existing table, and
+-- this schema is applied on every start-up, so the change is expressed as an idempotent ALTER —
+-- a no-op once the column is already nullable.
+ALTER TABLE command_idempotency ALTER COLUMN response DROP NOT NULL;

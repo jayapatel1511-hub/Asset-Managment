@@ -1,0 +1,14 @@
+{
+  "name": "@ams/contracts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The wire contract shared by app/ and server/ \u2014 entity shapes and the AmsBackend interface. No runtime dependency, no React, no database driver: this package is what both sides agree on, and nothing else.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "//": "Typechecked from the repository root (`npm run typecheck:contracts`), which borrows server/'s tsc \u2014 this package has no dependencies of its own and installs nothing."
+  }
+}
