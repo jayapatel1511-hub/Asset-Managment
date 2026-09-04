@@ -1,6 +1,6 @@
 # 07 — Synthetic fleet history: large profile
 
-Generated 2026-09-03T03:31:02.518Z by `app/scripts/synthetic/generate.ts` v0.1.0 in 1174.0 s. Spec: `specs/007-synthetic-data/spec.md`.
+Generated 2026-09-03T22:51:54.142Z by `app/scripts/synthetic/generate.ts` v0.1.0 in 175.8 s. Spec: `specs/007-synthetic-data/spec.md`.
 
 **Result: PASS.** The manifest records `verified: true`; the dataset may be copied into the app.
 

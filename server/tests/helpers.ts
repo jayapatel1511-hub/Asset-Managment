@@ -1,26 +1,30 @@
 /**
- * Test harness: one Fastify app over an in-memory PGlite (no directory, so nothing touches
- * server/data/), seeded from the real migrated dataset in migration/staged/ — 1,026 assets, not
- * fixtures. Routes are exercised with `app.inject()`, so there is no port and no network, but
- * every request goes through the same hooks, zod validation and error handler production traffic
- * does.
+ * Test harness: one Fastify app over an isolated database, seeded from the real migrated dataset
+ * in migration/staged/ — 1,026 assets, not fixtures. Routes are exercised with `app.inject()`, so
+ * there is no port and no network, but every request goes through the same hooks, zod validation
+ * and error handler production traffic does.
+ *
+ * `openTestDatabase()` (src/db/open.ts) decides what "isolated" means per driver: on postgres a
+ * freshly created, uniquely-named database that is dropped on close (WS-W1's "isolated
+ * integration-test database"), on pglite an in-memory instance that touches nothing in
+ * server/data/. Each test file calls this once in `beforeAll`, so the suite creates five.
  */
-import type { PGlite } from "@electric-sql/pglite";
+import type { Database } from "../src/db/database";
 import type { FastifyInstance } from "fastify";
 import { buildApp, createContext } from "../src/app";
 import { DATASET_DIR } from "../src/config";
-import { openDatabase } from "../src/db/pglite";
+import { openTestDatabase } from "../src/db/open";
 import { seedIfNeeded } from "../src/db/seed";
 import type { SubmissionOutcome } from "../../app/src/api/AmsBackend";
 
 export interface TestApp {
   app: FastifyInstance;
-  db: PGlite;
+  db: Database;
   close(): Promise<void>;
 }
 
 export async function createTestApp(): Promise<TestApp> {
-  const db = await openDatabase(); // in-memory
+  const db = await openTestDatabase();
   const seed = await seedIfNeeded(db, DATASET_DIR);
   const app = await buildApp(createContext(db, seed.dataset), { logger: false });
   await app.ready();
