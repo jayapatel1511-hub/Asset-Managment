@@ -145,11 +145,11 @@ Core asset and data-management operation must not depend on it.
 
 Do not begin by adding more operational screens.
 
-1. Approve `docs/15-postgres-data-model.md`, including the additions required by `docs/16-data-management.md`.
-2. Close blocking product, data ownership, classification, approval and retention decisions.
-3. Create shared contracts and database migrations.
+1. ~~Approve state model~~ **Done 2026-09-03 (R1).** Approve remaining `docs/15` tables beyond the first-proof subset, including additions required by `docs/16-data-management.md`.
+2. Close remaining product decisions (R5 admin scope, Q18, data ownership, classification, approval, retention). **R4 (Q8/Q9) closed 2026-09-03.**
+3. Create shared TypeScript contracts from `specs/010…/contracts/` (**R2 frozen**) and first-proof migrations from `specs/010…/data-model.md` (**R3 subset approved**).
 4. Implement identity, health and read-only API paths.
-5. Implement the atomic transaction command and concurrency/idempotency tests.
+5. Implement the atomic transaction command and concurrency/idempotency tests (five-asset race).
 6. Build the read-only data dictionary, data-quality rule engine, dashboard and issue queue.
 7. Replace the production frontend adapter with HTTP.
 8. Add PWA shell caching, IndexedDB data, drafts, queue and conflict resolution.

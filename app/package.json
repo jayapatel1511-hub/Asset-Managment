@@ -22,7 +22,10 @@
     "synthetic": "vite-node scripts/synthetic/generate.ts",
     "synthetic:roster": "vite-node scripts/synthetic/authoring/make-roster.ts",
     "data:real": "node scripts/copy-staged-data.mjs",
-    "data:synthetic": "node scripts/copy-staged-data.mjs --dataset synthetic/standard"
+    "data:synthetic": "node scripts/copy-staged-data.mjs --dataset synthetic/standard",
+    "predev:localapi": "node scripts/generate-state-machine.mjs && node scripts/copy-staged-data.mjs",
+    "dev:localapi": "vite --mode localapi --port 3200 --strictPort",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.74.7",
@@ -36,6 +39,7 @@
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.3.4",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^25.0.1",
     "typescript": "^5.9.3",
     "vite": "^6.4.3",

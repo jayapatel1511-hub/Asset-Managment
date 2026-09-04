@@ -1,0 +1,94 @@
+{
+  "_note": "Strings the mockup needed that app/src/i18n/en.json does not have. Keys follow the area.element[.qualifier] convention. en.json was not edited. Grouped comments mark which gap or § 9 provisional string each one covers.",
+
+  "nav.more": "More",
+
+  "search.idleHint": "Search an Asset ID, serial or model, or use a quick filter.",
+
+  "scan.title": "Scan a tag",
+  "scan.hint": "Camera scanning needs the Power Apps SDK, not available outside Power Apps. Type or paste a scanned code to test the same resolution logic.",
+  "scan.field": "Asset ID or serial",
+  "scan.resolve": "Resolve",
+  "scan.torch": "Torch",
+  "scan.aim": "Point the camera at the tag on the instrument.",
+
+  "asset.sim.title": "SIM",
+  "asset.sim.secured": "Office Admin and System Owner only",
+  "asset.sim.iccid": "ICCID",
+  "asset.sim.phoneNumber": "Phone number",
+  "asset.sim.staticIp": "Static IP",
+  "asset.sim.carrier": "Carrier",
+
+  "cart.add": "Add",
+  "cart.scan": "Scan",
+  "cart.duplicate": "{assetId} is already in the cart.",
+  "cart.backToForm": "Back",
+
+  "checkout.expectedReturnRequired": "Expected return",
+  "checkout.transactionDate": "Transaction date",
+  "checkout.transactionDate.hint": "Admins may backdate up to 30 days (Q9).",
+  "checkout.assignedTo.change": "Change",
+
+  "transfer.newCustodian.unchanged": "Leave unchanged",
+  "transfer.newCustodian.hint": "Picked from the directory — leave blank to leave unchanged.",
+
+  "calibration.emptyHorizon": "Nothing is due within {days} days.",
+  "calibration.record.certificateFile": "Certificate (PDF)",
+  "calibration.record.certificateChoose": "Choose file",
+  "calibration.record.certificateDestination": "Saved to AMS Documents/{assetId}/",
+  "calibration.record.labRequired": "Pick a calibration lab.",
+
+  "deploy.pickPrimary": "Pick logger",
+
+  "recover.recoveryDate": "Recovery date",
+
+  "site.currentCount": "{count} current",
+  "site.pastCount": "{count} past",
+  "site.since": "since",
+  "site.closed": "closed",
+
+  "admin.newAsset.caption": "Register a piece of equipment from the model catalogue. The Asset ID is minted for you.",
+  "admin.newAsset.homeOfficeRequired": "Pick a home office.",
+  "admin.fieldQueue.title": "Tags to finish",
+  "admin.fieldQueue.caption": "Assets tagged in the field with a temporary ID, or with no home office yet. Open one to complete it.",
+  "admin.returnSweep.title": "Return sweep",
+  "admin.returnSweep.caption": "Assets that came across as checked out with nobody named. Return them once you find who has them.",
+  "admin.officeAdmins.pickPerson": "Pick a person…",
+
+  "reports.compliance.overdueCount": "Overdue: {count}",
+  "reports.compliance.dueCount": "Due within {days} days: {count}",
+  "reports.compliance.inCalibrationCount": "In calibration: {count}",
+  "reports.compliance.unknownStatusCount": "Unknown status: {count}",
+  "reports.utilisation.horizon30": "30 days",
+  "reports.utilisation.horizon90": "90 days",
+  "reports.utilisation.horizon365": "365 days",
+  "reports.utilisation.availablePercent": "{percent} % available",
+
+  "_enumLabels": {
+    "_note": "G-09. Display-only humanisation. The stored enum values are unchanged.",
+    "equipmenttype": {
+      "DataLogger": "Data logger",
+      "Geophone": "Geophone",
+      "SoundLevelMeter": "Sound level meter",
+      "DustMonitor": "Dust monitor",
+      "Modem": "Modem",
+      "Accessory": "Accessory"
+    },
+    "status": {
+      "Available": "Available",
+      "CheckedOut": "Checked out",
+      "Deployed": "Deployed",
+      "InCalibration": "In calibration",
+      "NeedsRepair": "Needs repair",
+      "Missing": "Missing",
+      "Retired": "Retired"
+    },
+    "assetGroup": {
+      "_note": "Reports 'By asset group' buckets, derived from equipment type.",
+      "Instruments": "DataLogger, SoundLevelMeter, DustMonitor",
+      "Sensors": "Geophone",
+      "Comms": "Modem",
+      "Accessories": "Accessory"
+    }
+  }
+}

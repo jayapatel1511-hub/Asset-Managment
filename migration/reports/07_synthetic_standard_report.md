@@ -1,6 +1,6 @@
 # 07 — Synthetic fleet history: standard profile
 
-Generated 2026-09-03T03:11:06.821Z by `app/scripts/synthetic/generate.ts` v0.1.0 in 37.2 s. Spec: `specs/007-synthetic-data/spec.md`.
+Generated 2026-09-03T22:58:08.091Z by `app/scripts/synthetic/generate.ts` v0.1.0 in 10.7 s. Spec: `specs/007-synthetic-data/spec.md`.
 
 **Result: PASS.** The manifest records `verified: true`; the dataset may be copied into the app.
 
@@ -74,6 +74,7 @@ Every row in this dataset is fictional. Nothing in it describes a real asset, pe
 | FR-050 | Every planted scenario present at as-of | PASS | 16 of 16 |  \| overdue-calibration-per-office: 9/9 offices with calibrated assets; expected-return-overdue: AQDS-900002; retired-after-15-years: DST-5007; failed-calibration-then-repair: GEO-UM-40142; temporary-tag: 9; third-party-owned: 6; leaver-holding-assets: elodie.mensah@englobecorp.com; site-on-two-projects: 215 |
 | SC-003 | Volume minimums at this scale | PASS | assets 1459/1400, lines 91616/85000, installations 8062/6000, cal records 7567/7000, projects 625/150, sites 2542/300 |  |
 | SC-007 | Answer key reconciles with the app's own point-in-time, installation and reporting logic | PASS | 0 discrepancies |  \| calibration counts not reconciled: as-of is not today |
+| FR-052 | Two generations with the same seed and parameters are byte-identical | PASS | all 13 files identical |  (3.0 s) |
 
 ## Planted scenarios (FR-050)
 

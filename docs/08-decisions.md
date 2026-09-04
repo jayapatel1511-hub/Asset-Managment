@@ -70,7 +70,7 @@ Record every deviation from the spec here. Format: date · decision · why · wh
 | 2026-09-03 | Preserve the existing React + TypeScript + Vite user experience and migration/domain work; replace the production adapter and hosting path | The interface, tests, migration cleaning, reference data, synthetic history and business specifications remain valuable. Reusing them avoids restarting the product while allowing the authoritative backend to change | Jay (direction); detailed implementation recorded in constitution 2.0.0 and feature 010 |
 | 2026-09-03 | **Working web-platform target:** Azure-hosted PWA, Microsoft Entra ID, TypeScript API, Azure Database for PostgreSQL, private Blob Storage, transactional outbox/worker and Azure Container Apps | This is the concrete architecture selected to execute the web-app pivot. It retains organizational SSO and Canadian Azure residency while giving the repository direct control over database transactions, offline cache/queue behavior, private documents, releases and observability | INFERRED implementation choice from Jay's web-app direction; requires Jay/enterprise platform confirmation before provisioning |
 | 2026-09-03 | Power Apps Code App, Dataverse, Power Automate state flows, SharePoint as the primary certificate store and mandatory Power BI reporting are superseded as the production path | Keeping two production architectures would duplicate authority and make the specifications contradictory. The existing Power Platform files remain historical references until replacement coverage exists | Consequence of the web-app pivot; Power BI/Teams/SharePoint remain optional integrations |
-| 2026-09-03 | Proposed canonical state model separates lifecycle, physical disposition, serviceability and calibration currency | The former single status could not truthfully represent a deployed or checked-out asset that also needs repair or is overdue. The split keeps location/custody history while independently tracking fitness and compliance | PROPOSED in `docs/15-postgres-data-model.md`; detailed schema/transition approval still required |
+| 2026-09-03 | Proposed canonical state model separates lifecycle, physical disposition, serviceability and calibration currency | The former single status could not truthfully represent a deployed or checked-out asset that also needs repair or is overdue. The split keeps location/custody history while independently tracking fitness and compliance | **Superseded same day** — see R1 APPROVED row below |
 | 2026-09-03 | Add feature 010, **Web Application Platform**, and amend the constitution to version 2.0.0 with atomic-event Principle VIII | The platform pivot affects identity, data, offline, documents, operations, migration and every production write path. It requires an executable cross-cutting feature and a governing rule that one complete event commits all-or-nothing | Jay's web-app direction; implementation remains Spec Draft |
 | 2026-09-03 | **A Zite test environment was created and loaded**: database `Englobe AMS — Zite test` (baseId `85b7c453b34bbf86`), five tables per `docs/18` § 7a, plus an internal Zite app **Englobe AMS Field** (appId `6uh1adzxfc`) carrying the three Field screens — S01 Search, S03 Asset detail, S04 Checkout. Loaded from `migration/synthetic/demo/` only: 371 fictional assets, 699 locations, 260 projects, 52 equipment models, 26 categories, 91 kit/component parent links, seed `englobe-ams-007`. Verified by `execute_sql`: 371 assets, 8 root categories, 18 leaf categories, and a status breakdown identical to the source | Jay approved the Zite route for testing, and separately approved starting the 14-day build-tools trial for the full build (test plus three screens). Loader lives in the new top-level `zite/` directory; `app/`, `server/` and `migration/` were not modified. **This is a test environment only** — `docs/14` § 4.6 requires a Canadian region for production data and Zite offers US/EU only (blocker B1) | Jay (decided) |
 | 2026-09-03 | **Zite has no transaction, and a failing multi-write does not roll back.** Tested against the live runtime, not inferred: `zitejs/db` exposes exactly `{assets, auth, categories, equipmentModels, locations, projects, sql}`; every transaction spelling probed returns `undefined`; `zite.sql()` refuses `BEGIN` / `START TRANSACTION` / `COMMIT` as read-only. Three successive writes where the third failed left the first two **committed**. Evidence in `docs/18` § 2b | This is the question that decides whether Zite can ever be more than a test environment, and the answer is no: CLAUDE.md rule 2 ("one business event is one atomic database commit") is unsatisfiable on this interface. A five-asset checkout can half-succeed. The largest unit known not to write partially is one `bulkCreate` — one table, at most 100 records — and even that was rejected by pre-flight validation rather than demonstrably rolled back. Settles `docs/18` § 8 question 5 against Zite-as-the-store | Claude Code (tested); decision input for Jay and Englobe IT |
@@ -85,3 +85,241 @@ Record every deviation from the spec here. Format: date · decision · why · wh
 | 2026-09-03 | **The Zite track is parked and the Azure web application is the single active direction.** `zite/`, `specs/ZITE-BUILD-PROMPT.md` and `docs/18-hosting-alternatives.md` are retained as evidence and banner-marked PARKED; the `zite/HANDOFF.md` entry is removed from the `CLAUDE.md` read order. No files were deleted and `app/`, `server/` and `migration/` were never touched by the Zite work, so the web-app codebase resumes exactly where `52cdf0a` left it | The Zite evaluation asked one decisive question and got a decisive answer: no transaction, no rollback, so rule 2 is unsatisfiable (`docs/18` § 2b). Residency (B1) blocks it independently. Keeping a live second track in the read order would send a resuming session into a dead end and split authority between two architectures — the same failure the Power Platform supersession row above was written to avoid | Jay (decided): *"lets park zite stuff and bring back webapp vision"* |
 | 2026-09-03 | **The Power Platform track is parked, leaving the Azure web application as the only live path.** Concretely: `app/src/api/dataverse/` is no longer imported by `app/src/api/index.ts` and `VITE_AMS_BACKEND=dataverse` now throws instead of falling back to mock; `@microsoft/power-apps` and `@microsoft/power-apps-cli` are removed from `app/package.json`; `app/power.config.json`, `solution/`, `docs/01`, `02`, `03`, `05` and `10` are banner-marked `LEGACY-POWER-PLATFORM`. Nothing was deleted. Verified after the change: 317/317 app tests, 64/64 server tests, clean `tsc -b` and production build | `CLAUDE.md` already listed all of this under *Retire from the production path*, but as an intention with the files still wired in — the adapter was still imported, the packages still installed, and the docs still read as build instructions. An intention that the build still honours is not a decision. Parking it makes the repo state match the pivot recorded on the same day, and removes the risk that a future session implements against Dataverse because the seam was still there. The two packages were dead already: nothing imported them, and they were the reason `npm ci` failed on a clean clone | Jay (decided): *"lets park powerapp too, just webapp vision"* |
 | 2026-09-03 | **The feature 008 release guard now requires `VITE_AMS_BACKEND=http`, not `dataverse`.** `app/scripts/release-guard.mjs` refused every release build the moment Dataverse was parked — it demanded a value that `api/index.ts` no longer accepts, so `npm run build:release` was unrunnable. Rebound to `http`, with `dataverse` now explicitly refused and a test covering that | **Not a spec deviation.** FR-001 says the build must fail "unless the data backend is explicitly set to the real data platform" and deliberately never names which platform, so the guard's `REQUIRED` was always an implementation binding of that phrase. The requirement is unchanged; only what satisfies it moved. Verified both ways: refused with the variable unset, and a clean `VITE_AMS_BACKEND=http` release whose bundle scan reports no fleet data against 1,026 asset IDs, 126 ICCIDs, 128 phone numbers and 225 static IPs | Claude Code — consequence of the Power Platform parking, found by running the release build rather than by reading it |
+| 2026-09-03 | **R1 APPROVED — canonical asset state is four independent axes:** `lifecycle` (Active / Retired), `disposition` (AtOffice / CheckedOut / Deployed / InTransit / AtCalibrationLab / Missing), `serviceability` (Serviceable / NeedsRepair / OutOfService), and **derived** `calibration currency` (NotRequired / Unknown / Current / DueSoon / Overdue / InCalibration / Failed). Display pills are views only. Compatibility single-`status` remains only in the local mock/`server/` POC until HTTP cutover | The single status field could not tell the truth about a checked-out or deployed asset that also needs repair or is overdue. This unblocks `docs/15` §3, first-proof migrations, `deriveState` rewrite, and WS-W4. Supersedes the same-day PROPOSED row | Jay (decided): *"okay update all"* after readiness triage named R1 as the critical path |
+| 2026-09-03 | **R2 FROZEN for first proof** — `specs/010-web-application-platform/contracts/transaction-command.md` (plus auth-caller, error-codes, outbox-envelope) is the G0.4 atomic command contract for the five-asset race. Further event types may extend it; they must not silently rewrite locking, idempotency, or server-owned field rules | Planning had an unfrozen R2 while a concrete draft already existed. Freezing the draft lets WS-W4 start without waiting for every workflow shape | Jay (decided) with the R1–R4 readiness update |
+| 2026-09-03 | **R3 APPROVED for first-proof subset** — tables named in `specs/010-web-application-platform/data-model.md` (asset, identifiers, sequence, transaction, transaction_line, idempotency, outbox, minimal refs/users) may be migrated. Full `docs/15` (plus `docs/16` additions) remains the target catalogue and still needs table-by-table review before parallel WS-W2 completion | Minimum surface for the race without pretending the entire physical model is signed off | Jay (decided) with the R1–R4 readiness update |
+| 2026-09-03 | **R4 / Q8 CONFIRMED** — expected return on checkout is **optional**, UI pre-fills +14 days, editable and clearable. Overdue-return jobs only cover checkouts that kept a date | Confirms the 2026-09-02 proceeded assumption and `clarifications.md` recommendation | Jay (decided) with the R1–R4 readiness update |
+| 2026-09-03 | **R4 / Q9 DECIDED** — administrators may set `effective_at` up to **30 days** in the past; Field Users may not. Refuse any backdate that would land at or before an existing transaction line for the same asset; name the conflicting transaction. `recorded_at` is always server receive time | Needed for honest late entry without breaking acceptance question 7 replay. Matches `clarifications.md` recommendation | Jay (decided) with the R1–R4 readiness update |
+| 2026-09-03 | **PostgreSQL 17 is the pinned local development and test major** (`docker-compose.yml`, `postgres:17.11-alpine`), and `server/` now runs on a networked `pg` Pool by default with the in-process PGlite kept as a selectable fallback (`AMS_DB=pglite`) | No PostgreSQL major was pinned anywhere in the repository: `docs/14-webapp-architecture.md` names "Azure Database for PostgreSQL Flexible Server" and no version, so a container had to choose one. 17 is a current Flexible Server major with the longest remaining support runway, and the schema uses nothing newer than PostgreSQL 13. The swap itself was **verified, not assumed**: `server/README.md` § Swapping in networked PostgreSQL asserted that `schema.sql` "runs unchanged" on ordinary PostgreSQL, and that claim was load-bearing for the whole delivery plan while never having been executed. It holds — `schema.sql` applied unchanged to PostgreSQL 17.11 both statement-by-statement through `psql -v ON_ERROR_STOP=1` (exit 0) and as one multi-statement `query()`, which is what the driver does; it is idempotent on re-apply; and the plpgsql append-only triggers, the `rel_one_open_parent` partial unique index and the `ON CONFLICT ... RETURNING` sequence increment all behave as the POC assumed. All 64 server tests pass against the container with no test-logic changes (681 ms, versus 1.69 s on PGlite), and all 64 still pass on PGlite. Two claims did **not** survive intact and are recorded as deviations rather than glossed: the swap was not confined to the connection layer — four files outside `src/db/` named `PGlite` as a type and had to be retyped to a driver-agnostic `Database` interface (`src/app.ts`, `src/db/seed.ts`, `src/services/transactionService.ts`, `tests/helpers.ts`) — and `Queryable` itself is unchanged, but `Tx` and `Database` were added above it because the seed loader needs `exec` and the command wrapper needs `transaction`, neither of which `Queryable` carries | **ASSUMED pending Jay** for the major version — if Englobe IT pins a different Flexible Server major, change the tag in `docker-compose.yml` and re-run the suite. The verification result itself is fact, not assumption |
+| 2026-09-03 | **The clickable mockup was reviewed and recorded in `docs/20-mockup-review.md`.** It resolves G-01 to G-21 and contributes the first desktop Console design (entity rail, sortable table, bulk select, filter chips, pagination), which partially answers G-22 | The package is a real contribution that must not be discarded, but three of its findings would cost rework if built from as-is, so the review is a document rather than a conversation | Claude Code |
+| 2026-09-03 | **The mockup's G-01 verdict is superseded.** It was built against a copy of `docs/12-ui-spec.md` taken before that day's edits and proposes "the phone stays canonical, two-pane is optional and not canonical" — the inverse of the recorded decision. Its 20 screens stand as the **Field** slice, not as the canonical screen set | § 1 and § 8 of `docs/12-ui-spec.md` and `docs/02-app.md` § Surfaces make desktop the full-function surface and mobile a deliberate slice. The mockup also never saw G-22 or G-23 | Claude Code |
+| 2026-09-03 | **The mockup's ten screenshots must be re-exported before any review meeting.** All ten render stock Fluent blue; the `.dc.html` itself defaults to the Englobe ramp `#14713a`. Verified by brand-pixel count across all ten shots | G-03 — stock Fluent blue, no brand — is the complaint that started the work. A reviewer reading `shots/` sees the unfixed version and concludes G-03 was never addressed | Claude Code |
+| 2026-09-03 | **G-24 opened: three design systems now exist, with three token vocabularies.** The phone mockup uses `--brandFg/Bg/Tint/FgOn` with Englobe green `#14713a` and Segoe UI; both Console files use hardcoded warm stone, teal `#0F5F55` and Inter + IBM Plex Mono with zero brand tokens; `docs/mockups/ams-field-ui.html` uses `--brand/-fg/-soft` on stock Fluent blue `#0f6cbd`, so it does not implement G-03 at all. Option A retrofits the Console onto Fluent + Englobe green; option B amends § 1 and moves the phone onto the Console's system | G-03's value was that brand lives in four variables and nowhere else, so the real hex is a one-line swap. Two systems means retheming by hand in three files and two greens each claiming to be the accent. Every further screen doubles the reconciliation cost, so this blocks screen work | **Claude (proposed), needs Jay** |
+| 2026-09-03 | **The image-prompt pack caused G-24 and has been corrected.** `specs/_planning/VISUAL-DIRECTION-PROMPTS.md` specified a warm-neutral ground and a "deep teal-green" accent, which collided with the Fluent tokens and Englobe green the mockup had already established. A prompt that seeds a design against an existing system must say *inherit its brand variables* | Recorded so the cause is visible rather than rediscovered the next time a screen is generated from a prompt | Claude Code |
+| 2026-09-03 | **`Assets Console Mobile.dc.html` is a proposed replacement for S01 Field home, not a Console.** It has no entity rail and no bulk select; it has Scan / Check out / Return quick actions, recent activity, due-in-30 and overdue counts, an asset bottom sheet and office scoping. Either accept it as the new S01 and rewrite § 5.1, or withdraw it | `docs/02-app.md` § Surfaces defines Console as desktop-admin and states that adding to the Field screen list "is a decision, not a default". As named, the file implies admin bulk operations on a phone, which the surfaces table rules out. As renamed, it is a better S01 than the current search-field-over-a-list | **Claude (proposed), needs Jay** |
+| 2026-09-03 | **The mockup's Q9 state is incomplete and must not be built from as-is.** It has the 30-day floor and the admin-only gate but not the refusal of a backdate landing at or before an existing transaction line for the same asset. That error state needs a design and copy | The R4/Q9 decision recorded earlier the same day includes the conflict refusal, which is the part with a failure mode. The mockup predates it. Q8 needs no change — its default already matches the "optional, prefill +14 days" decision | Claude Code |
+| 2026-09-03 | **`proposed-strings.json` is not merged.** 39 of its 50 strings are clean; 11 collide with keys that shipped the same day in `f09f0ee` / `7b37683` — including `asset.sim.title` under the same key with different text, and four cases of the same text under a new key (`recover.recoveryDate` vs `recover.date`, `asset.sim.phoneNumber` vs `asset.sim.phone`, `reports.utilisation.horizon365` vs `period365`, `cart.backToForm` vs `common.back`) | Two keys for one string is how a copy file rots, and `docs/12-ui-spec.md` § 1 requires every visible string to trace to one `en.json` key. Reconciliation is a code change and has not been made | Claude Code |
+| 2026-09-03 | **§ 0 sample-data convention hardened: the Asset ID scheme is not a design choice.** The Console files invented a second scheme (`SEIS-4128`, `TS-0331`, `VEH-1042`, projects `24-1187`) alongside the canonical `DL-UM-16984` / `02208928` shapes. The convention now says so, and asks that fleet coverage include a total station and a vehicle | Rule 6 makes the canonical Asset ID the identity. Two identity shapes in one review pack invites comment on the wrong thing. The Console's coverage of total stations and vehicles is worth keeping — its scheme is not | Claude Code |
+| 2026-09-03 | **WS-W4-F1 CORRECTED — a submission id reused with a different payload is now REFUSED, not answered with the original outcome.** `runCommand` returns `{ ok: false }` carrying `[command.error.idempotencyPayloadMismatch]`, still HTTP 200 because a refusal is an answer | CLAUDE.md rule 3, WS-W4 first-proof item 6 and the frozen R2 contract all say *refused*; `server/README.md` § Idempotency argued the opposite ("refusing would make a replay fail after a success the caller may already have seen"). That argument answers the wrong question — a client reusing one id for two different requests has a bug, and handing it someone else's success both hides the bug and silently drops the second request. Rule 13 settles it: the specification wins. README corrected in the same change | Jay (decided): *"feel free to unblock those, make a call for demo"* |
+| 2026-09-03 | **WS-W4-F2/F3 CORRECTED — idempotency is now claim-then-process.** `runCommand` INSERTs the `command_idempotency` row FIRST, before any asset lock, with `response` NULL; the outcome is UPDATEd in before COMMIT. `command_idempotency.response` becomes nullable via an idempotent `ALTER … DROP NOT NULL` in `schema.sql` | The check was read-then-insert: two copies of one submission in flight together both found no row and both ran the command — precisely what an offline queue replaying while the original is still travelling produces. The primary key is now the concurrency control: the second copy blocks on it and is answered from the winner's committed row. This also removes F3's HTTP 500 on self-permitting transitions (`Transfer`, legal `CheckedOut → CheckedOut`), where the loser previously reached validation, wrote a header and only then collided. **A refusal still rolls the claim back**, so a refused command is re-evaluated on retry — that behaviour is deliberate and unchanged. Verified: 98/98 on PostgreSQL; the ALTER migrated an existing populated database in place (`NO` → `YES`, 1,026 rows intact) | Jay (decided), same authorization |
+| 2026-09-03 | **Calibration record identity is now derived, not invented.** `migration/05_calibrations.py` stages an `id` = `stable_guid("calibration", source_row)`, and `server/src/db/seed.ts` derives the identical value when a dataset carries no id — replacing `randomUUID()`. A `stableGuid` helper in TypeScript reproduces Python's `uuid.uuid5(NAMESPACE_URL, …)` byte for byte | All 164 calibration records in `migration/staged/` have no `id`, so every reload minted fresh ones. That made the **real** migrated dataset the one thing in the pipeline that was not reproducible, failed WS-W11's "second-run empty business diff" outright, and orphaned anything referencing a record by id. Synthetic profiles hid it — their 34,914 records already carry uuid5 ids. Both fixes derive the SAME id (verified 164/164 against the ids the Python script will stage, and the two implementations cross-checked on shared inputs), so the staged JSON does **not** need regenerating and nothing migrates. Proven: all 12 business tables byte-identical across two full loads of `staged`. The loader keeps the derivation rather than trusting the file, because a loader that silently invents identity for any input is the defect | Jay (decided), same authorization. **Not** an identity-model change — no existing id is altered, because none existed |
+| 2026-09-03 | **Working mode: PROTOTYPE / proof of concept.** Specs are amended as needed to make the thing run; evaluation happens afterwards, at build level. Every amendment made under this mode is marked — `grep -rn "DEMO CALL 2026-09-03" specs/` finds the contract-level ones, and this log carries the rest | Jay: *"we are building prototype to do proof of concept make any changes in specs we need to make it happen then we will evaluate at build level"*, and *"prototype means everything works end to end and i can demo it"*. This inverts the default posture of CLAUDE.md rule 13 for the duration — the rule said record the deviation and amend the requirement, and this says go ahead and amend it. What does NOT relax: rule 10 (no credentials in source), rule 12 (synthetic data refused in production), and the marking itself. An unrecorded shortcut cannot be evaluated later, only discovered | Jay (decided) |
+| 2026-09-03 | **`.claude/launch.json` rewritten for macOS; `app` gains `dev:localapi` and `typecheck` scripts.** Configs are now `englobe-ams-api` (3001), `englobe-ams-localapi` (3200, the demo stack) and `englobe-ams-mock` (3000, no API) | Every config held hard-coded Windows absolute paths (`C:\Files\Asset Managment\.tools\node-v22.14.0-win-x64\node.exe`) from the locked-down corporate machine, so the demo stack could not start at all on macOS. `app` also had no `typecheck` script, which CI was working around with a bare `npx tsc -b` — WS-W1 asks for a common typecheck command and now there is one | Claude Code — found by trying to run the prototype rather than by reading the file |
+
+---
+
+## Assumptions taken to complete the end-to-end build — 2026-09-03
+
+These are **assumptions, not decisions**. Each was taken so the local end-to-end build (app → HTTP
+API → PostgreSQL) could be finished without waiting on an answer, and each is reversible in one
+named place. They are recorded here because CLAUDE.md rule 13 requires a deviation to be written
+down rather than absorbed, and because several of them touch questions listed under
+*Ask before doing*. **Jay's confirmation is still outstanding on every row.**
+
+The freeze that governed the parallel build is `specs/_planning/BUILD-FREEZE.md`.
+
+| ID | Open question it stands in for | Assumption taken | Reverse it at | Why this was safe to assume |
+|---|---|---|---|---|
+| **A-R5** | R5 — global vs office-scoped administrator | `OfficeAdmin` is office-scoped; `SystemOwner` is global; `ReportReader` is office-scoped and read-only; a role row with `office IS NULL` means global | `app_user_role.office` + `server/src/auth/authorize.ts` | Office-scoping is the strictly *narrower* reading. If Jay decides administrators are global, widening a scope is one seed row per admin; if the reverse had been assumed, every existing grant would have to be audited and cut back |
+| **A-R6** | R6 — Azure subscription, Canadian region, Entra app registration owner | Not required locally. Identity is an `IdentityProvider` interface with a `dev` implementation (the existing header shortcut) and a written-out OIDC implementation selected by `AMS_AUTH=oidc` | `server/src/auth/providers/` | G0.2 is an Englobe IT dependency, not Jay's alone, and `REMAINING-WORK.md` already states R6 "does not block local development". No Azure resource was created and no cost was incurred |
+| **A-DOC** | WS-W7 — private Blob Storage | Documents go behind a `DocumentStore` interface. The local implementation writes to `server/data/documents/` (gitignored) under the same private-by-default, hash-verified, metadata-in-PostgreSQL contract. Azure Blob is a second implementation of the same interface | `server/src/documents/` | The *contract* — authorization on every request, integrity hash, no broad storage credential in the browser (rule 11) — is what WS-W7 actually tests. The storage backend is the swappable part |
+| **A-PG** | PostgreSQL major version | 17 (already recorded above as D-2026-09-03-PG) | `docker-compose.yml` | Unchanged from the earlier entry |
+| **A-STATE** | R1's approved four-axis state vs the POC's single `status` column | `asset.status` **stays** as the operational value the screens use; the four approved axes are added as derived columns plus a view, not a rewrite | `db/migrations/` | `REMAINING-WORK.md` explicitly permits the single status "until HTTP cutover", and the earlier decision above records why a rewrite was out of scope. Deriving rather than replacing satisfies rule 9's separation while keeping 416 green tests green. **This is the row most likely to need revisiting** — a derived axis cannot carry a fact the single status does not already encode |
+| **A-TENANT** | Offline cache partition (tenant + environment + user object ID) | Locally: tenant `englobe.local`, environment from the Vite mode, object ID from `/api/me` | `app/src/offline/partition.ts` | The partition *rule* is the non-negotiable; the values are environment configuration |
+
+### What was deliberately **not** assumed
+
+- No production Azure resource, no cloud spend, no shared-environment data change — all four are on
+  CLAUDE.md's *Ask before doing* list and none was touched.
+- The canonical state model, transaction semantics, identity model, merge semantics and retention
+  policy were **not** changed. A-STATE adds a derived projection over the existing model; it does not
+  redefine it.
+- No high-impact data operation was approved or self-approved on Jay's behalf.
+
+---
+
+## Database lane calls — 2026-09-03 (WS-W2)
+
+Four decisions taken while turning `server/src/db/schema.sql` into `db/migrations/`. Recorded
+because each is a fork the specification left open, not a detail.
+
+| # | Decision | Why | Reverse it at |
+|---|---|---|---|
+| **D-MIG-1** | Migrations are **forward-only**. There is no `down`. | WS-W2's deliverable is "migration up/down **or** forward-recovery policy" — the *or* is real, and a `down` script is a liability rather than an asset here: it is written when the schema is fresh in mind, run months later against data the author never saw, and the two protections that matter most (append-only history, rule 5; asset-ID immutability, rule 6) exist precisely to make destructive reversal impossible. Recovery is a new numbered migration plus PostgreSQL point-in-time restore, which WS-W12 exercises anyway. | `db/migrations/` policy + `server/src/db/migrate.ts` |
+| **D-MIG-2** | `SET LOCAL ams.allow_history_write` is the **single sanctioned escape hatch** from append-only history, and only `server/src/db/seed.ts` and migrations may use it. | The seed loader must be able to replace a whole dataset, so the choice was between weakening rule 5 for everyone (what `TRUNCATE` silently did before) and opening one named, greppable, transaction-scoped door. `SET LOCAL` cannot leak to the next statement on a pooled connection, and an API route reaching for it has to *say so in SQL*, which makes the bug visible in review. **An application command must never set it** — rule 5's correction path is a compensating event. | `db/migrations/0003_history_append_only.sql` |
+| **D-MIG-3** | The four approved state axes are **generated columns plus a view**, not a schema rewrite. | Assumption A-STATE above, now implemented. `docs/19` § 8.3 is right that a *transaction line's* two status columns cannot be split into six after the fact — and nothing touches `asset_transaction_line`. For an *asset's current* state the mapping is total, so the axes can be true today without invalidating a row or a test. Each `CASE` has no `ELSE`: an unmapped status is refused, not bucketed. | `db/migrations/0008_state_axes.sql` |
+| **D-MIG-4** | The production marker is `AMS_ENV`, falling back to `NODE_ENV`. Rule 12's refusal is enforced in the **database**, on `meta`, in both directions — loading synthetic data into a production environment, and promoting an environment holding synthetic data to production. | Rule 12 says "environment and seed markers are verified **before any load**". Enforcing it in application code makes that a promise; enforcing it on `meta` makes it a fact, and writing the markers first makes "before any load" literal — a refused load leaves zero rows, verified end to end. | `db/migrations/0007_environment_guard.sql`, `server/.env.example` |
+
+### Consequence — `server/src/db/schema.sql` no longer exists
+
+The schema was one file re-executed on every start-up; it is now nine numbered files applied
+through a `schema_migration` ledger. `SCHEMA_SQL` was **removed** rather than left pointing at a
+copy, because two files that both describe the schema is exactly the drift a ledger exists to
+prevent. Documents written before this change still reference the old path; they describe the
+schema's *content* accurately and its *location* incorrectly.
+
+---
+
+## Identity and authorization lane calls — 2026-09-03 (WS-W3)
+
+| # | Decision | Why | Reverse it at |
+|---|---|---|---|
+| **D-AUTH-1** | **Deny by default on every `/api/*` route.** One `onRequest` gate: 401 unauthenticated, 403 when `app_user.is_active = false`. `/api/health` and `/api/auth/*` are the only exemptions. | A per-route allow-list means the next route somebody adds is public until they remember otherwise. The gate covers routes other lanes had not written yet, which is the point. `/api/health` is exempt because a container probe cannot hold a session, and it discloses only liveness and which dataset is loaded. | `server/src/routes/session.ts` |
+| **D-AUTH-2** | **CSRF is a double-submit token compared server-side**, not an `Origin` check — and it applies **only to cookie-authenticated** state-changing requests. | Corporate proxies strip `Origin`, which makes a stripped header indistinguishable from a same-origin one; a check that cannot tell those apart either blocks legitimate users or waves attackers through. Scoping it to cookie auth is not a loophole: a header-authenticated request carries no *ambient* credential, so there is nothing for a cross-origin page to ride on — which is also why the pre-existing suite needed no change. | `server/src/auth/settings.ts` (`csrfApplies`) |
+| **D-AUTH-3** | **Sessions are stored in memory.** | Correct for one process, wrong for more than one — a user would be signed out whenever the load balancer moved them. Behind a `SessionStore` interface for that reason. **This blocks the first multi-replica Container Apps deployment and nothing before it.** | `server/src/auth/session.ts` |
+| **D-AUTH-4** | `GET /api/office-admins` now requires an administrator role. It was readable by any authenticated caller. | It is an administrative surface — who administers which office — and a Field User has no workflow that needs it. | `server/src/routes/read.ts` |
+| **D-AUTH-5** | **A-R5 refinement, needs Jay.** Administration and restricted SIM/network fields are office-scoped for every role. *Fleet row visibility* is scoped only for `ReportReader`. | An Ottawa technician must be able to look up a logger transferred in from Toronto, or the transfer workflow breaks at the moment it is needed. So "office-scoped" was read as scoping **authority and credentials**, not **existence**. This is a real policy choice inside A-R5 that A-R5 did not settle, and it is the one most worth a second opinion. Reversing it is two functions. | `scopeAssetRows` / `scopeRestrictedFields` in `server/src/routes/read.ts` |
+| **D-AUTH-6** | The HTTP adapter throws a distinct `AuthRequiredError` on 401 instead of a generic failure, and does **not** redirect on writes. | The offline queue treats a throw as "never reached the server, keep it and retry" — right for a dead connection, wrong for an expired session, which would retry forever without succeeding. And a queued command replaying in the background must not navigate the user away from what they are doing. Reads redirect; writes raise and let the caller decide. | `app/src/api/http/index.ts` |
+
+### Still outstanding
+
+- **R6 remains open and is not Jay's alone.** The Entra app registration, tenant, redirect URIs and
+  the Canadian region are an Englobe IT dependency. The OIDC provider is written and proven against
+  a fabricated issuer; it has never spoken to a real tenant, and it will fail with a clear message
+  until one exists.
+
+---
+
+## Integration call — two office-scope answers, kept apart on purpose (2026-09-03)
+
+Two lanes independently decided what an **office-scoped read-only caller** (`ReportReader`) should
+get when they ask for an aggregate, and arrived at different answers. Both were flagged for the
+integrator to "pick one". The resolution is that they are not in conflict — **the response shapes
+differ, and that is the reason**:
+
+| Endpoint | Shape | Behaviour | Why |
+|---|---|---|---|
+| `/api/reports/fleet-counts`, `/api/reports/calibration-counts` | a **bare** `FleetCounts` / `CalibrationCounts` DTO, fixed by `AmsBackend` and consumed by existing screens | **refuse** with `office_scope_required` unless the caller names an office they are scoped to | The DTO has nowhere to say what population it covers. Filtering it silently would hand a scoped reader a subtotal that looks exactly like a total, which is the specific failure WS-W9's "every figure reconciles" exists to prevent. Refusing is the honest answer available to this shape |
+| `/api/reports/*` (the seven reports) | an **envelope** with a required `scope: { offices, readOnly }` and a data-currency stamp | **filter**, and state the population on the face of every response | Once a response can declare its own scope, declaring beats refusing: the reader gets their answer *and* cannot mistake it for a total |
+
+Changing either would make things worse. Adding an envelope to the two legacy endpoints is a
+breaking change to `AmsBackend` and to every screen that calls them, for no gain the seven reports
+do not already provide. Making the seven reports refuse instead of declare would remove a correct
+answer to replace it with an error.
+
+**The rule underneath, for whoever adds the next aggregate:** an aggregate must either declare the
+population it covers or refuse to compute a partial one. It must never quietly return a subtotal.
+
+---
+
+## Integration call — the outbox is now inside the atomic commit (2026-09-03)
+
+**What changed.** `runCommand` in `server/src/services/transactionService.ts` calls
+`emitAcceptedEvent` on every accepted command, on the command's own `tx` handle. Until this
+landed, CLAUDE.md rule 2 was true of four of its five clauses: a business event committed its
+transaction lines, state changes and relationship changes atomically — **and outbox events** was
+aspirational, because no outbox existed. It is now literal.
+
+**Why it reads the committed lines back** rather than taking the asset list from the request body:
+every command spells its assets differently (`lines[]`, `assetIds[]`, a bare `assetId`,
+deployment's primary-plus-components), so deriving the list a second time would be a second thing
+to keep in step with the first. The lines are the fact that was just written; the event describes
+them, not the intention behind them.
+
+**Why it skips rather than fails when there is no transaction header.** Not every accepted command
+is a business event — `SetOfficeAdmins` changes an administrative assignment and writes no
+transaction. The distinction is made by looking for the header, not by listing command names, so a
+command type added later is classified by what it actually wrote rather than by whether someone
+remembered to add it to a list.
+
+**Consequence for `tests/outbox.test.ts` A1.** That test used to contain a hand-written copy of the
+integration point, because the lane that wrote it could not edit `transactionService.ts` under the
+build freeze. The copy has been removed and the test now exercises the real wiring — the only
+version of it that would fail if the wiring were deleted.
+
+### Outstanding — DDL still applied outside the migration set
+
+`outbox_event`, `outbox_delivery`, `document` and their siblings are created by an `onReady` hook
+in `server/src/routes/documents.ts`, not by `db/migrations/`. Both lanes flagged this deliberately:
+the database lane was rewriting `server/src/db/**` at the same moment, and two lanes editing one
+schema is the collision the freeze exists to prevent.
+
+It should be folded into numbered migrations and the bootstrap deleted. Until it is, there is a
+real coupling worth naming: **the atomic command now depends on a table created by a route
+module's start-up hook.** Any process that opens the database without building the Fastify app —
+a standalone worker, the migration CLI — will not have it.
+
+---
+
+## Outbox, documents and reporting lane calls — 2026-09-03 (WS-W7, WS-W8, WS-W9)
+
+### Schema additions beyond `docs/15-postgres-data-model.md` § 11
+
+| Addition | Why it was not enough to use § 11 as written |
+|---|---|
+| `outbox_event.dead_lettered_at`, `dead_letter_reason` | § 11 has `attempt_count` only, so "dead" would have to be derived as `attempt_count >= <whatever the worker is configured with>`. That makes a permanent operational fact depend on a runtime setting — lower the bound and live rows silently die, raise it and dead rows silently resurrect. WS-W8 asks for "a dead-letter state", and a state a config change can rewrite is not one |
+| `outbox_event.locked_by` | § 11 has `locked_at`, which answers "is this leased" but not "by whom". The second is what an operator needs when a lease is stuck |
+| `outbox_delivery` | The consumer-side idempotency store the outbox contract requires — delivery is at-least-once, so the consumer must be keyed by `eventId` |
+| `notification_suppression` | Cadence state, so a device is not reminded hourly about the same overdue return |
+| `operational_alert` | A durable destination for backlog-age and dead-letter alerts, addressed to a named owner |
+| `document.upload_state`, `replaces_document_id`, `is_current`, void columns, `container` | Replacement history (a reissued certificate supersedes rather than overwrites), and the upload state machine WS-W7 asks for |
+
+### Behavioural calls
+
+| # | Decision | Why |
+|---|---|---|
+| **D-DOC-1** | **Proxy only. No SAS, ever.** | The document contract offers `userDelegationSas` or `proxyPut` as alternatives. The `DocumentStore` interface deliberately has **no method capable of returning a URL or a credential**, so rule 11 ("no broad storage credential reaches the browser") is enforced by the type system rather than by remembering. It is also the only option the local store could satisfy |
+| **D-DOC-2** | Authorization runs on **every** document request, including `/content`. A document id is never a bearer token | A document id in a log, a browser history or a copied link must grant nothing. The authorization answer is a statement about *this instant* |
+| **D-DOC-3** | A `Skipped` malware-scan state is downloadable unless `AMS_DOCUMENT_SCAN_REQUIRED=1` | The scanner is an enterprise dependency that does not exist yet (R6). Refusing every document until it does would make the whole feature untestable; defaulting to permissive **with a named switch** makes the production posture a one-line change and an explicit one |
+| **D-RPT-1** | Two `docs/15` § 12 view names are deliberately **not** created by the reporting migration: `v_asset_effective_status` (belongs to the R1 four-axis model, `0009`) and `v_completion_queue` (feature 011) | Two migrations claiming one view name is the collision that would silently drop one of them |
+| **D-RPT-2** | Export templates are **code constants**, not table rows | Rule 19 requires an *approved* template. A row in a table is editable by whoever can write that table; a constant changes only through review and deployment |
+| **D-RPT-3** | Three refusal codes are not yet in `contracts/error-codes.md`: `export.rowLimitExceeded`, `export.forbidden`, `export.notFound`. `document.error.stateConflict` is also missing | Recorded so the catalogue is amended rather than quietly diverged from |
+| **D-RPT-4** | The error envelope in use is `{ error, message, details? }`, matching `auth/authorize.ts`, **not** `error-codes.md`'s draft `{ ok: false, code }` | Two shapes existed. One had to win, and the one already returned by the authorization layer wins because it is on more paths. **`contracts/error-codes.md` should be amended to match** — this is a divergence from a draft contract, flagged rather than absorbed |
+
+### Integration call — the DDL was folded into migrations
+
+`outbox/schema.ts` and `documents/schema.ts` applied their DDL from an `onReady` hook in
+`routes/documents.ts`; the reporting views came from a second hook in `routes/reports.ts` reading
+`server/src/db/views.sql`. Both were correct during the parallel build and wrong the moment it
+ended:
+
+- `transactionService.ts` now writes an outbox row inside **every** accepted command, so the atomic
+  command had come to depend on a table created by a *route module's start-up hook*. Any path that
+  opens the database without building the Fastify app — a standalone worker, a job runner, the
+  migration CLI — would have failed.
+- `views.sql` and the migration set would have been two files describing the same eleven views,
+  which is the drift the ledger exists to prevent, and the reason `server/src/db/schema.sql` was
+  deleted rather than kept.
+
+Folded into `0010_outbox.sql`, `0011_documents.sql` and `0012_reporting_views.sql`; both hooks
+deleted and `views.sql` removed. `ReportService.ready()` now **verifies** the views exist and fails
+with an actionable message rather than creating them.
+
+### Fix — a composite command emitted one event instead of several
+
+`emitAcceptedEvent` looked up a single header by the transaction id the command returned. A Return
+of a damaged asset is *two* business events (the Return and a ReportFault committed with it); a
+partial recovery is Recover plus MarkMissing. Only the first reached a consumer, silently. It now
+selects every header written under the command's submission id and enqueues one event each, still
+inside the command's own transaction. Pinned by `tests/outbox.test.ts` A1e.
+
+### Open product question — pre-go-live calibration certificates
+
+The staged dataset holds **164 calibration records with no certificate**. The certificate-gap sweep
+will chase every one of them on a weekly cadence. **Jay should decide whether migrated pre-go-live
+records are in scope before this runs in a shared environment** — otherwise the first week in UAT
+generates 164 notifications about records nobody intends to complete.
+
+---
+
+## UI decisions — 2026-09-03 (G-24, D2)
+
+Both taken by Jay in session, answering the two questions `docs/20-mockup-review.md` raised as
+blocking. **G-24 was explicitly gating all further screen work**; it is now open.
+
+| # | Decision | What it settles |
+|---|---|---|
+| **G-24 / D1** | **Option A — Fluent v9 + Englobe green wins.** The Console mockups' teal `#0F5F55` / Inter / warm-stone system does **not** become the app's design system | `docs/12-ui-spec.md` § 1's fixed constraint stands unamended. The app keeps stock Fluent v9, Segoe UI, and brand isolated to the four `--brandFg/Bg/Tint/FgOn` variables (G-03). The Console mockups are **layout references, not visual ones** — their structure is adopted, their palette is not. Retheming the two `.dc.html` files is a documentation task, not a prerequisite |
+| **D2** | **Yes — `Assets Console Mobile.dc.html` is accepted as the new S01 Field home**, replacing the search-first home | `docs/12-ui-spec.md` § 5.1 is superseded: the Field home becomes greeting + custody count, Scan / Check out / Return quick actions, recent activity, and due-soon / overdue counts. Search moves from *being* the home to being reachable from it. Built in Fluent + Englobe green per G-24, not in the mockup's palette |
+
+**Why A rather than B.** B ("move the phone onto the Console's system") better answers the "plain
+and boring" complaint, and that complaint is real. But it requires formally amending the one
+constraint § 1 declares fixed, restyling Fluent v9 rather than using it stock, and retokenising
+every existing screen plus `StatusPill` and `AssetRow`. The Console mockups' value is their
+*layout* — the entity rail, the bulk bar, the mobile home's quick actions — and none of that is
+tied to their palette. A gets the layout at a fraction of the rework, and leaves B available later
+as a deliberate design pass rather than as a side effect of adopting a mockup.
+
+**Consequence for the mockup package.** `docs/mockups/review-ref/DECISIONS.md` rows G-01…G-21 were
+written against the removed phone mockup and remain *proposals*. G-23 (vehicles have no visual
+identity) is still open and is not affected by either decision above.

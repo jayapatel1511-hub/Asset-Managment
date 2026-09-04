@@ -1,0 +1,80 @@
+name: app
+
+# Verification only. No secrets, no cloud login, no OIDC federation, no deployment.
+# WS-W1 asks for "CI without personal cloud credentials" (specs/REMAINING-WORK.md);
+# anything needing a secret belongs in a later pass, under WS-W10.
+
+on:
+  push:
+  pull_request:
+
+# Least privilege: read the repository, nothing else.
+permissions:
+  contents: read
+
+# Cancel a superseded run on the same ref. Note that `push` and `pull_request`
+# carry different refs for the same branch (refs/heads/x vs refs/pull/N/merge),
+# so an in-repo PR branch still runs twice. Narrow `on.push.branches` if that
+# duplication matters more than push coverage on unproposed branches.
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck, build, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 26 is what development runs (v26.8.1 as of 2026-09-03) and what
+      # app/package.json's `@types/node ^26.4.1` is typed against.
+      #
+      # It also matters behaviourally, not just for parity: Node 26 installs its
+      # own experimental `localStorage` global, and under vitest's jsdom
+      # environment (window === globalThis) that getter shadows the Storage
+      # jsdom installs. app/tests/setup.ts exists solely to restore it — see the
+      # comment at the top of that file, which records 108 of 317 tests failing
+      # without it. Pinning an older major would leave that guard unexercised.
+      #
+      # Neither app/package.json nor server/package.json declares an `engines`
+      # field, so this pin and its twin in server.yml are the only places the
+      # supported Node major is stated.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      # `npm run typecheck` exists now and is exactly `tsc -b`, but it is invoked
+      # directly here for the `--force` flag: the .tsbuildinfo files are
+      # gitignored and never restored from the npm cache, so without it a
+      # cold runner can skip work it has no record of having done. Running the
+      # typecheck as its own step also gives a type error its own named,
+      # early-failing step rather than burying it in the build. `tsc -b --noEmit`
+      # is refused here (TS6310: referenced project tsconfig.node.json may not
+      # disable emit), so build mode is used as written.
+      - name: Typecheck
+        run: npx --no-install tsc -b --force
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test
+
+      # Deliberately no artifact upload, and none should be added.
+      # `npm run build` triggers `prebuild`, which copies migration/staged/ into
+      # app/public/data/, and vite copies publicDir into dist/ — so dist/data/
+      # holds the 1,026 real migrated assets, including SIM ICCIDs, phone
+      # numbers and static IPs. Only `npm run build:release` (mode=release,
+      # publicDir disabled) yields a bundle that is safe to publish; see the
+      # header comment in app/vite.config.ts and feature 008 FR-002.

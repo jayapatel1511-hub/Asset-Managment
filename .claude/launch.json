@@ -2,63 +2,90 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "englobe-ams-dev",
-      "runtimeExecutable": "C:\\Files\\Asset Managment\\.tools\\node-v22.14.0-win-x64\\node.exe",
-      "runtimeArgs": [
-        "C:\\Files\\Asset Managment\\app\\node_modules\\vite\\bin\\vite.js",
-        "C:\\Files\\Asset Managment\\app"
-      ],
-      "port": 3000
-    },
-    {
-      "name": "englobe-ams-synthetic",
-      "runtimeExecutable": "C:\\Files\\Asset Managment\\.tools\\node-v22.14.0-win-x64\\node.exe",
-      "runtimeArgs": [
-        "C:\\Files\\Asset Managment\\app\\node_modules\\vite\\bin\\vite.js",
-        "C:\\Files\\Asset Managment\\app",
-        "--port",
-        "3100",
-        "--strictPort"
-      ],
-      "port": 3100
-    },
-    {
+      "//": "The TypeScript API over containerised PostgreSQL. Start this FIRST \u2014 Vite proxies /api to it. Needs `docker compose up -d --wait`.",
       "name": "englobe-ams-api",
-      "runtimeExecutable": "C:\\Files\\Asset Managment\\.tools\\node-v22.14.0-win-x64\\node.exe",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "C:\\Files\\Asset Managment\\server\\node_modules\\tsx\\dist\\cli.mjs",
-        "C:\\Files\\Asset Managment\\server\\src\\main.ts"
+        "--prefix",
+        "server",
+        "run",
+        "start"
       ],
       "port": 3001
     },
     {
+      "//": "The app against the real API (VITE_AMS_BACKEND=http, via app/.env.localapi). This is the demo stack.",
       "name": "englobe-ams-localapi",
-      "runtimeExecutable": "C:\\Files\\Asset Managment\\.tools\\node-v22.14.0-win-x64\\node.exe",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "C:\\Files\\Asset Managment\\app\\node_modules\\vite\\bin\\vite.js",
-        "C:\\Files\\Asset Managment\\app",
-        "--mode",
-        "localapi",
-        "--port",
-        "3200",
-        "--strictPort"
+        "--prefix",
+        "app",
+        "run",
+        "dev:localapi"
       ],
       "port": 3200
     },
     {
-      "//": "A second Vite instance against the same API, for a concurrent session: port 3200 is --strictPort, so two sessions cannot share it (AGENT-BRIEF.md section 5, 'Concurrent sessions are real').",
-      "name": "englobe-ams-localapi-alt",
-      "runtimeExecutable": "C:\\Files\\Asset Managment\\.tools\\node-v22.14.0-win-x64\\node.exe",
+      "//": "The app against the in-browser mock \u2014 no API, no database. Useful for UI work only.",
+      "name": "englobe-ams-mock",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "C:\\Files\\Asset Managment\\app\\node_modules\\vite\\bin\\vite.js",
-        "C:\\Files\\Asset Managment\\app",
-        "--mode",
-        "localapi",
+        "--prefix",
+        "app",
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "//": "Verification stack on its own port, so it never collides with a demo already running on 3200. Same app, same real API.",
+      "name": "englobe-ams-verify",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "app",
+        "run",
+        "dev:localapi",
+        "--",
         "--port",
         "3210",
         "--strictPort"
       ],
-      "port": 3210
+      "port": 3210,
+      "autoPort": false,
+      "env": {
+        "AMS_API_PORT": "3002"
+      }
+    },
+    {
+      "//": "Static server for the two UI mockups in docs/mockups/review-ref (design reference, not the app). Owns port 8770 to match docs/mockups/README.md - stop any manual `python3 -m http.server 8770` first.",
+      "name": "englobe-ams-mockups",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8770",
+        "--directory",
+        "docs/mockups/review-ref"
+      ],
+      "port": 8770,
+      "autoPort": false
+    },
+    {
+      "//": "A second API on 3002, for verifying a change while another session's demo holds 3001. Pair with englobe-ams-verify, which sets AMS_API_PORT to match.",
+      "name": "englobe-ams-api-alt",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "server",
+        "run",
+        "start"
+      ],
+      "env": {
+        "AMS_PORT": "3002"
+      },
+      "port": 3002,
+      "autoPort": false
     }
   ]
 }

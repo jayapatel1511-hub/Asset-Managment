@@ -183,7 +183,18 @@ def main() -> int:
             if a["parentasset"]:
                 for rel in relationships:
                     if rel["childasset"] == a["assetid"] and rel["createdbyline"] is None:
-                        rel["createdbyline"] = line_id
+                        # txn_id, NOT line_id, despite the column name. The name says "line" and
+                        # the value is a transaction — that discrepancy is real and predates this
+                        # fix, but the value has to match what READS it. Every consumer compares
+                        # this against a TRANSACTION id:
+                        #   app/src/domain/pointInTime.ts     `r.createdbyline === entry.transaction`
+                        #   server/src/services/transactionService.ts   writes result.transactionId
+                        #   app/src/api/mock/store.ts                   same
+                        #   server/src/db/views.sql (v_asset_timeline)  follows the write path
+                        # Writing a line id here meant all six migrated component attachments were
+                        # invisible in every timeline — UI, API and view alike — because the
+                        # comparison could never match. Found by the reporting lane, 2026-09-03.
+                        rel["createdbyline"] = txn_id
 
     # ---- id sequence: next value per prefix, continuing past every existing tag ----
     idsequence = {}

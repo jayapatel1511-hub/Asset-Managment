@@ -14,11 +14,29 @@
  * Every body is validated with zod here, at the boundary, so no service function has to defend
  * against a missing field; a body that does not parse is a 400 with the offending paths, because
  * a client sending the wrong shape has a bug and retrying it would not help.
+ *
+ * ## Who may write (WS-W3)
+ *
+ * Every route below names its guard between the path and the handler:
+ *
+ *   every command                 FieldUser, OfficeAdmin or SystemOwner. ReportReader is refused
+ *                                 with 403 `forbidden_role` — read-only is enforced, not documented.
+ *   `PUT /api/office-admins/:office`  OfficeAdmin or SystemOwner, **and** office scope: an Ottawa
+ *                                 administrator administering Toronto is refused (A-R5).
+ *   `GET /api/assets/next-id`     any authenticated role — it is a preview, and it allocates
+ *                                 nothing (the server mints the real id inside the command).
+ *
+ * Note what the guards do *not* consult: the body. zod strips unknown keys, so a body carrying
+ * `role`, `upn`, `office` or `performedby` loses them before any service sees it, and every
+ * server-owned field is taken from the resolved caller — `performedby: user.upn` in
+ * services/commandService.ts, never `body.performedby`. That is CLAUDE.md rule 1 holding at the
+ * only layer where it can be checked.
  */
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
 import type { SubmissionOutcome } from "../../../app/src/api/AmsBackend";
 import type { AppContext } from "../app";
+import { guards, requireAdminRole, requireAnyRole, requireOfficeScope, requireWriteAccess } from "../auth/authorize";
 import type { Queryable } from "../db/pglite";
 import type { CurrentUser } from "../../../app/src/api/types";
 import {
@@ -235,7 +253,7 @@ export function registerCommandRoutes(app: FastifyInstance, ctx: AppContext): vo
   }
 
   // ---- features 001/003/004 transaction commands ----
-  app.post("/api/commands/:type", async (req, reply) => {
+  app.post("/api/commands/:type", requireWriteAccess(), async (req, reply) => {
     const { type } = req.params as { type: string };
     const entry = COMMANDS[type];
     if (!entry) {
@@ -245,20 +263,20 @@ export function registerCommandRoutes(app: FastifyInstance, ctx: AppContext): vo
   });
 
   // ---- feature 004: record a calibration ----
-  app.post("/api/calibrations", async (req, reply) =>
+  app.post("/api/calibrations", requireWriteAccess(), async (req, reply) =>
     submit(reply, req.user, "RecordCalibration", calibrationSchema, req.body, (tx, input) =>
       recordCalibration(tx, req.user, input)
     )
   );
 
   // ---- feature 001: register an asset, and preview the tag it would be given ----
-  app.post("/api/assets", async (req, reply) =>
+  app.post("/api/assets", requireWriteAccess(), async (req, reply) =>
     submit(reply, req.user, "RegisterAsset", registerSchema, req.body, (tx, input) => registerAsset(tx, req.user, input))
   );
 
   // Registered as a static segment, which Fastify's router prefers over read.ts's
   // /api/assets/:assetId regardless of registration order.
-  app.get("/api/assets/next-id", async (req, reply) => {
+  app.get("/api/assets/next-id", requireAnyRole(), async (req, reply) => {
     const q = z
       .object({ manufacturer: z.string(), model: z.string(), equipmenttype: z.string(), serial: z.string().optional() })
       .safeParse(req.query);
@@ -271,29 +289,55 @@ export function registerCommandRoutes(app: FastifyInstance, ctx: AppContext): vo
   });
 
   // ---- feature 005: deployment, recovery, swap, configuration change ----
-  app.post("/api/deployments", async (req, reply) =>
+  app.post("/api/deployments", requireWriteAccess(), async (req, reply) =>
     submit(reply, req.user, "Deploy", deploymentSchema, req.body, (tx, input) => submitDeployment(tx, req.user, input))
   );
 
-  app.post("/api/recoveries", async (req, reply) =>
+  app.post("/api/recoveries", requireWriteAccess(), async (req, reply) =>
     submit(reply, req.user, "Recover", recoverySchema, req.body, (tx, input) => submitRecovery(tx, req.user, input))
   );
 
-  app.post("/api/component-swaps", async (req, reply) =>
+  app.post("/api/component-swaps", requireWriteAccess(), async (req, reply) =>
     submit(reply, req.user, "ComponentSwap", swapSchema, req.body, (tx, input) => submitComponentSwap(tx, req.user, input))
   );
 
-  app.post("/api/configuration-changes", async (req, reply) =>
+  app.post("/api/configuration-changes", requireWriteAccess(), async (req, reply) =>
     submit(reply, req.user, "ConfigurationChange", configChangeSchema, req.body, (tx, input) =>
       submitConfigurationChange(tx, req.user, input)
     )
   );
 
   // ---- feature 004 US4: office → administrator assignment ----
-  app.put("/api/office-admins/:office", async (req, reply) => {
-    const { office } = req.params as { office: string };
-    return submit(reply, req.user, "SetOfficeAdmins", officeAdminsSchema, req.body, (tx, input) =>
-      setOfficeAdmins(tx, office, input.adminUpns)
-    );
-  });
+  //
+  // The one office-scoped write in the system today, and the shape every later administrative
+  // command follows. `knownOffice` returns null for a name that is not an office at all, which
+  // `requireOfficeScope` passes through on purpose: "Vancouver is not one of our offices" is a
+  // validation answer the command already gives, and dressing it up as 403 would hide a typo
+  // behind a permissions error while disclosing nothing an attacker could not read off
+  // GET /api/locations.
+  app.put(
+    "/api/office-admins/:office",
+    guards(requireAdminRole(), requireOfficeScope((req) => knownOffice(ctx, (req.params as { office: string }).office))),
+    async (req, reply) => {
+      const { office } = req.params as { office: string };
+      return submit(reply, req.user, "SetOfficeAdmins", officeAdminsSchema, req.body, (tx, input) =>
+        setOfficeAdmins(tx, office, input.adminUpns)
+      );
+    }
+  );
+}
+
+/**
+ * The office an administrative request names, or null when it names no office this system has.
+ *
+ * Case-insensitive, because the caller typed it into a URL. Reads the location table rather than
+ * a constant so that an office added by an administrator is immediately administrable — rule 7:
+ * reference data is maintained in the application, not hard-coded.
+ */
+async function knownOffice(ctx: AppContext, name: string): Promise<string | null> {
+  const res = await ctx.db.query<{ name: string }>(
+    "SELECT name FROM location WHERE locationtype = 'Office' AND lower(name) = lower($1) LIMIT 1",
+    [name]
+  );
+  return res.rows[0]?.name ?? null;
 }

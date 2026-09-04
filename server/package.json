@@ -3,21 +3,31 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Englobe AMS — local TypeScript API over in-process PostgreSQL (PGlite). Proof of concept; no cloud services.",
+  "description": "Englobe AMS \u2014 local TypeScript API over PostgreSQL. Two drivers behind one interface: a networked pg Pool (docker-compose.yml, default) and the original in-process PGlite. Proof of concept; no cloud services.",
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
     "reseed": "tsx src/main.ts --reseed --exit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "db:up": "docker compose -f ../docker-compose.yml up -d --wait",
+    "db:down": "docker compose -f ../docker-compose.yml down",
+    "db:reset": "docker compose -f ../docker-compose.yml down -v && docker compose -f ../docker-compose.yml up -d --wait",
+    "db:migrate": "tsx src/db/migrateCli.ts",
+    "db:check": "tsx src/db/migrateCli.ts --check",
+    "test": "vitest run",
+    "test:postgres": "AMS_DB=postgres vitest run",
+    "test:pglite": "AMS_DB=pglite vitest run",
+    "test:both": "npm run test:postgres && npm run test:pglite"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",
     "fastify": "5.12.1",
+    "pg": "^8.23.0",
     "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"

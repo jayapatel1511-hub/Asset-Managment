@@ -1,6 +1,6 @@
 # 07 — Synthetic fleet history: demo profile
 
-Generated 2026-09-03T03:11:28.132Z by `app/scripts/synthetic/generate.ts` v0.1.0 in 5.2 s. Spec: `specs/007-synthetic-data/spec.md`.
+Generated 2026-09-03T22:57:57.207Z by `app/scripts/synthetic/generate.ts` v0.1.0 in 3.3 s. Spec: `specs/007-synthetic-data/spec.md`.
 
 **Result: PASS.** The manifest records `verified: true`; the dataset may be copied into the app.
 
@@ -74,7 +74,7 @@ Every row in this dataset is fictional. Nothing in it describes a real asset, pe
 | FR-050 | Every planted scenario present at as-of | PASS | 16 of 16 |  \| overdue-calibration-per-office: 8/8 offices with calibrated assets; expected-return-overdue: AC-5001; retired-after-15-years: DST-5003; failed-calibration-then-repair: GEO-V12-400001; temporary-tag: 1; third-party-owned: 1; leaver-holding-assets: rohan.marchetti@englobecorp.com; site-on-two-projects: 63 |
 | SC-003 | Volume minimums at this scale | PASS | assets 371/350, lines 23022/21250, installations 2022/1500, cal records 1877/1750, projects 260/38, sites 686/75 |  |
 | SC-007 | Answer key reconciles with the app's own point-in-time, installation and reporting logic | PASS | 0 discrepancies |  \| calibration counts not reconciled: as-of is not today |
-| FR-052 | Two generations with the same seed and parameters are byte-identical | PASS | all 13 files identical |  (2.1 s) |
+| FR-052 | Two generations with the same seed and parameters are byte-identical | PASS | all 13 files identical |  (1.4 s) |
 
 ## Planted scenarios (FR-050)
 

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; }
+  body { background:#EFEEEB; color:#1C1917; font-family:Inter,-apple-system,'Segoe UI',sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#0F5F55; text-decoration:none; }
+  a:hover { color:#0B463F; }
+  * { box-sizing:border-box; text-wrap:pretty; }
+  ::-webkit-scrollbar { width:0; height:0; }
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;display:flex;flex-direction:column;background:#FAFAF9;overflow:hidden">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 20px;flex:0 0 auto;font-size:12px;font-weight:600;color:#1C1917">
+    <span>9:41</span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="16" height="11" viewBox="0 0 16 11" aria-hidden="true"><rect x="0" y="7" width="2.6" height="4" rx="0.6" fill="currentColor"></rect><rect x="4.4" y="5" width="2.6" height="6" rx="0.6" fill="currentColor"></rect><rect x="8.8" y="2.6" width="2.6" height="8.4" rx="0.6" fill="currentColor"></rect><rect x="13.2" y="0" width="2.6" height="11" rx="0.6" fill="currentColor"></rect></svg>
+      <svg width="24" height="11" viewBox="0 0 24 11" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="10" rx="2.6" fill="none" stroke="currentColor" stroke-opacity="0.4"></rect><rect x="2" y="2" width="14" height="7" rx="1.6" fill="currentColor"></rect><path d="M22 4v3a2 2 0 0 0 0-3z" fill="currentColor" fill-opacity="0.5"></path></svg>
+    </span>
+  </div>
+
+  <header style="display:flex;align-items:center;gap:10px;padding:0 16px 12px;flex:0 0 auto">
+    <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+      <button type="button" onClick="{{ goBack }}" aria-label="Back" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;margin-left:-6px;border:none;border-radius:8px;background:transparent;color:#1C1917;cursor:pointer;flex:0 0 auto" style-hover="background:#F0EEEC">
+        <svg width="19" height="19" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.5"></path></svg>
+      </button>
+    </sc-if>
+    <sc-if value="{{ showLogo }}" hint-placeholder-val="{{ true }}">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:#0F5F55;flex:0 0 auto">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6 14 5v6L8 14.4 2 11V5z" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+      </span>
+    </sc-if>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:600;letter-spacing:-0.01em;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ title }}</span>
+      <span style="display:block;font-size:12px;color:#78716C;line-height:16px">{{ subtitle }}</span>
+    </span>
+    <button type="button" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid #E7E5E4;border-radius:9px;background:#FFFFFF;color:#57534E;cursor:pointer;flex:0 0 auto" style-hover="background:#F7F6F4">
+      <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.3"></circle><path d="M10.4 10.4 14 14" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>
+    </button>
+    <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#EDF1F0;color:#0F5F55;font-size:12px;font-weight:600;flex:0 0 auto">MT</span>
+  </header>
+
+  <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:0 16px 96px">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding-bottom:20px">
+          <button type="button" onClick="{{ goAssets }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;border:1px solid #0F5F55;border-radius:10px;background:#0F5F55;padding:12px;cursor:pointer;font-family:inherit;color:#FFFFFF" style-hover="background:#0B463F">
+            <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.6 5.6V3.4a.8.8 0 0 1 .8-.8h2.2M13.4 5.6V3.4a.8.8 0 0 0-.8-.8h-2.2M2.6 10.4v2.2a.8.8 0 0 0 .8.8h2.2M13.4 10.4v2.2a.8.8 0 0 1-.8.8h-2.2M4 8h8" fill="none" stroke="currentColor" stroke-width="1.35"></path></svg>
+            <span style="font-size:12.5px;font-weight:500">Scan</span>
+          </button>
+          <button type="button" onClick="{{ goAssets }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;padding:12px;cursor:pointer;font-family:inherit;color:#1C1917" style-hover="background:#FCFCFB">
+            <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true" style="color:#0F5F55"><path d="M2.6 6.2h9.2L9.4 3.6M13.4 9.8H4.2l2.4 2.6" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"></path></svg>
+            <span style="font-size:12.5px;font-weight:500">Check out</span>
+          </button>
+          <button type="button" onClick="{{ goAssets }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;padding:12px;cursor:pointer;font-family:inherit;color:#1C1917" style-hover="background:#FCFCFB">
+            <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true" style="color:#0F5F55"><path d="M13.4 9.8H4.2l2.4-2.6M2.6 6.2h9.2L9.4 8.8" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"></path></svg>
+            <span style="font-size:12.5px;font-weight:500">Return</span>
+          </button>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;padding:0 2px 8px">
+          <span style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:#78716C">RECENT ACTIVITY</span>
+          <span style="flex:1;height:1px;background:#E7E5E4"></span>
+        </div>
+        <div style="border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;overflow:hidden">
+          <sc-for list="{{ activity }}" as="a" hint-placeholder-count="6">
+            <button type="button" onClick="{{ a.open }}" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:12px 13px;border:none;border-bottom:1px solid #F2F0EE;background:transparent;font-family:inherit;cursor:pointer" style-hover="background:#FCFCFB">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;flex:0 0 auto;background:{{ a.ibg }};color:{{ a.ifg }}">
+                <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="{{ a.d }}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+              </span>
+              <span style="flex:1;min-width:0">
+                <span style="display:block;font-size:13.5px;color:#1C1917;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                  {{ a.verb }} <span style="font-family:'IBM Plex Mono',Consolas,monospace;font-size:12.5px;font-weight:500">{{ a.id }}</span>
+                </span>
+                <span style="display:block;font-size:12px;color:#78716C;padding-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.detail }}</span>
+              </span>
+              <span style="flex:0 0 auto;font-size:11.5px;color:#A8A29E">{{ a.when }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCatGrid }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="8">
+          <button type="button" onClick="{{ c.open }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:14px;border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;padding:13px;cursor:pointer;font-family:inherit;text-align:left" style-hover="background:#FCFCFB">
+            <svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true" style="color:#57534E"><path d="{{ c.d }}" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"></path></svg>
+            <span style="display:block;width:100%">
+              <span style="display:block;font-size:13.5px;font-weight:500;color:#1C1917">{{ c.name }}</span>
+              <span style="display:block;font-size:12px;color:#78716C;padding-top:2px;font-variant-numeric:tabular-nums">{{ c.count }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCatList }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="display:flex;gap:2px;padding:3px;border:1px solid #E7E5E4;border-radius:9px;background:#F2F0EE;margin-bottom:14px">
+          <sc-for list="{{ scopes }}" as="sc" hint-placeholder-count="3">
+            <button type="button" onClick="{{ sc.pick }}" style="flex:1;height:32px;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:{{ sc.w }};cursor:pointer;background:{{ sc.bg }};color:{{ sc.fg }};box-shadow:{{ sc.sh }}">{{ sc.label }}</button>
+          </sc-for>
+        </div>
+
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+          <section style="padding-bottom:18px">
+            <div style="display:flex;align-items:center;gap:8px;padding:0 2px 8px">
+              <span style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:#78716C">{{ g.label }}</span>
+              <span style="font-size:10px;font-weight:600;color:#A8A29E;font-variant-numeric:tabular-nums">{{ g.count }}</span>
+              <span style="flex:1;height:1px;background:#E7E5E4"></span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
+                <button type="button" onClick="{{ r.open }}" style="display:block;width:100%;text-align:left;border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;padding:12px;cursor:pointer;font-family:inherit" style-hover="background:#FCFCFB">
+                  <span style="display:flex;align-items:center;gap:8px">
+                    <span style="font-family:'IBM Plex Mono',Consolas,monospace;font-size:13px;font-weight:500;color:#1C1917">{{ r.id }}</span>
+                    <span style="flex:1"></span>
+                    <span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:11px;font-size:11.5px;font-weight:500;background:{{ r.pbg }};color:{{ r.pfg }};border:1px solid {{ r.pbd }}">
+                      <span style="width:5px;height:5px;border-radius:50%;background:{{ r.pfg }}"></span>{{ r.status }}
+                    </span>
+                  </span>
+                  <span style="display:block;font-size:13.5px;color:#1C1917;padding:4px 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.model }}</span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#78716C">
+                    <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" style="flex:0 0 auto"><path d="M8 1.8a4.6 4.6 0 0 1 4.6 4.6c0 3.4-4.6 7.8-4.6 7.8S3.4 9.8 3.4 6.4A4.6 4.6 0 0 1 8 1.8z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>
+                    <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.location }}</span>
+                    <sc-for list="{{ r.metas }}" as="m" hint-placeholder-count="1">
+                      <span style="width:3px;height:3px;border-radius:50%;background:#D6D3D1;flex:0 0 auto"></span>
+                      <span style="flex:0 0 auto;color:{{ m.fg }};font-weight:{{ m.w }};font-variant-numeric:tabular-nums">{{ m.text }}</span>
+                    </sc-for>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+        </sc-for>
+
+        <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed #DDD9D5;border-radius:10px;padding:28px 16px;text-align:center">
+            <span style="display:block;font-size:13.5px;color:#57534E">No assets in this scope</span>
+            <button type="button" onClick="{{ scopeAll }}" style="margin-top:10px;height:32px;padding:0 12px;border:1px solid #E7E5E4;border-radius:8px;background:#FFFFFF;font-family:inherit;font-size:13px;color:#1C1917;cursor:pointer" style-hover="background:#F7F6F4">Show all offices</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCal }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="display:flex;gap:10px;padding-bottom:16px">
+          <span style="flex:1;border:1px solid #FEDF89;border-radius:10px;background:#FFFAEB;padding:12px">
+            <span style="display:block;font-size:22px;font-weight:600;color:#B54708;font-variant-numeric:tabular-nums">{{ dueSoon }}</span>
+            <span style="display:block;font-size:12px;color:#8A5A17">Due in 30 days</span>
+          </span>
+          <span style="flex:1;border:1px solid #FECDCA;border-radius:10px;background:#FEF3F2;padding:12px">
+            <span style="display:block;font-size:22px;font-weight:600;color:#B42318;font-variant-numeric:tabular-nums">{{ overdueCount }}</span>
+            <span style="display:block;font-size:12px;color:#912018">Overdue</span>
+          </span>
+        </div>
+        <sc-for list="{{ dueGroups }}" as="g" hint-placeholder-count="2">
+          <section style="padding-bottom:18px">
+            <div style="display:flex;align-items:center;gap:8px;padding:0 2px 8px">
+              <span style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:#78716C">{{ g.label }}</span>
+              <span style="font-size:10px;font-weight:600;color:#A8A29E;font-variant-numeric:tabular-nums">{{ g.count }}</span>
+              <span style="flex:1;height:1px;background:#E7E5E4"></span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
+                <button type="button" onClick="{{ r.open }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;padding:12px;cursor:pointer;font-family:inherit" style-hover="background:#FCFCFB">
+                  <span style="flex:1;min-width:0">
+                    <span style="display:block;font-family:'IBM Plex Mono',Consolas,monospace;font-size:13px;font-weight:500">{{ r.id }}</span>
+                    <span style="display:block;font-size:12.5px;color:#78716C;padding-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.model }}</span>
+                  </span>
+                  <span style="flex:0 0 auto;text-align:right">
+                    <span style="display:block;font-size:12.5px;font-weight:{{ r.dueW }};color:{{ r.dueFg }};font-variant-numeric:tabular-nums">{{ r.dueText }}</span>
+                    <span style="display:block;font-size:11px;color:#A8A29E;padding-top:2px">{{ r.dueKind }}</span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isMore }}" hint-placeholder-val="{{ false }}">
+      <div style="border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;overflow:hidden">
+        <sc-for list="{{ moreItems }}" as="m" hint-placeholder-count="7">
+          <button type="button" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;height:52px;padding:0 14px;border:none;border-bottom:1px solid #F2F0EE;background:transparent;font-family:inherit;font-size:14px;color:#1C1917;cursor:pointer" style-hover="background:#FCFCFB">
+            <span style="flex:1">{{ m.label }}</span>
+            <span style="font-size:12px;color:#A8A29E;font-variant-numeric:tabular-nums">{{ m.meta }}</span>
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true" style="color:#A8A29E;flex:0 0 auto"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <button type="button" onClick="{{ closeSheet }}" aria-label="Close" style="position:absolute;inset:0;border:none;background:rgba(28,25,23,.32);cursor:pointer;z-index:40"></button>
+      <div style="position:absolute;left:0;right:0;bottom:0;z-index:50;background:#FFFFFF;border-top:1px solid #E7E5E4;border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(28,25,23,.12);padding:8px 16px 20px">
+        <span style="display:block;width:36px;height:4px;border-radius:2px;background:#E7E5E4;margin:0 auto 14px"></span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'IBM Plex Mono',Consolas,monospace;font-size:16px;font-weight:500">{{ sheetId }}</span>
+          <span style="flex:1"></span>
+          <span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:11px;font-size:11.5px;font-weight:500;background:{{ sheetPbg }};color:{{ sheetPfg }};border:1px solid {{ sheetPbd }}">
+            <span style="width:5px;height:5px;border-radius:50%;background:{{ sheetPfg }}"></span>{{ sheetStatus }}
+          </span>
+        </span>
+        <span style="display:block;font-size:13.5px;color:#57534E;padding:6px 0 14px">{{ sheetModel }}</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#F2F0EE;border:1px solid #F2F0EE;border-radius:10px;overflow:hidden;margin-bottom:14px">
+          <sc-for list="{{ sheetFields }}" as="f" hint-placeholder-count="6">
+            <span style="background:#FFFFFF;padding:10px 12px;grid-column:{{ f.span }}">
+              <span style="display:block;font-size:10px;font-weight:600;letter-spacing:0.07em;color:#78716C">{{ f.label }}</span>
+              <span style="display:block;font-size:13px;padding-top:2px;color:{{ f.fg }};font-weight:{{ f.w }};font-family:{{ f.ff }};font-variant-numeric:tabular-nums">{{ f.value }}</span>
+            </span>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="button" onClick="{{ closeSheet }}" style="flex:1;height:46px;border:1px solid #0F5F55;border-radius:10px;background:#0F5F55;font-family:inherit;font-size:14px;font-weight:500;color:#FFFFFF;cursor:pointer" style-hover="background:#0B463F">{{ sheetPrimary }}</button>
+          <button type="button" style="flex:0 0 auto;height:46px;padding:0 14px;border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;font-family:inherit;font-size:14px;font-weight:500;color:#1C1917;cursor:pointer" style-hover="background:#F7F6F4">{{ sheetSecondary }}</button>
+          <button type="button" aria-label="More actions" style="flex:0 0 auto;width:46px;height:46px;border:1px solid #E7E5E4;border-radius:10px;background:#FFFFFF;color:#57534E;cursor:pointer" style-hover="background:#F7F6F4">
+            <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><circle cx="3.4" cy="8" r="1.15" fill="currentColor"></circle><circle cx="8" cy="8" r="1.15" fill="currentColor"></circle><circle cx="12.6" cy="8" r="1.15" fill="currentColor"></circle></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <nav style="position:absolute;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(5,1fr);align-items:start;height:76px;padding-top:8px;background:rgba(250,250,249,.94);border-top:1px solid #E7E5E4;backdrop-filter:blur(8px)">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+      <button type="button" onClick="{{ t.pick }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:transparent;padding:6px 0;font-family:inherit;font-size:10.5px;font-weight:{{ t.w }};color:{{ t.fg }};cursor:pointer">
+        <svg width="21" height="21" viewBox="0 0 16 16" aria-hidden="true"><path d="{{ t.d }}" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"></path></svg>
+        {{ t.label }}
+      </button>
+    </sc-for>
+  </nav>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#0F5F55&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#0F5F55&quot;,&quot;#14713A&quot;,&quot;#1A4E8A&quot;,&quot;#3F3F46&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;startTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;home&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;assets&quot;,&quot;cal&quot;,&quot;more&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;State&quot;}}">
+const MONO = "'IBM Plex Mono',Consolas,monospace";
+const SANS = "inherit";
+
+const DATA = [
+  { id:"SEIS-4090", model:"Instantel Micromate", status:"Needs repair", location:"Ottawa Depot", custodian:"K. Sandhu", cal:-4, project:"—", mine:false, office:"Ottawa" },
+  { id:"SLM-2208", model:"Larson Davis 831", status:"Calibration due", location:"Hwy 417 Widening", custodian:"R. Beaulieu", cal:2, project:"24-0993", mine:false, office:"Ottawa" },
+  { id:"SLM-2240", model:"Larson Davis 831C", status:"Calibration due", location:"Ottawa Yard", custodian:"M. Tremblay", cal:3, project:"24-0993", mine:true, office:"Ottawa" },
+  { id:"SEIS-4131", model:"Instantel Minimate Plus", status:"Deployed", location:"Barrhaven Trunk Sewer", custodian:"M. Tremblay", cal:6, project:"24-1204", mine:true, office:"Ottawa" },
+  { id:"SEIS-4128", model:"Geosonics SSU 3000LC", status:"Deployed", location:"Ottawa Yard", custodian:"M. Tremblay", cal:12, project:"24-1187", mine:true, office:"Ottawa" },
+  { id:"SEIS-4155", model:"Geosonics SSU 3000EZ+", status:"Deployed", location:"Riverside South Collector", custodian:"M. Tremblay", cal:14, project:"24-1330", mine:true, office:"Ottawa" },
+  { id:"SEIS-4162", model:"Instantel Minimate Pro6", status:"Available", location:"Ottawa Warehouse B", custodian:"—", cal:31, project:"—", mine:false, office:"Ottawa" },
+  { id:"GEO-0944", model:"GeoSpace GS-One LF", status:"Deployed", location:"Kanata LRT Ph 2", custodian:"M. Tremblay", cal:22, project:"24-1187", mine:true, office:"Ottawa" },
+  { id:"GEO-0917", model:"GeoSpace GS-11D", status:"Available", location:"Ottawa Warehouse B", custodian:"—", cal:24, project:"—", mine:false, office:"Ottawa" },
+  { id:"GEO-0961", model:"Sercel DSU3", status:"Retired", location:"Ottawa Depot", custodian:"—", cal:null, project:"—", mine:false, office:"Ottawa" },
+  { id:"SLM-2261", model:"Brüel & Kjær 2250-L", status:"Deployed", location:"Barrhaven Trunk Sewer", custodian:"J. Okafor", cal:9, project:"24-1204", mine:false, office:"Ottawa" },
+  { id:"TS-0331", model:"Leica TS16 P 1\"", status:"Deployed", location:"Hwy 417 Widening", custodian:"D. Nguyen", cal:28, project:"24-0993", mine:false, office:"Ottawa" },
+  { id:"TS-0344", model:"Trimble S7 2\"", status:"Available", location:"Ottawa Warehouse B", custodian:"—", cal:26, project:"—", mine:false, office:"Ottawa" },
+
+  { id:"VEH-1042", model:"Ford F-250 XL 4x4", status:"Deployed", location:"Ottawa Yard", custodian:"M. Tremblay", project:"24-1187", mine:true, office:"Ottawa",
+    plate:"ON BX 4127", odo:184320, insp:24, insurance:"Feb 28, 2027", driver:"M. Tremblay", fuel:"•••• 4471", trailer:"Utility trailer T-19", service:"Jun 18, 2026" },
+  { id:"VEH-1067", model:"RAM 1500 Tradesman", status:"Needs repair", location:"Ottawa Depot", custodian:"P. Lalonde", project:"24-1330", mine:false, office:"Ottawa",
+    plate:"ON CJ 8802", odo:96540, insp:-6, insurance:"Nov 30, 2026", driver:"P. Lalonde", fuel:"•••• 6118", trailer:"—", service:"Mar 4, 2026" },
+  { id:"VEH-1081", model:"Ford Transit 250 cargo", status:"Available", location:"Ottawa Yard", custodian:"—", project:"—", mine:false, office:"Ottawa",
+    plate:"ON DA 2260", odo:41870, insp:58, insurance:"Aug 31, 2027", driver:"—", fuel:"•••• 2093", trailer:"—", service:"Aug 12, 2026" },
+
+  { id:"AIR-0312", model:"Thermo pDR-1500", status:"Deployed", location:"Kanata LRT Ph 2", custodian:"L. Fortin", project:"24-1187", mine:false, office:"Ottawa",
+    condition:"Good", service:"Jul 14, 2026", warranty:"Mar 2028", kit:"Cyclone, 2 filters, charger" },
+  { id:"AIR-0327", model:"Aeroqual AQS 1", status:"Available", location:"Ottawa Warehouse B", custodian:"—", project:"—", mine:false, office:"Montréal",
+    condition:"Good", service:"Jun 2, 2026", warranty:"Sep 2027", kit:"Inlet cap, 4 filters" },
+  { id:"WQ-0188", model:"YSI ProDSS 4-port", status:"Needs repair", location:"Ottawa Yard", custodian:"K. Sandhu", project:"24-1204", mine:false, office:"Ottawa",
+    condition:"Needs repair", service:"Aug 21, 2026", warranty:"Expired", kit:"4 sensors, flow cell" },
+  { id:"WQ-0203", model:"In-Situ Aqua TROLL 600", status:"Deployed", location:"Riverside South Collector", custodian:"P. Lalonde", project:"24-1330", mine:false, office:"Ottawa",
+    condition:"Fair", service:"May 9, 2026", warranty:"Jan 2029", kit:"Vented cable 30 m" },
+  { id:"HT-0451", model:"CPN MC-3 densometer", status:"Deployed", location:"Hwy 417 Widening", custodian:"D. Nguyen", project:"24-0993", mine:false, office:"Ottawa",
+    condition:"Good", service:"Aug 3, 2026", warranty:"Nov 2027", kit:"Standard block, transport case" },
+  { id:"HT-0466", model:"Rebound hammer N-34", status:"Available", location:"Ottawa Depot", custodian:"—", project:"—", mine:false, office:"Ottawa",
+    condition:"Fair", service:"Feb 17, 2026", warranty:"Expired", kit:"Anvil, chalk" },
+];
+
+const PILLS = {
+  "Available":       { bg:"#ECFDF3", fg:"#067647", bd:"#ABEFC6" },
+  "Deployed":        { bg:"#EFF8FF", fg:"#175CD3", bd:"#B2DDFF" },
+  "Calibration due": { bg:"#FFFAEB", fg:"#B54708", bd:"#FEDF89" },
+  "Needs repair":    { bg:"#FEF3F2", fg:"#B42318", bd:"#FECDCA" },
+  "Retired":         { bg:"#F5F5F4", fg:"#57534E", bd:"#E7E5E4" },
+};
+
+const COND = { "Good":"#067647", "Fair":"#B54708", "Needs repair":"#B42318" };
+
+const CATS = [
+  { k:"SEIS", name:"Seismographs", count:214, kind:"cal", d:"M1.6 8h2.4l1.6-4 2 8 2-6 1.4 2h3.4" },
+  { k:"GEO", name:"Geophones", count:386, kind:"cal", d:"M8 2.2v4.4M8 6.6 4.6 13.4h6.8zM3.4 4.2 5 5.6M12.6 4.2 11 5.6" },
+  { k:"SLM", name:"Sound level meters", count:92, kind:"cal", d:"M9.6 2.6 5.6 6H3.2v4h2.4l4 3.4zM12.4 5.4a4.4 4.4 0 0 1 0 5.2" },
+  { k:"TS", name:"Survey instruments", count:74, kind:"cal", d:"M8 2.2v3.6M4.6 13.4 8 5.8l3.4 7.6M2.6 13.4h10.8M6.2 4h3.6" },
+  { k:"VEH", name:"Vehicles", count:58, kind:"veh", d:"M1.8 10.4V7.6l1.8-3.2h6.6l2.4 3.2h1.6v2.8zM4.4 10.4a1.3 1.3 0 1 0 2.6 0 1.3 1.3 0 0 0-2.6 0M9.8 10.4a1.3 1.3 0 1 0 2.6 0 1.3 1.3 0 0 0-2.6 0" },
+  { k:"AIR", name:"Air quality", count:121, kind:"kit", d:"M2.4 5.6h7.2a2 2 0 1 0-2-2M2.4 8.6h9.2a1.8 1.8 0 1 1-1.8 1.8M2.4 11.6h5.2" },
+  { k:"WQ", name:"Water quality", count:66, kind:"kit", d:"M8 2.2s4 4.4 4 7a4 4 0 0 1-8 0c0-2.6 4-7 4-7z" },
+  { k:"HT", name:"Hand tools", count:37, kind:"kit", d:"M9.8 2.6a3 3 0 0 0 3.6 4.4l-6 6a1.8 1.8 0 0 1-2.6-2.6l6-6a3 3 0 0 1-1-1.8z" },
+];
+
+const ACTIVITY = [
+  { verb:"Returned", id:"SLM-2261", detail:"to Ottawa Yard", when:"14 min", kind:"in" },
+  { verb:"Checked out", id:"SEIS-4131", detail:"for 24-1204 Barrhaven Trunk Sewer", when:"1 h", kind:"out" },
+  { verb:"Logged 412 km", id:"VEH-1042", detail:"odometer now 184,320 km", when:"2 h", kind:"veh" },
+  { verb:"Deployed", id:"GEO-0944", detail:"at Kanata LRT Ph 2 · BH-14", when:"3 h", kind:"pin" },
+  { verb:"Booked calibration", id:"SLM-2240", detail:"Cal-Lab Ottawa · Sept 8", when:"Yesterday", kind:"cal" },
+  { verb:"Flagged for repair", id:"WQ-0188", detail:"pH sensor drift beyond spec", when:"2 d", kind:"warn" },
+];
+
+const AICON = {
+  in:   { bg:"#ECFDF3", fg:"#067647", d:"M13.4 9.8H4.2l2.4-2.6M2.6 6.2h9.2L9.4 8.8" },
+  out:  { bg:"#EDF1F0", fg:"#0F5F55", d:"M2.6 6.2h9.2L9.4 3.6M13.4 9.8H4.2l2.4 2.6" },
+  pin:  { bg:"#EFF8FF", fg:"#175CD3", d:"M8 1.8a4.6 4.6 0 0 1 4.6 4.6c0 3.4-4.6 7.8-4.6 7.8S3.4 9.8 3.4 6.4A4.6 4.6 0 0 1 8 1.8z" },
+  cal:  { bg:"#FFFAEB", fg:"#B54708", d:"M8 1.9a6.1 6.1 0 1 1 0 12.2A6.1 6.1 0 0 1 8 1.9zM8 4.4V8l2.6 1.7" },
+  veh:  { bg:"#F5F5F4", fg:"#57534E", d:"M1.8 10.4V7.6l1.8-3.2h6.6l2.4 3.2h1.6v2.8zM4.4 10.4a1.3 1.3 0 1 0 2.6 0M9.8 10.4a1.3 1.3 0 1 0 2.6 0" },
+  warn: { bg:"#FEF3F2", fg:"#B42318", d:"M8 2.6 14 13H2zM8 6.4v3.2M8 11.2v.6" },
+};
+
+const GROUPS = [
+  { label:"NEEDS ATTENTION", match:(r) => r.status === "Needs repair" || r.status === "Calibration due" },
+  { label:"IN USE", match:(r) => r.status === "Deployed" },
+  { label:"AVAILABLE", match:(r) => r.status === "Available" },
+  { label:"RETIRED", match:(r) => r.status === "Retired" },
+];
+
+class Component extends DCLogic {
+  state = { tab:"home", scope:"office", cat:null, sheet:null };
+
+  componentDidMount() {
+    const t = this.props.startTab;
+    if (t && t !== this.state.tab) this.setState({ tab: t });
+  }
+
+  setTab = (k) => this.setState({ tab: k === "scan" ? "home" : k, cat: null, sheet: null });
+  setScope = (k) => this.setState({ scope: k });
+  openCat = (k) => this.setState({ cat: k });
+  goBack = () => this.setState({ cat: null });
+  open = (id) => this.setState({ sheet: id });
+  closeSheet = () => this.setState({ sheet: null });
+
+  kindOf(r) { const c = CATS.find((x) => x.k === r.id.split("-")[0]); return c ? c.kind : "cal"; }
+  km(n) { return n.toLocaleString("en-CA") + " km"; }
+  due(d, noun) {
+    if (d === null || d === undefined) return noun === "cal" ? "No cal" : "—";
+    if (d < 0) return "Overdue " + Math.abs(d) + "d";
+    return "in " + d + "d";
+  }
+  dueStyle(d) {
+    const overdue = d !== null && d !== undefined && d < 0;
+    const soon = d !== null && d !== undefined && d >= 0 && d <= 7;
+    return { fg: overdue ? "#B42318" : soon ? "#B54708" : "#78716C", w: overdue || soon ? 500 : 400 };
+  }
+
+  decorate = (r) => {
+    const p = PILLS[r.status], kind = this.kindOf(r);
+    let metas = [];
+    if (kind === "cal") {
+      const st = this.dueStyle(r.cal);
+      metas = [{ text: r.cal === null ? "No cal" : "Cal " + this.due(r.cal, "cal"), fg: st.fg, w: st.w }];
+    } else if (kind === "veh") {
+      const st = this.dueStyle(r.insp);
+      metas = [
+        { text: this.km(r.odo), fg:"#78716C", w:400 },
+        { text: "Insp " + this.due(r.insp, "insp"), fg: st.fg, w: st.w },
+      ];
+    } else {
+      metas = [{ text: r.condition, fg: COND[r.condition] || "#78716C", w: r.condition === "Good" ? 400 : 500 }];
+    }
+    return {
+      id:r.id, model:r.model, status:r.status, location:r.location,
+      pbg:p.bg, pfg:p.fg, pbd:p.bd, metas,
+      open: () => this.open(r.id),
+    };
+  };
+
+  sheetFieldsFor(r) {
+    const kind = this.kindOf(r);
+    const f = (label, value, opts) => Object.assign({ label, value, fg:"#1C1917", w:400, ff:SANS, span:"auto" }, opts || {});
+    if (kind === "veh") {
+      const st = this.dueStyle(r.insp);
+      return [
+        f("PLATE", r.plate, { ff:MONO }),
+        f("ODOMETER", this.km(r.odo)),
+        f("NEXT INSPECTION", this.due(r.insp, "insp"), { fg:st.fg, w:st.w }),
+        f("INSURANCE", r.insurance),
+        f("DRIVER", r.driver),
+        f("FUEL CARD", r.fuel, { ff:MONO }),
+        f("LAST SERVICE", r.service),
+        f("PROJECT", r.project, { ff:MONO }),
+        f("TRAILER / ATTACHMENTS", r.trailer, { span:"span 2" }),
+      ];
+    }
+    if (kind === "kit") {
+      return [
+        f("LOCATION", r.location),
+        f("CUSTODIAN", r.custodian),
+        f("CONDITION", r.condition, { fg: COND[r.condition] || "#1C1917", w: r.condition === "Good" ? 400 : 500 }),
+        f("LAST SERVICE", r.service),
+        f("WARRANTY", r.warranty, { fg: r.warranty === "Expired" ? "#B42318" : "#1C1917", w: r.warranty === "Expired" ? 500 : 400 }),
+        f("PROJECT", r.project, { ff:MONO }),
+        f("KIT CONTENTS", r.kit, { span:"span 2" }),
+      ];
+    }
+    const st = this.dueStyle(r.cal);
+    return [
+      f("LOCATION", r.location),
+      f("CUSTODIAN", r.custodian),
+      f("CAL DUE", r.cal === null ? "No cal" : this.due(r.cal, "cal"), { fg:st.fg, w:st.w }),
+      f("PROJECT", r.project, { ff:MONO }),
+    ];
+  }
+
+  primaryFor(r) {
+    if (!r) return "";
+    if (r.status === "Available") return "Check out";
+    if (r.status === "Deployed") return "Return";
+    if (this.kindOf(r) === "veh") return "Book inspection";
+    if (this.kindOf(r) === "kit") return "Send for service";
+    return "Book calibration";
+  }
+
+  renderVals() {
+    const s = this.state;
+    const accent = this.props.accent || "#0F5F55";
+    const cat = s.cat ? CATS.find((c) => c.k === s.cat) : null;
+
+    const inCat = DATA.filter((r) => cat && r.id.split("-")[0] === cat.k);
+    const pool = inCat.filter((r) => s.scope === "all" ? true : s.scope === "mine" ? r.mine : r.office === "Ottawa");
+    const groups = GROUPS.map((g) => {
+      const items = pool.filter(g.match);
+      return { label:g.label, count:items.length, items: items.map(this.decorate) };
+    }).filter((g) => g.count > 0);
+
+    const sheet = DATA.find((r) => r.id === s.sheet) || null;
+    const sp = sheet ? PILLS[sheet.status] : PILLS.Deployed;
+
+    const calDue = DATA.filter((r) => this.kindOf(r) === "cal" && r.cal !== null && r.cal <= 30);
+    const inspDue = DATA.filter((r) => this.kindOf(r) === "veh" && r.insp <= 30);
+    const svcDue = DATA.filter((r) => this.kindOf(r) === "kit" && r.condition !== "Good");
+    const overdueCount = calDue.filter((r) => r.cal < 0).length + inspDue.filter((r) => r.insp < 0).length;
+    const dueSoon = calDue.filter((r) => r.cal >= 0).length + inspDue.filter((r) => r.insp >= 0).length + svcDue.length;
+
+    const dueRow = (r, days, kindLabel) => {
+      const st = this.dueStyle(days);
+      return { id:r.id, model:r.model, dueText: this.due(days, "cal"), dueFg:st.fg, dueW:st.w, dueKind:kindLabel, open: () => this.open(r.id) };
+    };
+    const dueGroups = [
+      { label:"CALIBRATION", count:calDue.length, items: calDue.slice().sort((a, b) => a.cal - b.cal).map((r) => dueRow(r, r.cal, "Calibration")) },
+      { label:"VEHICLE INSPECTIONS", count:inspDue.length, items: inspDue.slice().sort((a, b) => a.insp - b.insp).map((r) => dueRow(r, r.insp, "Safety inspection")) },
+      { label:"SERVICE & REPAIR", count:svcDue.length, items: svcDue.map((r) => ({
+          id:r.id, model:r.model, dueText:r.condition, dueFg: COND[r.condition], dueW:500, dueKind:"Last service " + r.service, open: () => this.open(r.id),
+        })) },
+    ].filter((g) => g.count > 0);
+
+    const mineCount = DATA.filter((r) => r.mine).length;
+    const fleet = CATS.reduce((n, c) => n + c.count, 0);
+    const inList = s.tab === "assets" && !!cat;
+
+    const title = s.tab === "home" ? "Good morning, Marc"
+      : s.tab === "assets" ? (cat ? cat.name : "Assets")
+      : s.tab === "cal" ? "Due soon" : "More";
+    const subtitle = s.tab === "home" ? mineCount + " assets in your custody · Ottawa"
+      : s.tab === "assets" ? (cat ? pool.length + " shown of " + cat.count : fleet.toLocaleString("en-CA") + " assets · 8 categories")
+      : s.tab === "cal" ? "Calibration, inspections and service"
+      : "Sites, reference data and settings";
+
+    return {
+      title, subtitle,
+      showBack: inList, showLogo: !inList,
+      goBack: this.goBack,
+      goAssets: () => this.setState({ tab:"assets", cat:null }),
+      isHome: s.tab === "home",
+      isCatGrid: s.tab === "assets" && !cat,
+      isCatList: inList,
+      isCal: s.tab === "cal",
+      isMore: s.tab === "more",
+      activity: ACTIVITY.map((a) => {
+        const ic = AICON[a.kind];
+        return { verb:a.verb, id:a.id, detail:a.detail, when:a.when, ibg:ic.bg, ifg:ic.fg, d:ic.d, open: () => this.open(a.id) };
+      }),
+      cats: CATS.map((c) => ({ name:c.name, d:c.d, count: c.count.toLocaleString("en-CA"), open: () => this.openCat(c.k) })),
+      scopes: [{ k:"mine", l:"Mine" }, { k:"office", l:"Ottawa" }, { k:"all", l:"All" }].map((x) => ({
+        label:x.l, pick: () => this.setScope(x.k),
+        bg: s.scope === x.k ? "#FFFFFF" : "transparent",
+        fg: s.scope === x.k ? "#1C1917" : "#78716C",
+        w: s.scope === x.k ? 600 : 500,
+        sh: s.scope === x.k ? "0 1px 2px rgba(28,25,23,.08)" : "none",
+      })),
+      groups, listEmpty: groups.length === 0,
+      scopeAll: () => this.setScope("all"),
+      dueGroups, dueSoon, overdueCount,
+      moreItems: [
+        { label:"Sites", meta:"4 active" },
+        { label:"Reservations", meta:"2 upcoming" },
+        { label:"Queued actions", meta:"0" },
+        { label:"Equipment models", meta:"148" },
+        { label:"Projects", meta:"36" },
+        { label:"People", meta:"212" },
+        { label:"Settings", meta:"" },
+      ],
+      tabs: [
+        { k:"home", label:"Home", d:"M2.6 13.4V6.2L8 2.4l5.4 3.8v7.2zM6.4 13.4V9h3.2v4.4" },
+        { k:"assets", label:"Assets", d:"M8 1.8 14 5v6l-6 3.2L2 11V5zM2 5l6 3.2L14 5M8 8.2v6" },
+        { k:"scan", label:"Scan", d:"M2.6 5.6V3.4a.8.8 0 0 1 .8-.8h2.2M13.4 5.6V3.4a.8.8 0 0 0-.8-.8h-2.2M2.6 10.4v2.2a.8.8 0 0 0 .8.8h2.2M13.4 10.4v2.2a.8.8 0 0 1-.8.8h-2.2M4 8h8" },
+        { k:"cal", label:"Due soon", d:"M8 1.9a6.1 6.1 0 1 1 0 12.2A6.1 6.1 0 0 1 8 1.9zM8 4.4V8l2.6 1.7" },
+        { k:"more", label:"More", d:"M2.4 4.6h11.2M2.4 8h11.2M2.4 11.4h11.2" },
+      ].map((t) => ({
+        label:t.label, d:t.d, pick: () => this.setTab(t.k),
+        fg: s.tab === t.k ? accent : "#78716C",
+        w: s.tab === t.k ? 600 : 500,
+      })),
+      sheetOpen: !!sheet,
+      closeSheet: this.closeSheet,
+      sheetId: sheet ? sheet.id : "",
+      sheetModel: sheet ? sheet.model : "",
+      sheetStatus: sheet ? sheet.status : "",
+      sheetFields: sheet ? this.sheetFieldsFor(sheet) : [],
+      sheetPbg: sp.bg, sheetPfg: sp.fg, sheetPbd: sp.bd,
+      sheetPrimary: this.primaryFor(sheet),
+      sheetSecondary: sheet && this.kindOf(sheet) === "veh" ? "Log km" : "Transfer",
+    };
+  }
+}
+
+</script>
+</body>
+</html>

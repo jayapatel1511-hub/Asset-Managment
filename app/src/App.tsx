@@ -8,6 +8,7 @@ import { DatasetBanner } from "./components/DatasetBanner";
 // build-time gate keeps them out of a release bundle entirely. See src/devStandins.tsx.
 import { DevRoleSwitcher } from "./devStandins";
 import { t } from "./i18n";
+import { FieldHomePage } from "./features/home/FieldHomePage";
 import { SearchPage } from "./features/search/SearchPage";
 import { AssetDetailPage } from "./features/asset/AssetDetailPage";
 import { CheckoutPage } from "./features/checkout/CheckoutPage";
@@ -71,7 +72,11 @@ export default function App() {
 
           <main style={{ flex: 1, overflowY: "auto" }}>
             <Routes>
-              <Route path="/" element={<SearchPage />} />
+              {/* D2 (2026-09-03): the Field home is no longer search. Search keeps its own route
+                  — it is still the fastest path when a technician knows the tag — but it is now
+                  one action reachable from the home rather than the thing the app opens on. */}
+              <Route path="/" element={<FieldHomePage />} />
+              <Route path="/search" element={<SearchPage />} />
               <Route path="/asset/:assetId" element={<AssetDetailPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/return" element={<ReturnPage />} />

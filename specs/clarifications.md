@@ -2,11 +2,10 @@
 
 **Created**: 2026-09-02
 **Owner**: Jay Patel (System Owner)
-**Status** (refreshed 2026-09-02 after the spec review): 6 resolved (Q1, Q2, Q3, Q5, Q7, Q13); Q4
-done as data work and awaiting Jay's read-through; 4 proceeded on under their recorded recommendation
-and needing confirmation (Q6, Q8, reminder cadence, inactive-project rule); open with nothing built on
-them yet (Q9, Q10, Q11, Q12); and five added 2026-09-02 (Q14–Q18). **Nothing here is on the build's
-critical path any more; Q4's sign-off and the conflict-report sign-off are on the production load's.**
+**Status** (refreshed 2026-09-03): Resolved include Q1–Q3, Q5, Q7–Q9, Q13. Q4 done as data work
+awaiting Jay's read-through. Still needing confirmation: Q6, reminder cadence, inactive-project rule.
+Open: Q10–Q12, Q14–Q16, Q18. Q17 closed by Power Platform parking. **R1–R4 readiness blockers are
+closed; Q4/conflict-report sign-offs remain on the production load path.**
 
 Per the constitution's Development Workflow, a `plan.md` is not written for a feature while a blocking
 `[NEEDS CLARIFICATION]` marker in its spec is open. **That gate was waived once**, on 2026-09-02, by
@@ -227,9 +226,11 @@ the highest-frequency screen will be filled with whatever dismisses the keyboard
 worse than an honest blank.
 
 **Proceeded on** (2026-09-02, `docs/08-decisions.md`): optional, prefilled at +14 days, editable and
-clearable — the recommendation exactly. Needs Jay's confirmation.
+clearable — the recommendation exactly.
 
-**Blocks**: 003 (CHK002) — confirmation only
+**Confirmed** (2026-09-03, Jay — R4 readiness update): same rule stands for production.
+
+**Blocks**: none — confirmation closed.
 
 ---
 
@@ -243,7 +244,10 @@ reconstruction that acceptance question 7 depends on.
 transaction that would land before an existing transaction for the same asset. The refusal message
 should name the conflicting transaction so the administrator can record a compensating entry instead.
 
-**Blocks**: 003 (CHK003)
+**Decided** (2026-09-03, Jay — R4): recommendation adopted. `recorded_at` = server receive time;
+`effective_at` may be backdated under the rules above.
+
+**Blocks**: none — closed.
 
 ---
 
@@ -388,8 +392,9 @@ to do with the equipment.
 | Still needed | Gates |
 |---|---|
 | Q4 read-through, `02_conflicts.md` sign-off | The production load (feature 002 FR-026) |
-| Q6, Q8, inactive-project rule, reminder cadence | Confirming — or reversing — what the build proceeded on |
-| Q9 | Backdating in feature 003; nothing built depends on it yet |
+| Q6, reminder cadence, inactive-project rule | Confirming — or reversing — what the build proceeded on |
+| ~~Q8~~ / ~~Q9~~ | **Closed 2026-09-03** (R4) |
+| Q10–Q12, Q14–Q16, Q18 | Still open; not on five-asset race critical path |
 | Q10, Q11, Q12 | Phase 2/3 scope; Q11 also decides Power BI reader licensing |
 | Q14 | 007 US5, the Dev load |
 | Q15, Q16 | 007 generator inputs — proceeded on the recommendation |

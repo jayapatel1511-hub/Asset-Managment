@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Englobe AMS">
+  <!-- Englobe AMS app mark (WS-W6). Deliberately geometric: at 48 px on a phone home screen a
+       wordmark is unreadable, and a technician picks the app out by silhouette and colour.
+       #0f6cbd is @fluentui/tokens webLightTheme colorBrandBackground — the same brand the running
+       app paints, so the installed icon and the app shell are visibly one product.
+       The glyph sits inside the central 60% so the same artwork survives Android's maskable crop
+       (the PNGs in this directory are rasterised from this geometry; see manifest.webmanifest). -->
+  <title>Englobe AMS</title>
+  <rect width="512" height="512" rx="92" fill="#0f6cbd"/>
+  <g fill="#ffffff">
+    <rect x="128.0" y="122.9" width="63.9" height="266.2"/>
+    <rect x="128.0" y="122.9" width="266.2" height="50.6"/>
+    <rect x="128.0" y="232.1" width="213.0" height="47.9"/>
+    <rect x="128.0" y="338.5" width="266.2" height="50.6"/>
+  </g>
+</svg>

@@ -1,0 +1,31 @@
+{
+  "name": "englobe-ams",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Englobe AMS monorepo \u2014 React/Vite PWA (app/), TypeScript API (server/), shared wire contract (packages/contracts/), versioned migrations (db/).",
+  "//": "Deliberately NOT an npm workspaces root. app/ and server/ each keep their own package-lock.json and their own node_modules, which is what the two CI workflows and every existing command already assume; converting them would regenerate three lockfiles to gain a name-based import that a relative path already provides. packages/contracts/ is type-only and has no runtime dependency, so both sides reach it by path. Revisit when a package here needs real dependencies of its own.",
+  "scripts": {
+    "dev": "npm run dev:api & npm run dev:app",
+    "dev:api": "npm --prefix server run start",
+    "dev:app": "npm --prefix app run dev:localapi",
+    "dev:mock": "npm --prefix app run dev",
+    "typecheck": "npm run typecheck:contracts && npm --prefix server run typecheck && npm --prefix app run typecheck",
+    "typecheck:contracts": "npm --prefix server exec -- tsc -p packages/contracts/tsconfig.json --noEmit",
+    "test": "npm --prefix server run test && npm --prefix app run test",
+    "test:integration": "npm --prefix server run test:postgres",
+    "test:both": "npm --prefix server run test:both",
+    "build": "npm --prefix app run build",
+    "build:release": "npm --prefix app run build:release",
+    "verify": "scripts/verify.sh",
+    "verify:fast": "scripts/verify.sh --fast",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d --wait",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:check": "npm --prefix server run db:check"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

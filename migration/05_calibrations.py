@@ -16,9 +16,16 @@ Writes:
 from __future__ import annotations
 
 import json
+import uuid
 from pathlib import Path
 
 import pandas as pd
+
+def stable_guid(namespace: str, key: str) -> str:
+    """Deterministic pseudo-GUID so re-running the migration is idempotent (FR-025). Identical
+    derivation to 04_load.py's, so the two scripts cannot drift apart."""
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"ams://{namespace}/{key}"))
+
 
 ROOT = Path(__file__).resolve().parent.parent
 CAL_CSV = ROOT / "data" / "source" / "calibration_history_2026-09-02.corrected.csv"
@@ -134,6 +141,14 @@ def main() -> int:
                                   "source_row": row["source_row"]})
 
         records.append({
+            # FR-025 idempotency: a calibration record needs a STABLE id, derived from the source
+            # row it came from, so re-running this script or reloading the staged data produces
+            # the same identity every time. Without it, `server/src/db/seed.ts` fell back to
+            # randomUUID() and every reload minted new ids for these 164 records — which made the
+            # real dataset the one thing in the pipeline that was not reproducible, and orphaned
+            # anything referencing a record by id. Same derivation as 04_load.py's stable_guid;
+            # source_row is unique across all 164 rows.
+            "id": stable_guid("calibration", str(row["source_row"])),
             "asset": asset["assetid"],
             "calibrationdate": cdate,
             "nextduedate": ndate,
