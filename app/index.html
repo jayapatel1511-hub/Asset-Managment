@@ -2,9 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <title>Englobe AMS</title>
+
+    <!--
+      WS-W6 — installable PWA head (see app/public/manifest.webmanifest for the manifest itself and
+      app/src/sw.ts for the worker).
+
+      `viewport-fit=cover` was added alongside the manifest: in `display: standalone` the app owns
+      the whole screen including the notch and the home indicator, which a browser tab never does.
+      App.tsx's 480 px-max column and the 390 px design target are unchanged — this only stops iOS
+      letterboxing the shell in white.
+
+      The two theme-color entries are the Fluent tokens App.tsx already paints
+      (@fluentui/tokens web light/dark colorNeutralBackground1). useSystemTheme.ts follows the OS,
+      so the installed title bar must follow it too or the seam is visible on every dark phone.
+
+      iOS still does not read `theme_color`, `background_color` or `icons` from a manifest for the
+      Add-to-Home-Screen path, hence the three apple-* tags. `apple-touch-icon` must be an opaque
+      square PNG — iOS applies its own mask and renders transparency as black.
+    -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#292929" />
+    <meta name="application-name" content="Englobe AMS" />
+    <meta name="description" content="Instrumentation asset tracking for Englobe Ontario." />
+
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Englobe AMS" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!--
+      CLAUDE.md rule 10/11: an installed app is a long-lived origin, so anything the platform can
+      be told to keep out of a cache, tell it. `referrer` never leaks an asset ID in a Referer
+      header to a third party; `format-detection` stops iOS turning a SIM phone number into a
+      tel: link in the Office Admin views.
+    -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="format-detection" content="telephone=no" />
   </head>
   <body>
     <div id="root"></div>

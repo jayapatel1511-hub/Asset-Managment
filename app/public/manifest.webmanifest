@@ -1,0 +1,51 @@
+{
+  "$comment": [
+    "Englobe AMS web app manifest — WS-W6 'web manifest'.",
+    "",
+    "WHY THESE VALUES:",
+    "  display/standalone + orientation/portrait-primary — the Field surface is a deliberate phone",
+    "  slice (REMAINING-WORK.md 'Three surfaces': find, check out, return, transfer, report fault,",
+    "  deploy/recover, reserve). A technician holding a logger in one hand gets a full-screen,",
+    "  fixed-orientation app, not a browser tab that rotates mid-scan.",
+    "",
+    "  theme_color #0f6cbd is @fluentui/tokens webLightTheme colorBrandBackground and",
+    "  background_color #ffffff is its colorNeutralBackground1, so the splash screen and the",
+    "  installed title bar are the same colours App.tsx already paints. index.html carries the",
+    "  matching per-scheme <meta name=theme-color> pair for the dark theme.",
+    "",
+    "  start_url/scope are '.' and './' — relative, so an install works unchanged if the app is",
+    "  ever hosted under a path prefix. App.tsx already derives the router basename from Vite's",
+    "  BASE_URL for the same reason; hard-coding '/' here would break that.",
+    "",
+    "  Icons are real files in ./icons/ (see icon-192.png, icon-512.png, maskable-512.png).",
+    "  A manifest that references an icon that does not exist fails installability silently.",
+    "",
+    "NOT HERE ON PURPOSE: no share_target, no protocol_handlers, no file_handlers. Every one of",
+    "those is an inbound write surface, and CLAUDE.md rule 1 gives the browser no authority to",
+    "originate a business event from an OS handoff we have not designed a command for."
+  ],
+  "id": "englobe-ams",
+  "name": "Englobe AMS — Asset Management",
+  "short_name": "Englobe AMS",
+  "description": "Instrumentation asset tracking for Englobe Ontario: find, check out, return, transfer and report on field equipment.",
+  "lang": "en-CA",
+  "dir": "ltr",
+  "start_url": ".",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "theme_color": "#0f6cbd",
+  "background_color": "#ffffff",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Search assets", "short_name": "Search", "url": "./", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Needs attention", "short_name": "Pending", "url": "./needs-attention", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ]
+}
