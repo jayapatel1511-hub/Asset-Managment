@@ -1,5 +1,10 @@
 # Implementation Plan: Release & Operations
 
+> **PRE-PIVOT EXECUTION RECORD — DO NOT IMPLEMENT ITS POWER APPS STEPS.** Release privacy,
+> verification, rollback and operability outcomes remain; Feature 010 owns the Node.js/TypeScript web
+> deployment and Feature 009 owns evidence. D18 governs workspace bundles, protected responses and
+> cache/revocation checks.
+
 **Branch**: `008-release-and-operations` | **Date**: 2026-09-02 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/008-release-and-operations/spec.md`;

@@ -5,6 +5,10 @@ description: "Task list for feature 008 — Release & Operations"
 
 # Tasks: Release & Operations
 
+> **PRE-PIVOT TASK RECORD.** Do not execute `pa app`, Code App, Dataverse or Power Platform tasks.
+> Re-plan the still-valid release-safety, verification, rollback and operations outcomes under
+> features 009/010 and D18 before implementation.
+
 **Input**: Design documents from `/specs/008-release-and-operations/`
 
 **Prerequisites**: [spec.md](spec.md); `docs/10-integration.md` § Hosting (the verified command sequence and limitations)
@@ -76,8 +80,8 @@ recoverable; this is not.
 **Independent Test**: Run the list against a published release; break one thing deliberately and
 confirm the list catches it.
 
-- [ ] T015 [P] [US2] `docs/11-runbook.md` § Verification — the item-by-item list: identity resolves to a real account with a real role and no role picker; search, checkout, return, calibration due against real data; a deep link cold-loads; 390 px layout; header suppressed with `?hideNavBar=true` (FR-013)
-- [ ] T016 [US2] **Resolve the routing question** (FR-010). The app uses `BrowserRouter` with absolute paths and is served from `/play/e/{env}/a/{app}`. Determine, against `pa app run`, whether a `basename` or `HashRouter` is required, then change `App.tsx` accordingly. **Coordinate — `App.tsx` is a shared file** (`AGENT-BRIEF.md` §5)
+- [ ] T015 [P] [US2] `docs/11-runbook.md` § Verification — identity resolves without a role picker; eligible Work/Reports/Administration workspace composition is exact; Field search/checkout/return and personal readiness behave against real data; Administration calibration is tested separately; forbidden deep links fetch zero protected data; exact 320/390 Field and responsive desktop cases pass (FR-013/D18)
+- [ ] T016 [SUPERSEDED — no active Power Apps work] The `/play/e/{env}/a/{app}` routing question was retired by the platform pivot. Feature 010 owns web deployment base-path and cold-deep-link behavior; it must be verified without changing shared code from this historical task.
 - [ ] T017 [P] [US2] Record in the runbook that verification runs against development first, and that a failed item blocks promotion (FR-014, FR-015)
 
 **Checkpoint**: A release can be trusted before it is promoted.

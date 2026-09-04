@@ -4,16 +4,25 @@
 
 **Created**: 2026-09-02
 
-**Status**: Draft — built 2026-09-02 (WS-B): domain modules, in-app reports surface, PBIP text model; the Power BI publish needs the tenant. Q11 open. FR-028 clarified 2026-09-02 and the built guard recorded as a defect against it — see `docs/08-decisions.md`
+**Status**: Draft — built 2026-09-02 (WS-B): domain modules and an in-app reports surface. The PBIP
+text model is a historical/optional artifact, not a completion gate. Q11 report/evidence recipient,
+purpose, capability and projection mapping remains open; D18 conformance is not proved. FR-028 was
+clarified 2026-09-02 and the built guard recorded as a defect against it — see `docs/08-decisions.md`.
+
+**Access amendment (D18, 2026-09-04):** [the need-to-know contract](../../docs/25-need-to-know-access-ux.md)
+separates general reporting from governed evidence. Report Reader is not an operational or admin
+role. General reports omit certificate links, costs, performer identity, free-text notes, and secured
+attributes. Evidence packs and evidential timelines require a separate approved purpose/capability.
 
 **Input**: `IM30 - Asset Managment via M365.docx` § Reporting (the five questions), § Future Enhancements (dashboards and analytics); `Asset AMS - SharePoint.xlsx` sheet *Start Here* (Metrics & Reporting, Equipment Dashboards, Upcoming Calibrations wishlist); `docs/00-brief.md` (the seven acceptance questions), `docs/06-delivery-plan.md` Step 6
 
 ## User Scenarios & Testing *(mandatory)*
 
-The app serves people who touch equipment. This feature serves people who do not: project managers
-deciding whether to rent or reallocate, a regional manager asking why three offices each hold spare
-loggers, an admin preparing a client's compliance evidence. They will not have an app licence and
-should not need one.
+Work serves people who touch equipment. The separate Reports workspace serves people who do not:
+project managers deciding whether to rent or reallocate, a regional manager asking why three offices
+each hold spare loggers, and an authorized evidence user preparing a client's compliance pack. They
+use the same web product without Work or Administration access and require no Power Apps runtime
+licence.
 
 It is also the only place where all seven acceptance questions are answered together, including
 question 7 — the historical one that the app answers per asset but nobody can answer in aggregate.
@@ -21,7 +30,7 @@ question 7 — the historical one that the app answers per asset but nobody can 
 The programme's definition of done is that these seven questions are answered live, from production
 data, in a review meeting. This feature is where that happens.
 
-### User Story 1 - Answer the fleet questions without an app licence (Priority: P1)
+### User Story 1 - Answer the fleet questions in the read-only Reports workspace (Priority: P1)
 
 A manager opens one report and can say what the company owns, where it is, who has it, and what is free
 at each office — broken down by office, asset group and equipment type, without asking anyone.
@@ -30,8 +39,9 @@ at each office — broken down by office, asset group and equipment type, withou
 users by headcount, and requires no new data — only what 001, 002 and 003 already hold. It is the
 cheapest large win in the programme.
 
-**Independent Test**: Hand the report to a manager who has never seen the system, ask them the five
-questions, and time them. No app access, no training.
+**Independent Test**: Hand the Reports workspace to a manager who has never seen the system, ask them
+the five questions, and time them. They receive no Work or Administration access and need no Power
+Apps runtime licence or training.
 
 **Acceptance Scenarios**:
 
@@ -46,9 +56,11 @@ questions, and time them. No app access, no training.
    missing assets.
 5. **Given** the report, **When** the manager filters to a project, **Then** every asset currently
    assigned to it is listed with its custodian and location.
-6. **Given** a manager without an app licence, **When** they open the report, **Then** it works.
+6. **Given** a manager without a Power Apps runtime licence, **When** they open the web Reports
+   workspace, **Then** it works without granting Work or Administration access.
 7. **Given** an asset carrying secured attributes, **When** a manager views the report, **Then** ICCID,
-   phone number and static IP are not shown unless their role permits it.
+   phone number and static IP are absent regardless of the actor's other roles; general Reports never
+   request or receive those fields.
 8. **Given** the report, **When** it is opened, **Then** the age of the data is stated, so nobody acts
    on a stale figure believing it is live.
 
@@ -56,8 +68,9 @@ questions, and time them. No app access, no training.
 
 ### User Story 2 - Prove calibration compliance (Priority: P2)
 
-An admin produces, for a client or an auditor, the calibration status of every instrument used on a
-project: what was in calibration, what was overdue, and the certificate for each.
+An authorized admin produces, for a client or an auditor, a governed calibration-compliance pack for
+the instruments used on a project: what was in calibration, what was overdue, and only the evidence
+approved for that recipient and purpose.
 
 **Why this priority**: This is the report with an external consequence — it is client-facing and
 occasionally dispute-facing. It ranks below US1 because feature 004 already answers the operational
@@ -74,7 +87,10 @@ would send it to a client confirm it is sufficient.
    due soon, overdue and unknown are shown by office.
 3. **Given** an overdue asset, **When** it appears, **Then** its days overdue, custodian and location
    are shown so it can be chased.
-4. **Given** an asset with a certificate, **When** it appears, **Then** the certificate is reachable.
+4. **Given** an asset with a certificate, **When** it appears in the general compliance view, **Then**
+   no certificate link is returned; **when** an authorized user creates/opens a governed compliance
+   pack with `maintenance.evidence.read`, matching scope, and document ACL, **then** the approved
+   certificate is reachable through audited private access.
 5. **Given** assets whose calibration status is unknown, **When** the view is opened, **Then** they are
    counted explicitly rather than omitted.
 
@@ -82,8 +98,10 @@ would send it to a client confirm it is sufficient.
 
 ### User Story 3 - Reconstruct where an asset has been (Priority: P3)
 
-Someone needs an asset's full timeline — every movement, custodian, project and site, with dates — as a
-document they can attach to a claim or an email.
+An authorized investigator needs an asset's evidential timeline — every relevant movement, custodian,
+project and site, with dates — as a governed document for an approved claim/audit purpose. A general
+Report Reader receives a minimized timeline sufficient for the programme question, not automatically
+the performer identities and free-text notes.
 
 **Why this priority**: Acceptance question 7. Low frequency, high stakes. P3 because the app already
 answers it per asset for people who have access, and this adds aggregate access and exportability.
@@ -93,14 +111,18 @@ someone reconstruct its year from the document alone.
 
 **Acceptance Scenarios**:
 
-1. **Given** an asset, **When** its timeline is opened, **Then** every transaction is listed
-   chronologically with date, action, from, to, performer and notes.
+1. **Given** an asset, **When** its general report timeline is opened, **Then** every in-scope
+   transaction is listed chronologically with date, action, from, and to, while performer identity and
+   free-text notes are omitted; an approved evidential projection includes only those additional
+   fields required by its governed purpose.
 2. **Given** an asset that has been part of a station, **When** its timeline is read, **Then** the
    attachments and detachments appear with the other assets and roles named.
 3. **Given** a date range, **When** the timeline is filtered to it, **Then** only events within it are
    shown, with the asset's state at the range's start stated.
-4. **Given** a timeline, **When** the user exports it, **Then** it is a document they can send.
-5. **Given** a retired asset, **When** its timeline is requested, **Then** it is fully available.
+4. **Given** a timeline, **When** an authorized user exports it for an approved recipient, **Then** a
+   governed purpose/template/capability creates a private expiring document with recorded scope and audit.
+5. **Given** a retired asset, **When** its timeline is requested, **Then** the purpose-approved
+   historical projection remains available; retirement does not grant extra fields.
 
 ---
 
@@ -156,14 +178,15 @@ utilised equipment types per office, and check the answer against the technician
 
 **Access and currency**
 
-- **FR-001**: Users MUST be able to read every view in this feature without an application licence.
+- **FR-001**: Authorized recipients MUST be able to read every report view they are entitled to
+  without a Power Apps runtime licence; entitlement to one view does not grant every report/evidence view.
 - **FR-002**: System MUST state the age of the data on every view.
-- **FR-003**: System MUST enforce the same field-level restrictions on secured attributes as the
-  application, so that reporting is not a route around them.
+- **FR-003**: General Reports MUST exclude secured attributes regardless of the actor's other roles;
+  reporting is never a route around the purpose-specific field projection.
 - **FR-004**: System MUST restrict access to the reports to named recipients rather than publishing them
   broadly. [NEEDS CLARIFICATION: Q11 — which managers and project managers need access, and does the
   organisation hold the licences? This determines the distribution mechanism, not just the recipient
-  list]
+  list.]
 
 **Fleet views**
 
@@ -188,18 +211,23 @@ utilised equipment types per office, and check the answer against the technician
   by office.
 - **FR-014**: System MUST report the calibration status of every asset assigned to a given project.
 - **FR-015**: System MUST report days overdue, custodian and location for each overdue asset.
-- **FR-016**: System MUST make a calibration certificate reachable from the calibration view.
+- **FR-016**: The general calibration view MUST NOT return a certificate link or metadata. System
+  MUST make approved evidence reachable only through a governed compliance-pack/evidence purpose by
+  a user with `maintenance.evidence.read`, matching row scope, and document ACL; access is audited.
 - **FR-017**: System MUST count assets of unknown calibration status explicitly rather than omitting
   them.
 
 **Timeline views**
 
-- **FR-018**: System MUST report an asset's complete transaction history chronologically, with date,
-  action, from, to, performer and notes.
+- **FR-018**: System MUST report an asset's in-scope transaction history chronologically, with date,
+  action, from, and to. General Report Reader views omit performer identity and free-text notes. An
+  approved evidential projection may include the minimum additional actor/note fields its purpose
+  requires.
 - **FR-019**: System MUST include attachment and detachment events, naming the other asset and the role.
 - **FR-020**: System MUST support filtering a timeline to a date range and MUST state the asset's state
   at the start of that range.
-- **FR-021**: Users MUST be able to export a timeline as a document.
+- **FR-021**: Users with an approved evidential/export capability MUST be able to create a governed
+  timeline document with purpose, template, recipient, row/field scope, expiry, attribution, and audit.
 - **FR-022**: System MUST report timelines for retired assets.
 
 **Utilisation views**
@@ -254,12 +282,14 @@ with the system it reports on.
   review meeting. This is the programme's definition of done.
 - **SC-003**: Every figure in the report reconciles exactly with the same query run against the
   operational data — zero discrepancies.
-- **SC-004**: Zero managers require an application licence to read any report.
+- **SC-004**: Zero managers require an application licence to read any report they are entitled to.
 - **SC-005**: Zero secured attributes are visible to a recipient not permitted to see them, verified by
   opening the report as each role.
-- **SC-006**: A calibration compliance pack for a completed project is accepted as sufficient by the
-  admin who would send it to a client, with zero manual supplementation.
-- **SC-007**: An asset timeline covering a year is produced and exported in under 2 minutes.
+- **SC-006**: A governed calibration compliance pack for a completed project is accepted as
+  sufficient by the authorized admin who would send it to a client, with zero manual supplementation
+  and no fields outside the approved template/purpose.
+- **SC-007**: An authorized evidential asset timeline covering a year is produced and exported in
+  under 2 minutes; the general Report Reader projection contains no performer identity or free-text notes.
 - **SC-008**: Data currency is stated on 100% of views, and no view presents a figure whose age is
   unstated.
 - **SC-009**: Zero utilisation figures are presented that span the migration boundary or draw on less

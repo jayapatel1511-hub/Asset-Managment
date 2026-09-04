@@ -5,6 +5,11 @@
 **Depends on**: **Blocked on 010 WS-W3/W4 foundations** for write apply; Blob (WS-W7) for artifacts  
 **Rule**: Dry-run writes **no** business changes. Apply has row-level outcomes. Idempotent. Declares reversibility class.
 
+**D18 boundary:** Data-job routes are Administration-only and online-only. Read/request/apply require
+`data.job.read`, `data.job.request`, or `data.job.apply` plus job-type purpose, row/field scope, and
+projection. A worker uses a separate least-privilege service identity. Work/general Reports receive
+no job parameters, items, artifacts, before/after data, requester identities, or internal IDs.
+
 ---
 
 ## Job types
@@ -38,7 +43,8 @@ export type DataJobItemStatus =
 ## Types
 
 ```ts
-export interface DataJob {
+/** Persistence/service shape. Never serialize this whole interface to the browser. */
+export interface InternalDataJob {
   id: string;
   jobType: DataJobType;
   status: string;
@@ -73,7 +79,8 @@ export interface DataJobSummary {
   uncertain: number;
 }
 
-export interface DataJobItem {
+/** Persistence/service shape; browser item projections explicitly allowlist fields. */
+export interface InternalDataJobItem {
   id: string;
   jobId: string;
   itemNumber: number;
@@ -88,7 +95,23 @@ export interface DataJobItem {
   afterData?: unknown;
   appliedAt?: string | null;
 }
+
+export interface AdminDataJobListItem {
+  jobId: string;
+  jobType: DataJobType;
+  status: string;
+  reversibilityClass: ReversibilityClass;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  resultSummary?: DataJobSummary | null;
+  scopeLabel: "Office" | "Organization";
+  dataProjectionId: "admin_datajob_list_v1";
+}
 ```
+
+Job detail/item responses use separate task projections. Raw source/request parameters,
+`beforeData`, `afterData`, hashes, storage paths, requester/approver IDs, and correlation IDs appear
+only when the current investigation purpose explicitly requires each field.
 
 ---
 
@@ -137,7 +160,8 @@ Refuse apply when any of:
 | Irreversible without recovery point | `job.recoveryRequired` |
 | Self-approval on high-impact | `job.selfApprovalForbidden` |
 
-**STOP**: OD-3 thresholds; OD-7 Office Admin bulk scope; OD-9 source-file retention.
+OD-3 thresholds, OD-7 OfficeAdmin bulk scope, and OD-9 source-file retention are decided. Apply must
+enforce them together with current D18 capability and projection policy.
 
 ---
 

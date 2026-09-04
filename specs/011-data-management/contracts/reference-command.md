@@ -2,8 +2,14 @@
 
 **Feature**: 011 | **Date**: 2026-09-03  
 **Consumers**: reference-data module; Console reference screens  
-**Depends on**: **Blocked on 010 WS-W3/W4 foundations** for writes; OD-1 Data Steward shape; R5 admin scope  
+**Depends on**: **Blocked on 010 WS-W3/W4 foundations** for writes; named data owners; decided OD-2
+Data Steward bundle and R5 scope ceiling
 **Rule**: Create / edit / deactivate / reactivate — **never ordinary hard-delete** (FR-018–FR-024)
+
+**D18 boundary:** Administration → Data governance only. Reads require `reference.read`; commands
+require `reference.manage` plus the exact domain/action, purpose, row scope, and field projection.
+OfficeAdmin/SystemOwner role alone is insufficient; Work and general Reports receive no reference
+management route or payload.
 
 ---
 
@@ -122,7 +128,9 @@ High-impact reclassification / re-parent / merge: **preview required before appl
 | Merge | Permanent redirect; impact preview; audit; quality re-eval |
 | ExternalAuthoritative | Local edit refused or override command with reconciliation consequence |
 
-Office Admin: only domains/offices explicitly permitted (**STOP**: OD-7 / OD-1).
+OD-7 is decided: OfficeAdmin may act only on permitted asset data in assigned offices; curated
+global references require SystemOwner scope **and** the exact capability. Named domain ownership
+remains an approval gate. Global scope alone never authorizes a reference command.
 
 ---
 
@@ -136,7 +144,7 @@ Office Admin: only domains/offices explicitly permitted (**STOP**: OD-7 / OD-1).
 | `reference.inactiveNotSelectable` | Client tried to assign deactivated ref on new op |
 | `reference.externalAuthoritative` | Silent local edit |
 | `reference.impactPreviewRequired` | |
-| `reference.forbidden` | Role/office |
+| `reference.forbidden` | Workspace, purpose, capability, domain, row scope, or field policy |
 | `reference.selfApprovalForbidden` | |
 | `BlockedOn010Foundations` | Documented dependency marker until W3/W4 ready |
 

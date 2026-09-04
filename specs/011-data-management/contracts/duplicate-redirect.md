@@ -5,6 +5,11 @@
 **Depends on**: **Blocked on 010 WS-W3/W4 foundations** for resolution apply  
 **Rule**: Detection produces **candidates only**. **Never auto-merge on serial** (or model/tag similarity alone). Preserve both UUIDs and histories; permanent redirect.
 
+**D18 boundary:** Administration → Data governance only. Candidate review and resolution require
+`duplicate.review` / `duplicate.resolve`, approved purpose, row scope, and a versioned comparison
+projection. Work/general Reports receive no candidates, evidence, histories, calibration/document
+counts, conflicts, or redirect internals.
+
 ---
 
 ## Resolution outcomes
@@ -23,7 +28,8 @@ export type DuplicateResolutionOutcome =
 ## Types
 
 ```ts
-export interface DuplicateCandidate {
+/** Persistence/service shape. Never serialize this whole interface by default. */
+export interface InternalDuplicateCandidate {
   id: string;
   entityType: "Asset" | "EquipmentModel" | "Location" | "Project";
   leftId: string;
@@ -39,16 +45,17 @@ export interface DuplicateCandidate {
 }
 
 export interface DuplicateReviewBundle {
-  candidate: DuplicateCandidate;
-  left: DuplicateRecordSnapshot;
-  right: DuplicateRecordSnapshot;
+  candidate: InternalDuplicateCandidate;
+  left: InternalDuplicateRecordSnapshot;
+  right: InternalDuplicateRecordSnapshot;
   conflicts: string[];
   survivorImpactIfLeft: string[];
   survivorImpactIfRight: string[];
   autoMergeEligible: false; // always false — structural
 }
 
-export interface DuplicateRecordSnapshot {
+/** Persistence/service shape; contains fields from several separately protected domains. */
+export interface InternalDuplicateRecordSnapshot {
   id: string;
   canonicalKey?: string | null;
   aliases: string[];
@@ -72,6 +79,26 @@ export interface DuplicateRecordSnapshot {
     relationships: number;
     installations: number;
   };
+}
+
+export interface AdminDuplicateReviewResponse {
+  candidateId: string;
+  scopeLabel: "Office" | "Organization";
+  left: {
+    recordRef: string;
+    canonicalKey?: string | null;
+    friendlyLabel: string;
+    model?: string | null;
+    serial?: string | null;
+    currentConflictFacts: string[];
+  };
+  right: AdminDuplicateReviewResponse["left"];
+  conflicts: string[];
+  survivorImpactIfLeft: string[];
+  survivorImpactIfRight: string[];
+  availableEvidenceSections: Array<"History" | "Calibration" | "Documents" | "Lineage">;
+  autoMergeEligible: false;
+  dataProjectionId: "admin_duplicate_review_v1";
 }
 
 export interface ResolveDuplicateInput {
@@ -114,6 +141,10 @@ GET  /api/data-management/redirects/{entityType}/{fromId}
 ```
 
 Shared serial between logger and geophone → candidate only; `autoMergeEligible` is always `false`.
+The base review response never includes raw history, calibration currency/records, document metadata,
+custodian user IDs, project/location internal IDs, or lineage blobs. `availableEvidenceSections`
+advertises only sections the actor may request; opening one requires its separate history,
+maintenance/evidence, or lineage purpose/capability and returns another projection.
 
 ---
 
@@ -132,7 +163,8 @@ On approved `MergeRecords`:
 9. Record requester, approver, evidence, impact.
 10. **Do not rewrite** immutable transaction lines.
 
-**STOP**: OD-11 — conflicting post-go-live operational histories; until decided, merge with unresolved incompatible state is refused (`duplicate.incompatibleState`).
+OD-11 is decided: merge with unresolved incompatible state remains refused
+(`duplicate.incompatibleState`).
 
 Concurrency: two stewards resolving the same candidate — row_version / job lock; one winner.
 

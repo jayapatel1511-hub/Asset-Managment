@@ -8,11 +8,18 @@
 
 **Input**: Microsoft Learn `code-apps/overview`, `code-apps/how-to/create-an-app-from-scratch`, `code-apps/system-limits-configuration` (all verified 2026-08-19); `docs/10-integration.md`; `docs/06-delivery-plan.md` Step 0 and § "Definition of done"; `CLAUDE.md` ALM row; constitution Principle VI (maintainable by a successor) and Principle VII (no credentials, minimum sensitive data)
 
+> **Platform pivot amendment (2026-09-04):** the release-safety, privacy, operability, rollback and
+> evidence outcomes remain applicable. Power Apps/Dataverse/Power Automate solution promotion,
+> Power Platform admin-centre steps and Code App hosting assumptions are legacy implementation detail.
+> Active delivery and proof are owned by Feature 010's Azure web platform and Feature 009. D18 further
+> requires purpose-sized bundles/responses and forbids privileged data in Field/cache artifacts; see
+> [`docs/25-need-to-know-access-ux.md`](../../docs/25-need-to-know-access-ux.md).
+
 ## User Scenarios & Testing *(mandatory)*
 
 Every other feature in this programme serves a technician or an admin. This one serves the person
-who has to **run** the system — the System Owner today, and the competent Power Platform
-administrator who inherits it and has never met anyone who built it. Principle VI says the system
+who has to **run** the system — the System Owner today, and the competent application/platform
+operator who inherits it and has never met anyone who built it. Principle VI says the system
 must be operable by that person. Until now nothing specified what "operable" means.
 
 It earns a feature rather than a documentation section for two reasons. It has a real user with
@@ -78,13 +85,16 @@ confirm the list catches it.
 
 1. **Given** a published release, **When** the operator opens it, **Then** identity resolves to
    their own account with their real role, without a development role picker.
-2. **Given** a published release, **When** the operator exercises search, checkout, return and the
-   calibration due list against real data, **Then** each behaves as its feature specifies.
+2. **Given** a published release, **When** the operator exercises Field search, checkout, return and
+   personal/assigned readiness against real data, **Then** each behaves as its feature specifies and
+   no fleet maintenance queue is returned. The Administration calibration queue is verified
+   separately with its exact purpose, capability, row scope and projection.
 3. **Given** a published release, **When** the operator navigates to a deep link and reloads the
-   page, **Then** the app resolves it rather than failing — the app runs under a hosted sub-path,
-   and absolute routing is the most likely thing to break on first publish.
-4. **Given** a published release, **When** it is opened on a phone, **Then** the layout is usable at
-   390 px and the platform header can be suppressed.
+   page, **Then** the configured web deployment resolves it, re-evaluates authorization before any
+   protected fetch, and never discloses existence on a forbidden route.
+4. **Given** a published release, **When** it is opened at the canonical responsive/device matrix,
+   **Then** Field is usable at 320 and 390 CSS pixels and Desk/Administration preserve their active
+   workspace through narrow desktop/zoom states without becoming the Field shell.
 5. **Given** a verification run, **When** any item fails, **Then** the release is not promoted
    further until it is fixed or rolled back.
 
@@ -213,12 +223,12 @@ to the operator without anyone reporting them.
   sequence that matches the platform's current supported tooling.
 - **FR-008**: The system MUST record which version is live, and when it was published.
 - **FR-009**: The operator MUST be given the address at which the published app runs.
-- **FR-010**: The published app MUST resolve deep links correctly when served from a hosted
-  sub-path, including on a cold page load.
-- **FR-011**: The published app MUST be usable at 390 px and MUST allow the platform's own header
-  to be suppressed.
-- **FR-012**: The published app MUST obtain identity from the platform, with no separate sign-in and
-  no development role selection.
+- **FR-010**: The published app MUST resolve deep links correctly under its configured web base path,
+  including on a cold page load, and MUST authorize the workspace/route before protected data fetch.
+- **FR-011**: The published app MUST pass the responsive/device matrix in `docs/23` §13, including
+  exact 320/390 CSS-pixel Field cases and narrow/zoomed Desk and Administration cases.
+- **FR-012**: The published app MUST obtain identity through the approved Entra/OIDC BFF boundary,
+  with no production development-role selection or client-asserted authorization.
 
 **Verification**
 
@@ -310,31 +320,24 @@ This feature introduces no stored business entity. Its artefacts are operational
 
 ## Assumptions
 
-- The operator is a competent Power Platform administrator, not a developer. Procedures assume the
-  admin centre and the CLI, not a debugger.
+- The operator is a competent application/platform operator, not necessarily a developer.
+  Procedures use the approved web/Azure release interface and repository runbook, not a debugger.
 - The app is a client. Rolling it back, republishing it or breaking it changes no business data —
   which is what makes US3 cheap and is a direct consequence of Principle I.
 - Publishing is one-way with respect to disclosure. There is no recall for assets already served
   from a public endpoint, which is why FR-001 to FR-004 are build-time refusals rather than review
   steps.
-- The platform's supported tooling changes. The command sequence documented in
-  `docs/10-integration.md` was verified 2026-08-19, and the previously documented commands had
-  already been deprecated — so the procedure must name its verification date and be re-checked at
-  each release.
+- Platform tooling changes, so the active Feature 010 deployment procedure must name its verification
+  date and be re-checked at each release. `docs/10-integration.md` is historical M365 research.
 - Field technicians work off the corporate network routinely. Any location-based restriction is
   therefore a field-usability question before it is a security question.
-- Two prerequisites sit outside this repository and block everything: the environment feature that
-  permits this class of app, and a premium licence for every end user who opens it — not only
-  makers. Both are in `docs/06-delivery-plan.md` Step 0.
-- [NEEDS CLARIFICATION: **Offline.** The platform documentation states nothing either way about
-  offline support for this class of app. Feature 003 US5 queues submissions and replays them, and
-  technicians work in basements, piers and mine access. Whether the app loads at all without
-  connectivity, and whether a service worker is permitted, must be established on the first day of
-  tenant access — before the pilot depends on it]
-- [NEEDS CLARIFICATION: **Mobile player.** The documentation states this class of app is not
-  supported in the Windows client; it says nothing about iOS or Android. The app is designed
-  phone-first at 390 px, and camera scanning depends on the answer. Whether technicians use the
-  mobile app or a mobile browser changes the pilot rollout]
+- External prerequisites remain under R6: Entra registration/assignment, Azure subscription and
+  region, managed identities, networking, secrets, storage, monitoring and recovery ownership.
+- **Offline gate:** only the exact workflows supported by the PWA/device contract may be claimed;
+  physical iOS and Android evidence, restart/reconnect, expiry, conflict and cache-revocation cases
+  are required before pilot acceptance.
+- **Mobile gate:** approved mobile browsers/PWA mode, camera behavior, accessibility and the exact
+  device matrix remain owner decisions plus physical-device evidence; emulation does not close them.
 - [NEEDS CLARIFICATION: **IP and location restriction.** The hosting endpoint cannot restrict by
   IP; conditional access by location is the available control. Whether Englobe requires such a
   restriction, and whether it can accommodate off-network field use, is a security-policy decision]

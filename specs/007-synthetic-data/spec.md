@@ -1,5 +1,10 @@
 # Feature Specification: Synthetic Fleet History
 
+> **PLATFORM/ACCESS AMENDMENT (2026-09-04):** Power Automate, Dataverse and Power BI clauses below
+> describe the pre-pivot delivery path. The active target is the API/PostgreSQL web application with
+> in-app Reports and the D18 workspace/projection boundary. Synthetic data remains structurally
+> forbidden from Production and grants no Field, report or Administration access.
+
 **Feature Branch**: `007-synthetic-data` (directory-selected; set `SPECIFY_FEATURE=007-synthetic-data`)
 
 **Created**: 2026-09-02
@@ -51,35 +56,39 @@ is the pathology this whole system exists to end, and the synthetic history must
 
 ### User Story 1 - Demonstrate and test the app against a fleet with a past (Priority: P1)
 
-A technician, an admin or a manager opens the app loaded with the synthetic dataset and finds a fleet
-that behaves like a real one that has been running for twenty years: loggers with dozens of
+An authorized tester enters each role-appropriate workspace against the synthetic dataset and finds a
+fleet that behaves like a real one that has been running for twenty years: loggers with dozens of
 deployments, a geophone that has been to four sites this year, a sound level meter with fourteen
 calibration certificates, a Minimate Plus retired in 2019 after thirteen years, an asset that went
-missing and was found, a site with three installations across two projects. Every screen that shows
-history has history to show. Every report that needs a year of data has twenty.
+missing and was found, and a site with three installations across two projects. The data supports
+deep history; only an approved Reports/Administration purpose receives it. Field still receives a
+small task-relevant activity/readiness projection.
 
 **Why this priority**: This is the reason the feature exists. Nothing else in the programme can show
-the history-dependent screens (asset timeline, site history, utilisation, compliance) doing what they
-are for, and the sales, training and acceptance conversations all need to see them doing it.
+the purpose-scoped timeline, site history, utilisation, compliance and calibration-administration
+views doing what they are for, and the sales, training and acceptance conversations need realistic
+data without widening Field access.
 
-**Independent Test**: Load the dataset into the app's mock backend. Open any active data logger:
-its history spans at least five years and includes deployments, recoveries, calibrations and
-checkouts. Open the utilisation view for the five years before as-of: it computes a figure rather
-than reporting insufficient history. Open a site: it lists past and current installations with
-dates. Every page carries the synthetic-data indicator.
+**Independent Test**: Load the dataset into the mock backend. As Field, open an assigned active data
+logger and confirm only current context, readiness and short relevant activity are returned. As an
+authorized Reports/evidence persona, open its five-year timeline and utilisation view. As an
+authorized administrator, open its calibration evidence and site-history context. Every projection
+carries the synthetic-data indicator and forbidden workspaces fetch none of the richer payload.
 
 **Acceptance Scenarios**:
 
-1. **Given** the synthetic dataset, **When** any Active asset acquired at least five years before
-   as-of is opened, **Then** its history contains transactions in every year of the five-year detail
-   window, newest first, each with date, type, from, to and performer.
+1. **Given** the synthetic dataset, **When** an authorized evidential Reports/Admin timeline for an
+   Active asset acquired at least five years before as-of is opened, **Then** its history contains
+   transactions in every year of the five-year detail window, newest first, with only the date, type,
+   from/to and attribution fields that purpose permits. Ordinary Work does not receive that timeline.
 2. **Given** the synthetic dataset, **When** the utilisation view is opened for the five years before
    as-of, **Then** it presents a figure by equipment type and office rather than stating history is
    insufficient.
 3. **Given** the synthetic dataset, **When** the earliest transaction in the whole dataset is found,
    **Then** it is dated at least twenty years before as-of.
-4. **Given** a retired synthetic asset, **When** its timeline is opened, **Then** the full history
-   from acquisition to retirement is present, and the asset is absent from every current count.
+4. **Given** a retired synthetic asset, **When** its authorized historical Reports/Admin timeline is
+   opened, **Then** the full history from acquisition to retirement is present, and the asset is
+   absent from every current count.
 5. **Given** any screen or report, **When** it renders synthetic data, **Then** a visible indicator
    states the data is synthetic and names the generation seed and as-of date.
 6. **Given** the seven acceptance questions from `docs/00-brief.md`, **When** each is asked of the app
@@ -133,16 +142,18 @@ shape and the same validity guarantees.
 **Why this priority**: A performance problem found before the tenant exists is a design change; one
 found in the Ottawa pilot is an incident. Below US1 and US2 because it needs them to exist first.
 
-**Independent Test**: Generate at the large profile. Search, asset detail with history, the
-calibration due list and each report view are timed against it and the timings recorded.
+**Independent Test**: Generate at the large profile. Time the minimal Work search/detail projection,
+the purpose-scoped Reports timeline, the Administration calibration queue, and each approved report
+view separately. Record scope, projection, row count and timings; no benchmark may widen a response.
 
 **Acceptance Scenarios**:
 
 1. **Given** the large profile, **When** generation completes, **Then** the dataset holds at least
    5,000 Active assets and at least 100,000 transaction lines, and passes every validity check that
    the default profile passes.
-2. **Given** the large profile served from static files (FR-060), **When** an asset with the most
-   history is opened, **Then** its detail and timeline render within the feature 006 SC-010 budget.
+2. **Given** the large profile served from the test source (FR-060), **When** an asset with the most
+   history is opened through minimal Work detail and separately through an authorized historical
+   projection, **Then** both render within the feature 006 SC-010 budget without sharing payloads.
 3. **Given** the large profile, **When** each report view is opened, **Then** the load time is
    recorded and compared with SC-010, and any breach is reported as a finding rather than hidden.
 4. **Given** the large profile, **When** a browser cannot load it at all, **Then** that is recorded as
@@ -184,12 +195,12 @@ site, project or office) and shows the described situation at as-of.
 
 ---
 
-### User Story 5 - Exercise the flows and the Power BI model in a development environment (Priority: P5)
+### User Story 5 - Exercise the API, workers and in-app Reports in a development environment (Priority: P5)
 
-Once the development Dataverse environment exists, the synthetic dataset is loaded into it through
-the same loader the migration uses, so that flows F1 to F5 process realistic volume, calibration and
-overdue-return reminders have something to remind about, and the Power BI project can be bound to
-data with twenty years of depth before any production history exists.
+Once an approved development API/PostgreSQL environment exists, the synthetic dataset is loaded
+through the same production-shaped loader the migration uses. Command validation, workers,
+reconciliation, calibration/return policies and the in-app Reports projections can then be exercised
+at realistic volume before production history exists.
 
 **Why this priority**: Genuinely valuable and genuinely tenant-bound. Nothing about it can be verified
 in a session without a tenant; it is specified so that the dataset is built loadable from the start
@@ -204,15 +215,16 @@ every synthetic row leaves the environment as it was.
 1. **Given** the development environment, **When** the synthetic dataset is loaded, **Then** every
    loaded asset, transaction, project, site and calibration record carries a marker identifying it as
    synthetic and naming the generation seed.
-2. **Given** the loaded dataset, **When** flow F1 processes its lines, **Then** zero lines are
-   rejected as illegal transitions.
+2. **Given** the loaded dataset, **When** the server validates/replays its transaction lines and runs
+   applicable workers, **Then** zero lines are rejected as illegal transitions.
 3. **Given** the loaded dataset, **When** the synthetic rows are removed by their marker, **Then**
    no synthetic row remains and no non-synthetic row was touched.
 4. **Given** the production environment, **When** a load is attempted against it, **Then** the loader
    refuses.
-5. [NEEDS CLARIFICATION: Q14 — may the synthetic dataset be loaded into `Englobe-AMS-Dev` at all, and
-   may it be bulk-removed afterwards? `CLAUDE.md` requires asking before anything that deletes data in
-   Dev. This gates US5 only; US1 to US4 are entirely local.]
+5. [NEEDS CLARIFICATION: Q14 — may the synthetic dataset be loaded through the production-shaped
+   loader into an approved non-production environment, and may it be bulk-removed afterwards?
+   `CLAUDE.md` requires asking before anything deletes data in Dev. This gates US5 only; US1 to US4
+   are entirely local.]
 
 ### Edge Cases
 
@@ -286,12 +298,6 @@ every synthetic row leaves the environment as it was.
   output paths once they are fixed, and the generator MUST write its outputs only to paths that scan
   covers. Fictional or not, a dataset shaped like the fleet does not belong in a public bundle.
   *(Added 2026-09-02 at WS-H's request.)*
-- **FR-010a**: Synthetic outputs MUST be excluded from any release bundle exactly as the staged real
-  data is (feature 008 FR-002, FR-003), and the release-bundle scan MUST cover the synthetic output
-  paths once they are settled. A fictional fleet on a public endpoint discloses nothing, but it is
-  indistinguishable from a real one to whoever finds it, and it would defeat FR-007's indicator.
-  *(Added 2026-09-02 at WS-H's request; WS-H extends the scanner, WS-G fixes the output paths.)*
-
 **Shape and validity**
 
 - **FR-011**: Every row MUST be one the application's own write path could have produced: same
@@ -378,16 +384,20 @@ every synthetic row leaves the environment as it was.
 
 **People, projects and sites**
 
-- **FR-037**: The roster MUST contain fictional field technicians, office administrators and a system
-  owner in the proportions `docs/00-brief.md` gives, each with an office, a role, a start date and an
-  optional leave date across the horizon, so that custodianship turns over realistically.
+- **FR-037**: The roster MUST contain fictional field technicians, office administrators, a system
+  owner and report readers in the proportions needed to exercise all four coarse application roles,
+  each with the applicable office/scope, role, start date and optional leave date across the horizon.
+  Roles remain ceilings; the test identity context separately declares workspace, purpose,
+  capabilities, scope and projection.
 - **FR-038**: Every roster member who leaves MUST return everything they hold before leaving, except
   the one planted exception (FR-050).
-- **FR-039**: The three demo identities the application already recognises MUST be roster members, so
-  that switching role in the app shows real holdings and real due lists. The system-owner demo
-  identity is the real service account's address; the roster MUST carry it as a **role**, not as a
-  person, and FR-001 to FR-003 apply unchanged to every other member. The fictional system owner of
-  FR-037 is a separate roster member.
+- **FR-039**: The test roster MUST contain at least four synthetic personas, one for each coarse role,
+  with identifiers disjoint from known real people and service accounts; the chosen synthetic domain
+  remains gated by Q15. A mock identity selector is test/demo evidence only and MUST be absent from a
+  production bundle. The Field persona receives only personal/assigned My work and asset readiness;
+  the ReportReader persona receives Reports only; OfficeAdmin/SystemOwner personas see governance or
+  calibration queues only after entering Administration with the exact purpose/capability/scope/
+  projection. No role switch alone reveals holdings, due lists or administrative data.
 - **FR-040**: Projects MUST be fictional, plausible for the fleet's disciplines, carry a project number
   from a range reserved for synthetic data and disjoint from every real number, belong to an office,
   have start and end dates across the horizon, and be Closed after their end date.
@@ -471,11 +481,11 @@ every synthetic row leaves the environment as it was.
 
 **Packaging and loading**
 
-- **FR-058**: The dataset MUST be emitted in the same per-table form the migration pipeline stages, so
-  that the application's mock backend and the future Dataverse loader consume it unchanged.
-- **FR-059**: The dataset MUST also be emitted in a form the Power BI semantic model can be bound to
-  without a Dataverse connection, one table per model table with the model's column names, so that
-  visuals can be authored and measures validated offline.
+- **FR-058**: The dataset MUST be emitted in the same per-table form the migration pipeline stages so
+  that the mock backend and production-shaped PostgreSQL loader consume the same facts unchanged.
+- **FR-059**: The dataset MAY retain the existing flat analytics/PBIP-compatible output as a
+  historical optional artifact. Core acceptance uses the governed in-app Reports projections and
+  does not require Power BI or Dataverse.
 - **FR-060**: The dataset MUST be loadable into the mock backend at the `demo` and `standard` profiles
   without depending on browser local storage for the base data, and a user's own writes on top of it
   MUST still survive a reload. The `large` profile MUST use the same mechanism; if a browser cannot

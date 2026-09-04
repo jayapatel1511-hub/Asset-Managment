@@ -20,6 +20,12 @@ constitution Principles I, II, V; `CLAUDE.md` rules 1, 4, 8, 9, 13.
 feature 009 proof harness (`specs/009-production-readiness/contracts/five-asset-race.md`),
 feature 007 coverage targets.
 
+> **D18 authorization amendment, 2026-09-04.** This table decides state preconditions/effects, not
+> who receives a command or its data. Every route/command also requires an approved workspace,
+> purpose, exact action capability, R5 row scope, and field policy. The historical prototype role
+> floors and “everything else is open to FieldUser” call in DC-28 are superseded below; role is only
+> an assignment ceiling. See `docs/25-need-to-know-access-ux.md`.
+
 ---
 
 ## 0. Why this file exists
@@ -430,8 +436,8 @@ to acceptance question 7 ("Where was asset X on date D, and what was attached to
 | Sets | `serviceability = OutOfService` |
 | Untouched | `lifecycle`, `disposition` |
 | Non-axis effects | none. `reasonCode` **required** |
-| Refusal | `transition.error.serviceability`; `auth.error.forbidden` below the role floor |
-| Role floor | OfficeAdmin or SystemOwner (**depends on R5**) |
+| Refusal | `transition.error.serviceability`; `auth.error.forbidden` without the exact capability/scope |
+| Capability | `asset.serviceability.withdraw`; Administration-only, inside decided R5 scope |
 
 #### R-15 `ReturnToService`
 
@@ -444,7 +450,7 @@ to acceptance question 7 ("Where was asset X on date D, and what was attached to
 | Untouched | `lifecycle`, `disposition` |
 | Non-axis effects | none |
 | Refusal | `transition.error.serviceability`; `auth.error.forbidden` |
-| Role floor | OfficeAdmin or SystemOwner (**depends on R5**) |
+| Capability | `asset.serviceability.restore`; Administration-only, inside decided R5 scope |
 
 > **DEMO CALL 2026-09-03 (DC-10)** — **`NeedsRepair` and `OutOfService` are given this operational
 > difference, and both are kept:**
@@ -452,7 +458,7 @@ to acceptance question 7 ("Where was asset X on date D, and what was attached to
 > | | `NeedsRepair` | `OutOfService` |
 > |---|---|---|
 > | Means | a fault has been reported; the asset is **expected back** | an **administrative withdrawal** from the available fleet, whether or not anything is broken |
-> | Set by | `ReportFault` (R-12), any role that may file a fault | `MarkOutOfService` (R-14), OfficeAdmin+, `reasonCode` required |
+> | Set by | `ReportFault` (R-12), `asset.issue.report` within Work purpose/scope | `MarkOutOfService` (R-14), `asset.serviceability.withdraw` in Administration, `reasonCode` required |
 > | Cleared by | `RepairComplete` (R-13) only | `ReturnToService` (R-15) only |
 > | Typical cause | dropped geophone, water ingress, dead channel | parts on back-order with no ETA, manufacturer recall, quarantine pending investigation, leased unit off-hire |
 > | Reporting | downtime **with an expected end** — stays in the fleet denominator | **withdrawn capacity** — excluded from the utilisation denominator |
@@ -536,7 +542,7 @@ Refusal when none of R-17a/b/c is determinable: **`transition.error.destinationR
 | Untouched | all three axes |
 | Non-axis effects | `home_office_location_id = toLocationId` only. `current_location_id` unchanged |
 | Refusal | `auth.error.forbidden` |
-| Role floor | OfficeAdmin or SystemOwner (**depends on R5**) |
+| Capability | `asset.rehome`; Administration-only, inside decided R5 scope |
 
 `docs/15:458` — a permanent home-office change through a recorded administrative event. It changes where the
 asset *belongs*, never where it *is*.
@@ -552,7 +558,7 @@ asset *belongs*, never where it *is*.
 | Untouched | **`disposition` and `serviceability` are frozen at their last values** |
 | Non-axis effects | `custodian_user_id = null`; `current_project_id = null`; `retired_at` set; `retirement_reason` **required** (`Sold`/`Lost`/`Damaged`/`Obsolete`, `docs/15:284`); no open parent relationship or installation may exist |
 | Refusal | `conflict.error.assetNotEligible` (from `CheckedOut`, `Deployed`, `InTransit`); `transition.error.openObligation` (open installation or parent relationship); `command.error.validation` (missing reason) |
-| Role floor | OfficeAdmin or SystemOwner (**depends on R5**) |
+| Capability | `asset.retire`; Administration-only, inside decided R5 scope |
 
 > **DEMO CALL 2026-09-03 (DC-13)** — **A retired asset keeps its last `disposition` and `serviceability`;
 > neither column gets a terminal value.** `Retire` is refused while custody or deployment is open.
@@ -666,7 +672,7 @@ untouched. A failure on either half refuses both.
 | Untouched | axes the corrected event did not touch |
 | Non-axis effects | `correctionOfTransactionId` **required** (`transaction-command.md:74`); the original header and lines are **never** modified — the correction is a new compensating event (`CLAUDE.md` rule 5, constitution Principle II) |
 | Refusal | `command.error.validation`; `auth.error.forbidden` |
-| Role floor | OfficeAdmin or SystemOwner, with separation of duties (**R5 + feature 011**) |
+| Capability | `data.correction.apply`, with decided R5 scope and OD-3 separation of duties (Feature 011) |
 
 > **DEMO CALL 2026-09-03 (DC-16)** — a `Correction` may write an axis value the ordinary rule for the corrected
 > type would refuse, **provided the resulting combination is one some rule in this table can produce**. It may
@@ -718,7 +724,7 @@ Extends `error-codes.md`. Codes marked **new** are added by this contract.
 | `Found`/`Return`/`DetachComponent` with no determinable destination | `transition.error.destinationRequired` | **new** |
 | Project closed or inactive | `transition.error.projectInactive` | existing (`error-codes.md:72`) |
 | Kit / component invariant | `transition.error.componentRule` | existing (`error-codes.md:73`) |
-| Role below the floor for this type | `auth.error.forbidden` | existing (`error-codes.md:42`) |
+| Missing workspace/purpose/action capability/row scope for this type | `auth.error.forbidden` | existing (`error-codes.md:42`) |
 
 > **DEMO CALL 2026-09-03 (DC-17)** — **`conflict.error.assetNotAvailable` is renamed
 > `conflict.error.assetNotEligible`**, and it becomes the code for a **disposition** precondition failure
@@ -1103,16 +1109,13 @@ Stated as plainly as the calls above.
 > correction of the affected assets — the sweep is going to touch them anyway.
 > **Scope:** `migration/**` is not this file's to edit. This states what the loader must produce.
 
-> **DEMO CALL 2026-09-03 (DC-28)** — **the prototype role floor for `MarkOutOfService`, `ReturnToService`,
-> `RehomeAsset`, `Retire` and `Correction` is OfficeAdmin or SystemOwner.** Everything else in this table is
-> open to FieldUser subject to office scope.
-> **Reason:** R5 (the role and office-scope model) is undecided (`specs/REMAINING-WORK.md` G0.3), and waiting on
-> it would leave five rules with no answer. The five chosen are the administrative ones: they either withdraw an
-> asset from the fleet, change where it permanently belongs, end its life, or rewrite history. **This widens no
-> authority** — `specs/009-production-readiness/contracts/security-matrix.md:31` already denies *every* role a
-> direct write to lifecycle/disposition/serviceability, and these are commands, not writes.
-> **Reversal cost:** R5 may refine the floor per office scope; that is a change to who counts as OfficeAdmin,
-> not to this table.
+> **DEMO CALL 2026-09-03 (DC-28), superseded by R5/D18 on 2026-09-04.** The prototype used
+> OfficeAdmin/SystemOwner role floors for `MarkOutOfService`, `ReturnToService`, `RehomeAsset`,
+> `Retire`, and `Correction`, and treated other types as FieldUser-capable. That shortcut no longer
+> authorizes anything. The administrative commands now require the exact capabilities declared in
+> their rows; every other command requires its own manifest/transaction-contract capability and
+> purpose. R5 supplies only the maximum office/global row scope. Direct axis writes remain denied to
+> every user.
 
 > **DEMO CALL 2026-09-03 (DC-29)** — **backdating cannot retroactively invalidate an already-accepted event's
 > precondition, and no extra rule is needed.**

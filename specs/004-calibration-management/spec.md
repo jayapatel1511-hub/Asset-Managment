@@ -6,6 +6,12 @@
 
 **Status**: Draft — built 2026-09-02 including US4 assignment; notification delivery itself needs the tenant. Open: the reminder cadence in US4 (proceeded on: once per threshold crossing — `docs/08-decisions.md`) and Q18 (component despatch, FR-021, added 2026-09-02). FR-020a–e and FR-032a–b are recorded as ASSUMED pending Jay in `docs/08-decisions.md`, not as blocking clarifications. Q4 and Q5 resolved; see also `docs/10-integration.md`
 
+**Access amendment (D18, 2026-09-04):** [the need-to-know contract](../../docs/25-need-to-know-access-ux.md)
+supersedes every clause that gave calibration lists, history, or certificates to a user merely because
+they could view an asset. Office/fleet planning is Administration work; Work receives only the
+server-derived recorded-blocker consequence and next action. Certificate evidence requires its own
+purpose, capability, row scope, document ACL, and audit.
+
 **Input**: `IM30 - Asset Managment via M365.docx` § What We Need → Calibration Status, § Reporting ("What equipment requires calibration?"), § Future Enhancements (calibration reminders, document storage for certificates); `Asset AMS - SharePoint.xlsx` sheet *Assets - Calibration History* (253 records) and *Start Here* (Calibration form draft, Montreal Calibration Portal); `docs/01-data-model.md`, `docs/03-automation.md` (flows F2, F3)
 
 ## User Scenarios & Testing *(mandatory)*
@@ -46,8 +52,8 @@ calibration plan from the app alone, and check it against the lab's own records.
    never appears in a due or unknown group.
 6. **Given** the admin changes the horizon to 90 days, **When** the list refreshes, **Then** it reflects
    the new horizon without reloading the application.
-7. **Given** an item on the list, **When** the admin selects it, **Then** they reach that asset's detail
-   and its calibration history.
+7. **Given** an item on the list, **When** the authorized maintenance planner selects it, **Then**
+   they reach its Administration calibration detail and history within the same approved scope.
 
 ---
 
@@ -55,34 +61,38 @@ calibration plan from the app alone, and check it against the lab's own records.
 
 An instrument comes back from the lab with a certificate. The admin records the calibration date, the
 certificate number, the cost and the result, and attaches the PDF. The asset's next-due date updates
-itself, and the certificate is retrievable years later by anyone who needs to prove the instrument was
-in calibration on a given day.
+itself, and the certificate is retrievable years later by an explicitly authorized evidence user for
+an approved compliance or audit purpose.
 
 **Why this priority**: This is what keeps US1 true over time. Without it, the due dates the migration
 established decay and the list becomes wrong within a year. It is P2 rather than P1 only because US1
 delivers standalone value from migrated data first.
 
-**Independent Test**: Record calibrations for ten assets with certificates attached, then confirm each
-asset's next-due date moved correctly and each certificate opens from the asset's detail screen.
+**Independent Test**: Record calibrations for ten assets with certificates attached, confirm each
+asset's next-due date moved correctly, confirm an evidence-authorized user can open each certificate,
+and confirm a Field User and general Report Reader receive neither history nor certificate metadata.
 
 **Acceptance Scenarios**:
 
 1. **Given** an admin records a calibration with a date, **When** they save, **Then** the next-due date
    is prefilled from that model's calibration interval and remains editable.
-2. **Given** a saved calibration record, **When** the asset is viewed, **Then** its last calibration and
-   next-due dates match that record.
-3. **Given** an asset with several calibration records, **When** the asset is viewed, **Then** its
+2. **Given** a saved calibration record, **When** an authorized coordinator opens its Administration
+   maintenance view, **Then** its last calibration and next-due dates match that record.
+3. **Given** an asset with several calibration records, **When** an authorized coordinator opens the
+   maintenance view, **Then** its
    last-calibration and next-due dates reflect the most recent record by calibration date, not the most
    recently entered.
-4. **Given** a certificate document, **When** the admin attaches it, **Then** it is stored and is
-   openable from the asset's calibration history by any user permitted to see the asset.
+4. **Given** a certificate document, **When** the admin attaches it, **Then** it is stored privately
+   and is openable only through an approved evidence purpose by a user with
+   `maintenance.evidence.read`, matching row scope, and document ACL.
 5. **Given** a calibration whose result is a failure, **When** it is recorded, **Then** the asset does
    not return to service on the strength of it, and its condition is reflected rather than its date
    being advanced.
 6. **Given** a calibration date in the future, **When** the admin attempts to save, **Then** it is
    refused.
-7. **Given** a Field User, **When** they view an asset, **Then** they can read its calibration history
-   and open certificates but cannot record a calibration.
+7. **Given** a Field User, **When** they view an asset, **Then** they receive only a server-derived
+   recorded-blocker summary and permitted next action; no calibration records, lab, cost, certificate
+   metadata/bytes, correction, or audit data is returned.
 8. **Given** a recorded calibration, **When** an admin discovers an error in it, **Then** it can be
    corrected, and the correction is attributable — calibration records are corrigible, unlike
    transaction lines, because they describe an external document rather than an internal event.
@@ -182,8 +192,9 @@ when nothing is due.
 
 **Due-date visibility**
 
-- **FR-001**: Users MUST be able to list Active assets whose next calibration falls within a selectable
-  horizon, grouped by home office with counts.
+- **FR-001**: An authorized maintenance planner MUST be able to list Active assets within their
+  approved office/organization scope whose next calibration falls within a selectable horizon,
+  grouped by explicitly labelled home office with counts. This list exists only in Administration.
 - **FR-002**: System MUST distinguish overdue assets from upcoming ones and MUST show how overdue.
 - **FR-003**: System MUST list assets with no known next-due date as a distinct group rather than
   omitting them.
@@ -191,14 +202,19 @@ when nothing is due.
   lists.
 - **FR-005**: System MUST show, for each due asset, its current status and custodian, so an asset that
   is out can be chased.
-- **FR-006**: Users MUST be able to reach an asset's detail and calibration history from any due list.
-- **FR-007**: System MUST flag an overdue calibration wherever the asset is displayed, not only in the
-  due list.
+- **FR-006**: An authorized maintenance planner MUST be able to reach the Administration calibration
+  detail/history from a due-list row without losing the current scope and filters. Work and general
+  Reports do not receive that history.
+- **FR-007**: System MUST expose an overdue or failed calibration in Work only as the server-derived
+  recorded blocker and permitted next action. Administration shows the underlying detail. It MUST
+  NOT attach raw calibration data to every asset presentation.
 
 **Recording**
 
-- **FR-008**: Administrators MUST be able to record a calibration with its date, next-due date,
-  performing lab, certificate number, cost and result.
+- **FR-008**: Users with `maintenance.record.create` MUST be able to record a calibration with its
+  date, next-due date, performing lab, certificate number and result. Cost is returned/accepted only
+  when the same Administration purpose also has `maintenance.financial.read` and
+  `maintenance.financial.write`; an administrator role alone is insufficient.
 - **FR-009**: System MUST prefill the next-due date from the asset's model calibration interval and
   MUST allow it to be overridden.
 - **FR-010**: System MUST require a next-due date when the model supplies no interval.
@@ -207,17 +223,20 @@ when nothing is due.
   calibration record by calibration date.
 - **FR-013**: System MUST NOT accept last-calibration or next-due dates as direct user input on the
   asset.
-- **FR-014**: Administrators MUST be able to correct a calibration record, and System MUST record who
-  changed it and when.
+- **FR-014**: Users with `maintenance.record.correct`, approved row scope, and any required approval
+  MUST be able to correct a calibration record, and System MUST record who changed it and when.
 - **FR-015**: System MUST detect and warn on a second calibration recorded for the same asset on the
   same date.
 - **FR-016**: System MUST NOT advance an asset's next-due date on the strength of a failed calibration.
 
 **Certificates**
 
-- **FR-017**: Administrators MUST be able to attach a certificate document to a calibration record.
-- **FR-018**: System MUST make an attached certificate openable from the asset's calibration history by
-  any user permitted to view the asset.
+- **FR-017**: Users with `maintenance.evidence.manage`, approved Administration/evidence purpose,
+  matching row scope, and document policy MUST be able to attach a certificate document to a
+  calibration record; role alone is insufficient.
+- **FR-018**: System MUST make an attached certificate openable only through an approved evidence
+  purpose by a user with `maintenance.evidence.read`, matching row scope, and document ACL. Asset-read,
+  general report, or maintenance-summary permission alone is insufficient; every download is audited.
 - **FR-019**: System MUST retain certificates for the life of the asset and beyond its retirement.
 - **FR-020**: System MUST allow a certificate to be replaced or re-associated without deleting the
   calibration record.
@@ -239,8 +258,9 @@ when nothing is due.
 
 **Lab round-trip**
 
-- **FR-021**: Users MUST be able to record the despatch of one or more assets to a calibration lab in a
-  single action. [NEEDS CLARIFICATION: Q18 — whether a permanent component (an SLM pre-amp or
+- **FR-021**: Users with `maintenance.dispatch` MUST be able to record the despatch of one or more
+  assets within scope to a calibration lab in a single Administration action. [NEEDS CLARIFICATION:
+  Q18 — whether a permanent component (an SLM pre-amp or
   element) can be despatched on its own. Q5 requires each to be calibrated and due-listed separately,
   which presupposes an answer; feature 003 FR-032b carries the question and
   `specs/clarifications.md` Q18 the recommendation.]
@@ -312,8 +332,9 @@ when nothing is due.
 - **SC-006**: Zero assets in calibration are successfully checked out, verified by attempting it.
 - **SC-007**: An asset returns from calibration to Available with zero direct status edits, verified by
   audit log.
-- **SC-008**: A certificate from a calibration recorded at go-live is still retrievable, from the asset,
-  12 months later.
+- **SC-008**: A certificate from a calibration recorded at go-live is still retrievable 12 months
+  later through its governed Administration/evidence route by an authorized user, without adding a
+  certificate link or metadata to Work Asset Detail or general Reports.
 - **SC-009**: Office admins report the calibration reminder as useful rather than noise at the end of
   the pilot month, and zero admins have muted it.
 - **SC-010**: Acceptance question 5 is answered live from production data in a review meeting.
@@ -335,8 +356,9 @@ when nothing is due.
 - The 40 calibration records carrying a next-due date but no calibration date are still worth loading —
   the actionable field is the due date.
 - One external lab (Montreal Calibration) handles most work; the model supports others without change.
-- Certificates arrive as PDFs and are small. Storage is the existing document library, and permissions
-  follow the site rather than being managed per certificate.
+- Certificates arrive mainly as PDFs. The active target stores them privately behind the API; access
+  is purpose/capability/row/document scoped and audited rather than inherited by every asset viewer or
+  broad site group. Type, size, scan, retention, and replacement follow Feature 010.
 - The reminder horizon is 30 days with overdue always included. Configurable, not hard-coded, because
   the right horizon will be argued about after the first shipment.
 - Notification reaches office admins via the collaboration tools already in daily use. The admin-to-

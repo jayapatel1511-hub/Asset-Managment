@@ -47,7 +47,7 @@ one.
 |---|---|
 | `app_user` | `performed_by_user_id`, custodian FKs |
 | `user_role` | Authorization stubs / Entra sync later |
-| `user_office_scope` | Office-scope refuse paths (`ASSUMPTION: R5`) |
+| `user_office_scope` | Decided R5 row ceiling: OfficeAdmin assigned-office; SystemOwner global ceiling. D18 workspace/purpose/capability/projection checks remain separate. |
 | `location` | Home office / AtOffice disposition |
 | `project` | Checkout requires active project |
 | `equipment_model` | Registration prefix / serialisation rules |

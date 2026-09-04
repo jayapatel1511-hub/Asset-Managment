@@ -5,6 +5,11 @@
 **Depends on**: **Blocked on 010 WS-W3/W4 foundations** for hold/purge apply; OD-5 periods; OD-6 hold authority  
 **Rule**: Versioned policy. Legal hold suspends purge. Preview writes nothing. **No general-purpose delete** for production business history.
 
+**D18 boundary:** Administration → Data governance/assurance only. Register, preview/apply, and hold
+operations require the corresponding `retention.*` or `legalhold.*` capability, approved purpose,
+case/row scope, field policy, and projection. Legal-hold reasons are Restricted and never enter Work,
+general Reports, offline storage, or a role-wide SystemOwner response.
+
 ---
 
 ## Types
@@ -22,7 +27,8 @@ export interface RetentionPolicy {
   supersededAt?: string | null;
 }
 
-export interface LegalHold {
+/** Persistence/service shape. Browser responses are case-scoped allowlists. */
+export interface InternalLegalHold {
   id: string;
   scope: Record<string, unknown>;
   reason: string;
@@ -34,7 +40,8 @@ export interface LegalHold {
   releaseReason?: string | null;
 }
 
-export interface RetentionPreviewResult {
+/** Persistence/service shape. Browser preview omits raw item IDs/reasons unless case-approved. */
+export interface InternalRetentionPreviewResult {
   jobId: string;
   policyId: string;
   policyVersion: number;
@@ -82,7 +89,9 @@ Register covers at least: active/retired assets, transactions/relationships, cal
 
 - Policies versioned; immutable after activation.
 - Retired assets + operational history: **indefinite** until approved supersession (FR-070).
-- Until OD-5 decides other classes: `periodDays: null` with action `Retain` and note `unspecified` — do not invent years.
+- OD-5 is decided: Retain indefinitely by default, with `export.artifact` and `data.job.source`
+  exceptions as recorded in `docs/08-decisions.md`. External legal obligations may supersede those
+  defaults through a new approved version; implementations never invent a period.
 
 ### Preview
 
@@ -94,7 +103,8 @@ Register covers at least: active/retired assets, transactions/relationships, cal
 
 - Suspends automated purge for matching records/documents.
 - Visible in preview.
-- Release: authority + reason + time; creator cannot self-release where separation of duties applies (**STOP**: OD-6).
+- OD-6 is decided: SystemOwner is the scope ceiling for placement/release, the placer cannot release,
+  and exact `legalhold.place` / `legalhold.release` capabilities are still required.
 
 ### Purge apply
 
@@ -127,4 +137,5 @@ Register covers at least: active/retired assets, transactions/relationships, cal
 1. Preview never mutates.
 2. Hold beats purge.
 3. Purge is a job, not a button on asset detail.
-4. Platform Operator may run jobs without deciding business meaning — approvals stay with Data Owner / System Owner.
+4. A Platform Operator may run jobs only with an approved service/operations capability and cannot
+   decide business meaning; approvals stay with the authorized Data Owner/SystemOwner purpose.

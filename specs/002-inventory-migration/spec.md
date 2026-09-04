@@ -6,6 +6,12 @@
 
 **Status**: Draft — built and run 2026-09-02 (1,053 source rows → 1,026 staged assets, 9 reports, idempotent). Q4 done as data work; the two sign-offs (`migration/reports/02_conflicts.md`, `03_models_review.md`) gate the production load. Q1, Q2, Q3, Q5 and Q13 resolved; see `docs/08-decisions.md`
 
+**Access amendment (D18, 2026-09-04):** This feature has no Work or general Reports screen.
+Migration files, conflicts, row-level outcomes, model review, provenance and sign-off evidence belong
+to an Administration migration/data-governance purpose and exact capability/projection. A temporary
+tag may resolve through a separate minimal Work lookup when needed for an assigned task; that lookup
+must not return migration lineage, conflict evidence or source-row detail.
+
 **Input**: `Asset AMS - SharePoint.xlsx` sheets *IM Asset Registry* (1,053 data rows, 28 columns) and *Assets - Calibration History* (253 rows, no Asset ID column); `IM30 - Asset Managment via M365.docx` § Current System; `docs/00-brief.md` (profile baseline), `docs/04-migration.md`
 
 ## User Scenarios & Testing *(mandatory)*

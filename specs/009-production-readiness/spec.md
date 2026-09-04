@@ -5,6 +5,10 @@
 **Status**: Draft — no tenant or production implementation claim  
 **Input**: features 001–008 and `docs/13-production-readiness-review.md`.
 
+> **D18 access amendment (2026-09-04):** `docs/25-need-to-know-access-ux.md` is authoritative for
+> workspace, purpose, capability, row-scope and field-projection behavior. A role is only a coarse
+> assignment ceiling. It never grants every route or field associated with that role name.
+
 ## Purpose
 
 Features 001–008 define and locally demonstrate the product. This feature defines the evidence required
@@ -57,18 +61,26 @@ catch-all status.
 
 ## User Story 4 — Prove authorization through every path (P2)
 
-Field users, administrators, managers and owners access data through the hosted app, direct data API,
-exports and reports. Each path enforces the same approved permissions. Interface filtering is never the
-security boundary.
+Field users, office administrators, system owners and report readers may enter only their eligible
+Work, Reports or Administration workspace. Every hosted-app, direct-API, export, document and report
+path enforces the same intersection of tenant/environment, active workspace, route purpose, named
+capability, row scope and explicit field projection. Interface filtering is never the security boundary.
 
 **Acceptance scenarios**
 
-1. Secured SIM and network attributes are unavailable to field users through every path.
-2. An office-scoped administrator cannot modify another office through a direct API call.
-3. If administrators are global instead, the role is named and documented honestly.
-4. The ordinary manager reporting model contains no secured SIM or network columns.
-5. Relationship cycles, self-parenting, second open parents and historical edits are refused server-side.
-6. Routine automation runs under least privilege rather than broad owner authority.
+1. A Field User receives the Work projection only: no calibration history, certificate links, maintenance
+   history, cost, data-quality entities, audit detail, secured SIM/network attributes or Administration
+   queue data exists in the response, cache, export or UI.
+2. An OfficeAdmin cannot read or modify another office through any direct or indirect path.
+3. A SystemOwner has a global row-scope ceiling, but is still denied when the workspace, purpose, named
+   capability or field projection does not permit the request.
+4. A ReportReader receives a separate read-only Reports workspace, never Field navigation, Scan,
+   Administration or general-report secured fields.
+5. A wrong-workspace or forbidden direct link is rejected before any protected resource or existence
+   lookup; browser restoration cannot reveal previously cached privileged content.
+6. Switching workspace, identity or capability set partitions or purges protected cache and queued data.
+7. Relationship cycles, self-parenting, second open parents and historical edits are refused server-side.
+8. Routine automation runs under least privilege rather than broad owner authority.
 
 ## User Story 5 — Establish real mobile and offline behavior (P2)
 
@@ -84,7 +96,9 @@ proved on the hosted client is included in the pilot promise.
 4. A different signed-in user cannot see or replay the prior user's cache or queue.
 5. Reauthentication occurs before an expired queue is replayed.
 6. A rejected replay remains in Needs Attention and is never silently discarded.
-7. Field-user local storage contains no secured attributes.
+7. Field-user local storage contains only the approved Field Work projection and zero forbidden
+   maintenance, evidence, cost, performer, audit, data-quality, secured-network, free-text,
+   internal-identifier or unrelated-people fields.
 
 ## User Story 6 — Cut over and recover safely (P3)
 
@@ -153,19 +167,33 @@ three separate procedures.
 
 ### Security, cache and reporting
 
-- **FR-025**: Every permission MUST be enforceable independently of the interface.
-- **FR-026**: Administrators MUST be explicitly global or office-scoped at the data/server layer.
+- **FR-025**: Every protected request MUST be authorized server-side as the intersection of authenticated
+  identity, tenant/environment, active workspace, route purpose, named capability, row scope and explicit
+  field projection. Role membership alone MUST NOT authorize a request.
+- **FR-026**: OfficeAdmin MUST be assigned-office scoped. SystemOwner MAY have a global row-scope ceiling,
+  but MUST NOT inherit Work, Reports, evidence, financial, stewardship or document capabilities.
 - **FR-027**: Relationship cycles, self-parenting, multiple open parents and direct historical edits
   MUST be refused server-side.
 - **FR-028**: Routine automation MUST use least privilege.
-- **FR-029**: Cache and queues MUST be partitioned by environment and signed-in user and cleared or made
-  inaccessible on identity change.
-- **FR-030**: Field-user cache, export and ordinary manager reports MUST contain no secured SIM/network
-  attributes.
-- **FR-031**: Manager reporting MUST work without requiring the Power Apps runtime (in-app
-  read-only reports and/or an approved optional BI tool) and MUST state its identity and
-  authorization model.
-- **FR-032**: Reporting recipients and required licences MUST be approved before sharing.
+- **FR-029**: Cache and queues MUST be partitioned by environment, tenant, signed-in identity, workspace
+  and projection version; identity, workspace, row-scope or capability change MUST purge or make prior
+  protected entries inaccessible.
+- **FR-030**: Field Work responses, cache and exports MUST omit calibration records and certificate links,
+  maintenance history, costs, performer identities, data-quality entities, audit detail, secured
+  SIM/network attributes, unrestricted free text and internal identifiers. General Reports MUST use its
+  own allowlisted read model and apply the same exclusions unless a separately approved evidential purpose
+  explicitly requires a field.
+- **FR-031**: Reporting MUST be a separate read-only Reports workspace in the same hosted web application,
+  without requiring the Power Apps runtime. It MUST state its identity, purpose, capability, row-scope and
+  projection model; ReportReader MUST NOT inherit Work or Administration navigation.
+- **FR-032**: Reporting recipients, approved purposes, named capabilities, row scope, projection templates
+  and required licences MUST be approved before sharing.
+- **FR-032a**: Route eligibility MUST be decided before any protected data or existence lookup. Forbidden
+  direct links MUST make zero protected-data requests and MUST NOT disclose whether the resource exists.
+- **FR-032b**: APIs, reports, exports and document endpoints MUST construct purpose-specific server
+  allowlist projections. A universal entity response followed by client-side hiding is prohibited.
+- **FR-032c**: Calibration and other evidence documents MUST require an approved evidence purpose, named
+  capability, row scope and document ACL. General Work and Reports projections MUST contain no document URL.
 
 ### Device evidence, cutover and recovery
 
@@ -203,14 +231,22 @@ three separate procedures.
   reporting.
 - **SC-007**: Temporary and canonical tags both resolve to one asset after completion.
 - **SC-008**: Calibration create/correct/void/fail tests produce zero current-date mismatches.
-- **SC-009**: Every forbidden role action fails through app, direct API, export and report.
-- **SC-010**: Zero secured attributes exist in field-user local storage or ordinary manager reporting.
+- **SC-009**: Every forbidden combination of workspace, purpose, capability, row scope and projection fails
+  through app, direct API, document, export and report paths, regardless of the actor's role label.
+- **SC-010**: Zero fields outside the approved projection exist in Field Work responses/local storage or
+  general Reports responses/exports.
 - **SC-011**: Hosted iOS/Android evidence exists for every claimed offline and scanner behavior.
 - **SC-012**: Final migration reconciliation accounts for every source row and post-rehearsal change.
 - **SC-013**: App rollback, platform recovery and data restore each pass rehearsal.
 - **SC-014**: Every gate has named ownership and retained evidence.
 - **SC-015**: The seven acceptance questions are answered live from tenant data before production
   acceptance.
+- **SC-016**: Every forbidden or wrong-workspace direct route produces zero protected-data requests and no
+  resource-existence disclosure.
+- **SC-017**: Workspace, identity, row-scope and capability changes leave zero recoverable privileged
+  responses in browser history, cache or queued work.
+- **SC-018**: A ReportReader-only account renders Reports navigation only and cannot fetch Work, Scan,
+  Administration or evidence-document data.
 
 ## Dependencies
 

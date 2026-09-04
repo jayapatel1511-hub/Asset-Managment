@@ -1,5 +1,9 @@
 # Contract: `AmsBackend` additions for Deployment & Kits
 
+> **LEGACY MOCK/ADAPTER CONTRACT.** This records the pre-pivot client seam; it does not authorize a
+> Dataverse adapter or a universal browser DTO. Current server-authoritative API/PostgreSQL contracts
+> and D18 purpose-sized Work/Administration projections govern implementation.
+
 **Feature**: 005 | **Date**: 2026-09-02 | **Consumers**: `api/mock/deployment.ts` (WS-A), `api/dataverse/index.ts` (WS-E), every screen under `features/deploy|recover|site`
 
 These signatures are added to `app/src/api/AmsBackend.ts` and the types to `app/src/api/types.ts`

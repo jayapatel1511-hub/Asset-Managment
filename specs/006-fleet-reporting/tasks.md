@@ -5,6 +5,10 @@ description: "Task list for feature 006 — Fleet Reporting"
 
 # Tasks: Fleet Reporting
 
+> **PRE-PIVOT EXECUTION RECORD — DO NOT IMPLEMENT AS WRITTEN.** Use the feature spec and D18. Power
+> BI publishing is optional, Reports is a separate read-only workspace, and no Field/mobile report
+> route or broad evidence projection is authorized by these historical tasks.
+
 **Input**: Design documents from `/specs/006-fleet-reporting/`
 
 **Prerequisites**: [plan.md](plan.md) (required), [spec.md](spec.md) (user stories)

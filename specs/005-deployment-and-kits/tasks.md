@@ -5,6 +5,10 @@ description: "Task list for feature 005 — Deployment & Kits"
 
 # Tasks: Deployment & Kits
 
+> **PRE-PIVOT EXECUTION RECORD — DO NOT IMPLEMENT AS WRITTEN.** Dataverse/Power Platform tasks are
+> parked. Use the current feature spec, API/PostgreSQL platform contracts, and D18 workspace,
+> capability and response-projection rules.
+
 **Input**: Design documents from `/specs/005-deployment-and-kits/`
 
 **Prerequisites**: [plan.md](plan.md) (required), [spec.md](spec.md) (user stories), [contracts/ams-backend-deployment.md](contracts/ams-backend-deployment.md)

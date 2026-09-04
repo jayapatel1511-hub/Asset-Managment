@@ -8,18 +8,21 @@ description: "Task list for feature 011 — Data Management & Stewardship"
 
 **Prerequisites**: [plan.md](plan.md), [spec.md](spec.md), [data-model.md](data-model.md), [contracts/](contracts/)
 
-**Tests**: Required at each story. Prefer failing tests before implementation. Direct API role/office tests for every write path.
+**Tests**: Required at each story. Prefer failing tests before implementation. Direct API tests must
+cover workspace, purpose, capability, row/office scope, projection, forbidden keys, zero-fetch denial
+and revocation/cache behavior for every read/write path; role/office tests alone are insufficient.
 
-**Status (reconciled 2026-09-03):** **2 of 90 checked.** Dictionary, quality rules, issue queue,
-reference create/edit/deactivate, corrections, import, duplicates, retention: **not in the tree**
-(`server/src/modules/data-management/` does not exist; no `data_dictionary_*` / `data_quality_*`
-migrations). A local governed-export *shape* lives under feature 010
-(`server/src/routes/reports.ts`, process-local `Map`, no `export_artifact` table / Blob / Console
-UI) — T068–T075 stay open. T002 and T089 are confirmations from the tree, not new implementation.
+**Status (reconciled 2026-09-04):** The original task boxes are a planning decomposition and were not
+mechanically rewritten to match the implementation path. The evidence ledger at the end records the
+local API/schema work that exists. It does **not** prove D18 access/projection conformance, the
+Administration UI, Azure/Blob/restore behavior, alert destinations, device behavior, or pilot gates;
+the 17 unchecked requirements-checklist items remain authoritative gaps.
 
 **Organization**: Phases follow CLAUDE.md order — read-only dictionary + quality first; high-impact writes after 010 foundations.
 
-**Read first**: `specs/_planning/MULTI-AGENT-OWNERSHIP.md`, `.specify/memory/constitution.md`, `CLAUDE.md` (rules 14–20; sequence 6, 10–13), `docs/16-data-management.md`, `docs/15-postgres-data-model.md`.
+**Read first**: `.specify/memory/constitution.md`, `CLAUDE.md` (rules 14–20; sequence 6, 10–13),
+`docs/23-canonical-product-ux-contract.md`, `docs/25-need-to-know-access-ux.md`,
+`docs/16-data-management.md`, and `docs/15-postgres-data-model.md`.
 
 ## Format: `[ID] [P?] [Story?] Description`
 
@@ -45,7 +48,7 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 
 ## Phase 1: Setup / read docs
 
-- [ ] T001 Read `specs/_planning/MULTI-AGENT-OWNERSHIP.md`, `.specify/memory/constitution.md`, `CLAUDE.md` (data-management rules 14–20 and sequence steps 6, 10–13), `docs/16-data-management.md`, `docs/15-postgres-data-model.md` §1–2 and open decisions, `specs/011-data-management/spec.md`, `checklists/requirements.md`, `specs/REMAINING-WORK.md` (WS-W2–W8, surfaces/Console note), and all files under `specs/011-data-management/contracts/`
+- [ ] T001 Read `.specify/memory/constitution.md`, `CLAUDE.md` (data-management rules 14–20 and sequence steps 6, 10–13), `docs/23-canonical-product-ux-contract.md`, `docs/25-need-to-know-access-ux.md`, `docs/16-data-management.md`, `docs/15-postgres-data-model.md` §1–2 and open decisions, `specs/011-data-management/spec.md`, `checklists/requirements.md`, `specs/REMAINING-WORK.md` (WS-W2–W8, workspace/Administration note), and all files under `specs/011-data-management/contracts/`; use `_planning/MULTI-AGENT-OWNERSHIP.md` only as historical ownership context
 - [x] T002 [P] Confirm Power Platform and Zite are parked — no tasks may target `solution/`, `app/src/api/dataverse/`, or `zite/`
 - [ ] T003 [P] Record baseline: existing `app/` tests still green (`cd app && npm test`); do not claim monorepo `test:integration` until 010/WS-W1 creates it
 
@@ -57,15 +60,16 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 
 **⚠️ CRITICAL**: Do not start until G0.5 / WS-W2 accepts `docs/15` **including** docs/16 §14 entities (see [data-model.md](data-model.md)). Mark **ASSUMPTION: R3** until then.
 
-**STOP GATE — Open decisions**: OD-4 (classification labels) may use a Dev placeholder enum only if every production path is flagged non-Prod-Accepted; do not invent corporate taxonomy.
+**Decision applied:** OD-4 is Internal / Confidential / Restricted. D18 treats classification as a
+handling floor, never entitlement; dictionary responses still require purpose/capability/projection.
 
 - [ ] T004 Align `docs/15-postgres-data-model.md` approval checklist with [data-model.md](data-model.md) entities — Agent 011 drafts the checklist item list in a PR comment or 011 note only; **does not edit docs/15** (orchestrator / Jay owns docs). Stop if entities rejected
 - [ ] T005 After schema approval: add forward-safe migrations under `db/migrations/` for `data_dictionary_entry`, `data_quality_rule`, `data_quality_issue` (read-first subset). Defer write-heavy tables (`data_job*`, `data_change_request`, `record_redirect`, `retention_policy`, `legal_hold`, `data_source_record`) to later phases if needed for sequencing — or land all tables inactive if WS-W2 prefers one migration set
-- [ ] T006 [P] Add shared TypeScript schemas for dictionary + quality reads to `packages/contracts/` matching `contracts/field-dictionary.md` and `contracts/quality-issue.md` (package must exist from 010/WS-W1)
-- [ ] T007 [P] Implement `GET /api/data-management/dictionary`, `GET .../dictionary/{entity}/{field}`, `GET .../dictionary/coverage` in `server/src/modules/data-management/` — Field User denied; server-side paging
+- [ ] T006 [P] Add purpose-sized shared TypeScript schemas for dictionary + quality reads to `packages/contracts/` matching `contracts/field-dictionary.md` and `contracts/quality-issue.md` (package must exist from 010/WS-W1); no universal DTO
+- [ ] T007 [P] Implement `GET /api/data-management/dictionary`, `GET .../dictionary/{entity}/{field}`, `GET .../dictionary/coverage` in `server/src/modules/data-management/` — Administration + exact capability/projection only; Field User and general Report Reader denied; server-side paging
 - [ ] T008 Seed machine-readable dictionary artifact (path TBD under `db/` or `data/` — prefer committed JSON/YAML checked by CI) covering all fields in the approved schema subset
 - [ ] T009 Add `npm run data:dictionary:check` (or equivalent) failing on missing/contradictory production field entries (FR-002 / SC-001 gate wiring)
-- [ ] T010 [P] Integration tests: coverage report; unauthorized Field User refused; paging does not require full fleet in memory
+- [ ] T010 [P] Integration tests: coverage report; Field User/general Report Reader/SystemOwner-without-capability refused before fetch; projection forbidden-key scan; paging does not require full fleet in memory
 
 **Checkpoint**: Read-only dictionary API + coverage check exist against PostgreSQL.
 
@@ -79,7 +83,8 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 
 **May begin** after Phase 2 + enough auth to protect routes (WS-W3). Mutating issue commands: **Blocked on 010 WS-W3/W4 foundations**.
 
-**STOP GATE**: OD-1 / OD-2 / OD-12 for production alert SLAs — until decided, store owner + severity; do not invent SLA hours.
+**STOP GATE**: named owner and the production quality-service-level decision remain; OD-2 is decided. Until the SLA is
+approved, store owner + severity and do not invent hours.
 
 ### Tests for US1
 
@@ -95,7 +100,7 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 - [ ] T017 [US1] `POST .../quality/commands/run-rules` as `QualityRuleRun` job — worker-safe; idempotent
 - [ ] T018 [US1] Issue read APIs + assign / set-status / waive / false-positive / verify-resolution commands per `contracts/quality-issue.md` — **Blocked on 010 WS-W3/W4 foundations**
 - [ ] T019 [P] [US1] Console overview + issue queue UI under `app/src/features/data-management/` — **depends on WS-W5 Console shell**; coordinate routes (`surfaces: console`)
-- [ ] T020 [US1] Alert hook stub for critical/age thresholds naming owner — **STOP OD-12** before enabling production notification cadence
+- [ ] T020 [US1] Alert hook stub for critical/age thresholds naming owner — **STOP on the open quality-service-level decision** before enabling production notification cadence
 
 **Checkpoint**: First Data Management proof — dictionary + rule-driven issue queue — demonstrable in Dev.
 
@@ -106,7 +111,9 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 **Goal**: Create / edit / deactivate / re-parent / alias / merge reference records with impact preview; never ordinary hard-delete.
 
 **Blocked on 010 WS-W3/W4 foundations** for all write commands.  
-**STOP GATE**: OD-1 Data Steward role shape; R5 admin scope; OD-7 Office Admin reference bounds.
+**Decisions applied:** OD-2 makes Data Steward a capability bundle, R5 fixes the scope ceiling, and
+OD-7 fixes OfficeAdmin bulk/reference bounds. Named domain ownership and final D18 capability mapping
+remain gates.
 
 ### Tests for US2
 
@@ -132,7 +139,7 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 **Goal**: Correct static asset facts with evidence; refuse derived state, canonical ID mutation, history edits.
 
 **Blocked on 010 WS-W3/W4 foundations.**  
-**STOP GATE**: OD-3 approval thresholds.
+**Decision applied:** enforce OD-3's approved field/risk-specific thresholds and separation of duties.
 
 ### Tests for US3
 
@@ -158,7 +165,8 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 **Goal**: Versioned templates; dry-run with row outcomes; apply gates; idempotent retries.
 
 **Blocked on 010 WS-W3/W4 foundations**; async apply needs WS-W8 workers; source blobs WS-W7.  
-**STOP GATE**: OD-3, OD-7, OD-9.
+**Decisions applied:** enforce OD-3 approval, OD-7 OfficeAdmin scope, and OD-9 source-file retention;
+do not treat their implementation as evidence until verified.
 
 ### Tests for US4
 
@@ -187,7 +195,8 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 **Goal**: Human-reviewed candidates; redirect merge preserves UUIDs/histories; no serial auto-merge.
 
 **Blocked on 010 WS-W3/W4 foundations.**  
-**STOP GATE**: OD-11 conflicting post-go-live histories.
+**Decision applied:** OD-11 refuses merge while current state or relationship obligations conflict;
+the steward reconciles them through ordinary business events before merge.
 
 ### Tests for US5
 
@@ -213,7 +222,8 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 **Goal**: Authority-aware dry-run and apply for external snapshots; no silent overwrite of local or source-owned fields.
 
 **Blocked on 010 WS-W3/W4 foundations.**  
-**STOP GATE**: OD-10 project-master authority; people sync uses Entra/`app_user` — no staff table.
+**STOP GATE**: project-master authority and synchronization contract; people sync uses
+Entra/`app_user` — no staff table.
 
 ### Tests for US6
 
@@ -235,15 +245,16 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 
 ## Phase 9: US7 — Governed exports (P3)
 
-**Goal**: Role-limited templates; server field/row scope; private short-lived artifacts.
+**Goal**: Workspace/purpose/capability/projection-limited templates; server field/row scope; private short-lived artifacts.
 
 **Blocked on 010 WS-W3/W4 foundations**; Blob WS-W7.  
-**STOP GATE**: OD-8 initial templates and limits; OD-4 classification on artifacts.
+**Decisions applied:** OD-8 initial templates/limits and OD-4 classification. D18 capability,
+projection, evidence-purpose, and recipient policy still gate delivery.
 
 ### Tests for US7
 
-- [ ] T068 [P] [US7] Field User / Office Admin / Steward / Report Reader each see only permitted templates (SC-013)
-- [ ] T069 [P] [US7] Restricted identifiers absent from general export bytes
+- [ ] T068 [P] [US7] Full role/workspace/purpose/capability/scope matrix sees only permitted templates; role-only access is refused (SC-013)
+- [ ] T069 [P] [US7] Certificate links/metadata, notes, performer identities, costs, and secured network identifiers absent from general export bytes
 - [ ] T070 [P] [US7] Expired download refused; artifact deleted/inaccessible (SC-014)
 - [ ] T071 [P] [US7] Large/restricted export requires second approval; self-approval refused
 - [ ] T072 [P] [US7] No fleet-wide raw export for Field User
@@ -263,7 +274,8 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 **Goal**: Register + hold + preview + purge apply; no general delete path.
 
 **Blocked on 010 WS-W3/W4 foundations.**  
-**STOP GATE**: OD-5 retention periods; OD-6 hold authority/release. Until OD-5: preview/register only for non-indefinite classes; do not invent periods.
+**Decisions applied:** enforce OD-5 retention defaults and OD-6 hold authority/self-release refusal.
+External legal obligations may supersede policy versions; never invent them.
 
 ### Tests for US8
 
@@ -288,7 +300,7 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 
 - [ ] T085 [P] Lineage “Why does the system say this?” read API for custodian/location/project/model/calibration/merged identity (FR-058) — may ship incrementally after US3/US5
 - [ ] T086 [P] Sensitive-value redaction review across job messages, logs, unauthorized artifacts (FR-079)
-- [ ] T087 Direct API security matrix for all data-management routes (roles × offices) — feeds WS-W12
+- [ ] T087 Direct API security matrix for every data-management route: identity × tenant/environment × active workspace × approved purpose × named capability × row/office scope × versioned projection, including zero-fetch/no-existence-leak denial, exact forbidden response keys and revocation/cache purge — feeds WS-W12
 - [ ] T088 Scale smoke: overview + issue search at 5,000 assets / 100k lines without full client download (SC-017)
 - [x] T089 Confirm no generic PATCH/SQL editor landed — grep/CI deny-list. **Confirm from tree 2026-09-03:** no `PATCH /table/{id}` and no SQL editor; writes are named commands. No CI deny-list job yet
 - [ ] T090 Pilot evidence checklist: SC-001, SC-006, SC-010, SC-011, SC-013–SC-016, SC-018–SC-019 mapped to dated test runs; migration sign-offs remain 009/WS-W11
@@ -300,12 +312,12 @@ Do **not** create empty scaffolding until the first owned implementation task ne
 | Gate | Blocks |
 |---|---|
 | docs/15 + 011 entities approved (R3) | Phase 2+ |
-| WS-W3 auth + OD-1 / R5 | Authorized reads beyond Dev bypass; all writes |
+| WS-W3 auth + final D18 capability mapping under decided R5 | Authorized reads beyond Dev bypass; all writes |
 | **010 WS-W3/W4 foundations** | US2 writes, US3–US8 |
 | WS-W5 Console shell | UI tasks T019, T028, T038, T050, T059, T067, T075, T084 |
 | WS-W7 Blob | Import sources, export artifacts, purge docs |
 | WS-W8 workers | Async apply, scheduled quality, export gen, purge |
-| OD-3 / OD-5 / OD-6 / OD-8 / OD-10 / OD-11 / OD-12 | As marked per phase |
+| Named domain owners; project-master authority; quality service levels; dictionary approval breadth; legal-policy exceptions; final Entra/D18 mapping | As marked per phase |
 
 ## Parallel example
 
@@ -333,3 +345,54 @@ T011–T015 test authoring in parallel before T016–T018
 US7 export *tests* exist in `server/tests/reports.test.ts` under 010. They do not close T068–T075:
 no Data Steward role, no second-approval SoD, no Blob/expiry worker, no Console UI, artifacts are
 process-local. Dictionary / quality / Rule 7 reference commands remain unchecked on purpose.
+
+---
+
+## Ledger reconcile — 2026-09-04
+
+The per-task checkboxes above were written before implementation and are **not** individually
+reconciled here, because several describe a decomposition the build did not follow (US4 and US5
+share one job spine; US6's provenance turned out to need no new storage for the "what established
+this fact" half). Reconciling them one by one would produce ticks that describe the plan rather than
+the code. What follows is what exists, with the file that holds it and the evidence that runs.
+
+**Verified by:** `scripts/verify.sh` — migrations from empty, an idempotent second run, typecheck,
+the server suite on **both** drivers, the client suite, and a client build. Plus `npm run lint`.
+
+| Story | State | Where | Evidence |
+|---|---|---|---|
+| **US1** dictionary + quality queue | Implemented (was, before this pass) | `modules/data-management/{dictionary,engine,ruleCatalogue,fieldCatalogue,commands,queries}.ts`, `0015` | `tests/dataManagement.test.ts` — 15 |
+| **US2** reference commands | Implemented (was) | `routes/reference.ts`, `services/referenceService.ts`, `0013` | `tests/reference.test.ts` — 8 |
+| **US3** static corrections | **Implemented 2026-09-04** | `modules/data-management/corrections.ts`, `0018` `data_change_request`, `0020` `requires_approval`, `0017` `audit_event` | `tests/dataManagementWrites.test.ts` § US3 — 9 |
+| **US4** import dry-run / apply | **Implemented 2026-09-04** | `modules/data-management/{jobs,imports}.ts`, `0018` `data_job_item` | § US4 — 8 |
+| **US5** duplicates / redirect | **Implemented 2026-09-04** | `modules/data-management/duplicates.ts`, `0018` `duplicate_candidate` + `record_redirect` | § US5 — 6 |
+| **US6** provenance / reconciliation | **Implemented 2026-09-04** | `modules/data-management/lineage.ts`, `0018` `data_source_record` | § US6 — 4 |
+| **US7** governed exports | **Persisted 2026-09-04** | `services/reportService.ts` + `0018` `export_artifact` | § US7 — 3, plus `tests/reports.test.ts` § E |
+| **US8** retention / legal hold | **Implemented 2026-09-04** | `modules/data-management/retention.ts`, `0018` `retention_policy` + `legal_hold` | § US8 — 8 |
+
+### What is deliberately NOT built, and why
+
+- **No D18 Administration screens.** The old mockup GOVERN rail was not adopted. D18 now adopts a
+  distinct Administration workspace and module IA, but the current local UI does not implement it;
+  WS-W5/Feature 011 must build and verify it against the canonical route/capability manifest.
+- **No import type for assets or transactions.** A canonical Asset ID comes from a server sequence
+  (rule 6) and a transaction is an accepted business event (rule 4); a spreadsheet is the origin of
+  neither. The migration loader is the sanctioned bulk path, and it runs once against an empty
+  database with reconciliation.
+- **No ordinary business-history purge.** OD-5 keeps asset/history classes indefinite and defines
+  only the approved export/source-artifact exceptions. Any broader purge remains refused unless a
+  superseding legal/policy version, authority, recovery prerequisite and reconciliation all pass.
+- **Nothing self-approved.** Every separation-of-duties gate is enforced in the database as well as
+  the service, and CLAUDE.md § Ask before doing forbids approving a high-impact operation on Jay's
+  behalf. The gates exist; the approvals are not ours to give.
+
+### Still open in 011
+
+- The requirements checklist has **17 unchecked items**; none is converted to passed by this ledger.
+- Named domain owners, project-master authority, quality service levels, dictionary-approval breadth,
+  external legal-policy exceptions, final Entra/D18 capability mapping, and the evidence named by
+  those gates remain open. OD-2 through OD-9 and OD-11 are decided.
+- **FR-016** alerting on issue age/criticality is a named-owner stub, not a scheduled alert.
+- **FR-041** irreversible-job recovery prerequisites are *declared and gated*
+  (`job.recoveryRequired`), and the recovery point itself is asserted by the caller — a real
+  verified recovery point needs the backup story, which is R6 hosting work.

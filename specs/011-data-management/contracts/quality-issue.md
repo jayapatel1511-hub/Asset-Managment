@@ -5,6 +5,10 @@
 **Depends on**: dictionary; WS-W2 views; WS-W3 for assign/resolve writes  
 **First proof**: read-only rules + issues + overview (CLAUDE sequence step 6)
 
+**D18 boundary:** these are Administration Data-governance routes. General Reports may receive an
+approved aggregate metric projection only; Work and ReportReader-only identities receive no rule,
+issue, evidence, owner, or internal-ID payload.
+
 ---
 
 ## Issue states
@@ -52,7 +56,7 @@ export interface DataQualityIssue {
   firstDetectedAt: string;
   lastDetectedAt: string;
   dueAt?: string | null;
-  evidence: Record<string, unknown>;
+  evidence: Record<string, unknown>; // internal/admin source; response projection allowlists fields
   resolutionNote?: string | null;
   waiverReason?: string | null;
   waiverApproverUserId?: string | null;
@@ -62,7 +66,8 @@ export interface DataQualityIssue {
   rowVersion: number;
 }
 
-export interface QualityOverviewCounts {
+/** Server/internal aggregate source. Browser responses use one of the projections below. */
+export interface InternalQualityOverviewCounts {
   bySeverity: Record<string, number>;
   byDomain: Record<string, number>;
   byOffice: Record<string, number>;
@@ -77,7 +82,40 @@ export interface QualityOverviewCounts {
   ruleVersion: string;
   dataCurrency: string;
 }
+
+export interface AdminQualityOverviewResponse {
+  dataProjectionId: "admin_dataquality_overview_v1";
+  scopeLabel: "Office" | "Organization";
+  counts: InternalQualityOverviewCounts;
+}
+
+export interface AdminQualityIssueListItem {
+  issueId: string;
+  ruleKey: string;
+  severity: DataQualityRule["severity"];
+  status: QualityIssueStatus;
+  affectedRecordLabel: string;
+  ownerDisplayName?: string | null;
+  firstDetectedAt: string;
+  lastDetectedAt: string;
+  dueAt?: string | null;
+  nextAction: string;
+  dataProjectionId: "admin_dataquality_issue_list_v1";
+}
+
+export interface ReportQualityMetricResponse {
+  dataProjectionId: "report_quality_aggregate_v1";
+  scopeLabel: "Office" | "Project" | "Organization";
+  metrics: Record<string, number>; // only explicitly approved metrics
+  dataCurrency: string;
+}
 ```
+
+`DataQualityIssue`, raw evidence, resolution/waiver text, internal entity/user/job IDs, and row
+version are persistence/service shapes, not universal API DTOs. Admin issue detail uses a separate
+case projection that allowlists only the evidence needed for the assigned issue. Every overview/list
+response declares projection and visible scope. The optional Reports aggregate has no issue links,
+owners, evidence, notes, rules, or internal IDs.
 
 ---
 
@@ -93,15 +131,23 @@ GET /api/data-management/quality/issues/{id}
 Query filters: `officeId`, `domain`, `severity`, `status`, `ownerUserId`, `page`, `pageSize`.  
 Every overview count MUST link to the filtered issue list and governing `ruleKey` (FR-015).
 
-Authorization: steward capability / System Owner / Office Admin (office-scoped) / Report Reader. Field User denied.
+Authorization requires the active Administration workspace, approved data-quality purpose,
+`dataquality.read`, row scope, and issue projection. OfficeAdmin/SystemOwner role alone is
+insufficient. Field User and
+general Report Reader are denied; an approved reporting metric is served from a separate aggregate
+Reports projection and never from these issue routes.
 
 Server-side paging only — no full-fleet download (FR-080).
+Issue lookup evaluates authorization before existence disclosure. These Administration projections
+are online-only and never enter the Field offline cache.
 
 ---
 
 ## Commands (writes — gated)
 
-**Blocked on 010 WS-W3/W4 foundations** for mutating issue workflow. Quality **rule run** may be System Owner / worker after auth exists.
+**Blocked on 010 WS-W3/W4 foundations** for mutating issue workflow. Every human command requires
+`dataquality.manage` plus its specific purpose/scope. A quality rule run may use an explicitly
+authorized worker service identity; SystemOwner role alone does not authorize it.
 
 ```http
 POST /api/data-management/quality/commands/run-rules

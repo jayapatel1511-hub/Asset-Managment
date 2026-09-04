@@ -8,6 +8,11 @@
 
 **Input**: `IM30 - Asset Managment via M365.docx` § Objective, § What We Need → Asset Registry; `Asset AMS - SharePoint.xlsx` sheets *IM Asset Registry* (1,053 rows) and *Start Here* (Asset ID conventions, asset group taxonomy); `docs/00-brief.md`, `docs/01-data-model.md`
 
+> **D18 access/presentation amendment (2026-09-04):**
+> [`docs/25-need-to-know-access-ux.md`](../../docs/25-need-to-know-access-ux.md) governs what each
+> workspace may fetch and display. Registry truth remains complete server-side; Field Work receives a
+> purpose-sized identity/current-context/readiness projection, not the full asset record.
+
 ## User Scenarios & Testing *(mandatory)*
 
 A technician standing in a storage room with a phone, and an office admin at a desk, are the two
@@ -19,32 +24,35 @@ A technician has a physical instrument in front of them, or a serial number writ
 and needs to know: what is this, whose is it, where does the system think it is, and is it due for
 calibration. They type or scan an identifier and get one screen with the answer.
 
-**Why this priority**: This is the minimum viable system. It answers acceptance questions 1, 2 and 3
-on its own, and it is the screen every other feature launches from. If nothing else in the programme
-shipped, a searchable and trustworthy catalogue would still replace the daily "does anyone know where
-the Micromate is?" message.
+**Why this priority**: This is the first independently testable read slice and the screen every other
+feature launches from. It is not a viable operating release on its own: pilot scope must include the
+truth-restoring Checkout + Return loop so the catalogue does not decay after launch.
 
 **Independent Test**: Load the migrated inventory, hand a technician a physical instrument, and ask
-them to tell you its home office and custodian without opening Excel or asking a colleague. Fully
-testable with zero transaction capability built.
+them to identify it and state only the Work-authorized current context without opening Excel or asking
+a colleague. This verifies the read slice; it does not qualify a pilot without transactions.
 
 **Acceptance Scenarios**:
 
-1. **Given** an asset tagged `DL-UM-16984` exists, **When** the technician enters `16984` in search,
-   **Then** the asset appears in results within 2 seconds showing its Asset ID, model, status,
-   current location and custodian.
+1. **Given** an asset tagged `DL-UM-16984` is in the technician's authorized Work scope, **When** the
+   technician enters `16984` in search, **Then** the asset appears within 2 seconds showing its
+   friendly equipment label, Asset ID and only the qualified current context/readiness fields allowed
+   by the Work projection.
 2. **Given** the serial `UM16984` belongs to both a data logger and a geophone, **When** the
    technician searches `UM16984`, **Then** both assets are listed and visually distinguished by
    equipment type and Asset ID, and neither is silently preferred.
-3. **Given** an asset detail screen is open, **When** the technician looks at it, **Then** current
-   status, current location, custodian, assigned project, parent asset, next calibration due date and
-   home office are all visible without scrolling past a second screen.
-4. **Given** an asset whose next calibration date has passed, **When** its detail screen opens,
-   **Then** the calibration date is visually flagged as overdue.
+3. **Given** a Field Work asset detail is open, **When** the technician looks at it, **Then** identity,
+   qualified current context, one server-derived recorded-readiness message, permitted actions and a
+   short relevant activity summary are visible without a tab maze; maintenance records, certificate
+   links, costs, audit detail, data-quality entities and unrelated people are absent from the response.
+4. **Given** an asset whose recorded calibration policy blocks use, **When** its Field detail opens,
+   **Then** it shows `Use blocked — {reason}` and the permitted next action. A due date may be shown
+   when policy permits, but no calibration history or evidence metadata is returned.
 5. **Given** a search term matching nothing, **When** it is submitted, **Then** the technician is told
    nothing matched and is offered the option to search by model instead — not shown an empty screen.
 6. **Given** a Field User is viewing a SIM asset, **When** the detail screen renders, **Then** ICCID,
-   phone number and static IP are not displayed.
+   phone number, static IP, internal identifiers and other Administration-only fields are absent from
+   the server response, cache and DOM rather than merely hidden.
 
 ---
 
@@ -68,11 +76,12 @@ physically verify the listed items are in the room.
    listed, grouped by equipment type with a count per group.
 2. **Given** an asset is Retired, **When** any availability list is produced, **Then** it never
    appears.
-3. **Given** an asset is CheckedOut, Deployed, InCalibration, NeedsRepair or Missing, **When** the
-   availability list is produced, **Then** it is excluded, and the technician can switch to an "all
-   statuses at this office" view that shows it with its status and custodian.
-4. **Given** the technician changes the office filter to Sudbury, **When** the list refreshes,
-   **Then** it reflects Sudbury without requiring a reload of the application.
+3. **Given** an asset is CheckedOut, Deployed, at the lab, blocked by a recorded repair state or
+   Missing, **When** the availability list is produced, **Then** it is excluded. Work does not reveal
+   an unrelated custodian merely to explain unavailability.
+4. **Given** the technician attempts to choose an office outside their authorized Work row scope,
+   **When** the filter opens or a direct request is made, **Then** that office is unavailable and no
+   protected count or row is fetched.
 
 ---
 
@@ -101,8 +110,9 @@ three resulting Asset IDs are unique, correctly prefixed, and match the physical
    save is refused with the existing asset shown, so the admin can tell a duplicate from a
    re-registration.
 4. **Given** the admin tries to type a manufacturer or model that is not in the catalogue, **When**
-   they attempt it, **Then** there is no free-text field to type it into; they are directed to add the
-   model to the catalogue first.
+   they attempt it, **Then** there is no free-text field. They receive an explicit handoff to the
+   governed Feature 011 reference workflow only if authorized, otherwise instructions to request a
+   steward change.
 5. **Given** a new asset is created, **When** it is saved, **Then** a history entry recording its
    addition to inventory exists, and its status is Available at its home office.
 6. **Given** an existing asset, **When** any user with any role attempts to change its Asset ID,
@@ -110,15 +120,17 @@ three resulting Asset IDs are unique, correctly prefixed, and match the physical
 
 ---
 
-### User Story 4 - Curate the model catalogue and the location hierarchy (Priority: P3)
+### User Story 4 - Consume a governed model catalogue and location hierarchy (Priority: P3)
 
-A System Owner or office admin maintains the lists everything else picks from: equipment models with
-their manufacturer, type, asset group, ID prefix and default calibration interval; and the location
-tree of regions, offices, sites, calibration labs and vehicles.
+The registry consumes the governed lists everything else picks from: equipment models with their
+manufacturer, category, ID prefix and default calibration interval; and the location tree of regions,
+offices, sites, calibration labs and vehicles. Feature 011 owns create/edit/deactivate/re-parent/merge
+commands, impact previews and approvals in Administration; this feature owns lookup integrity and
+correct registry behavior after those commands succeed.
 
-**Why this priority**: Prerequisite in build order, but third in user-visible value — it is
-administrative screen work, and Phase 1 can survive on catalogue data loaded by migration with edits
-made by the System Owner directly. Sequencing it P3 keeps the MVP honest.
+**Why this priority**: Curated references are a prerequisite, but the registry must not create a
+second, weaker administration path. Phase 1 may consume reviewed migration seeds while the governed
+Feature 011 Administration workflow is gated.
 
 **Independent Test**: Add a genuinely new model (a manufacturer the fleet has never held) and confirm
 an asset of that model can then be registered, calibrated and reported on with no other change.
@@ -240,34 +252,41 @@ confirm each scan reaches the right asset in one action, or one action plus one 
   The display name carries the type where needed so the rows stay distinguishable.)*
 - **FR-011**: System MUST support a hierarchical location structure covering region, office, site,
   vehicle, calibration lab, client premises and storage, and MUST prevent cyclic parentage.
-- **FR-011a**: System MUST support an unbounded number of offices, at any level of the hierarchy, added
-  and removed by administrators without a configuration or code change. No fixed office list may exist
+- **FR-011a**: System MUST support an unbounded number of offices, at any level of the hierarchy,
+  added, deactivated or moved through governed Feature 011 reference commands without a configuration
+  or code change. No fixed office list may exist
   anywhere — not in the schema, the interface, the automation, the notification configuration, or a
   reference file.
-- **FR-011b**: Administrators MUST be able to re-parent a location — move an office under a different
-  region, or promote it — without altering any asset that references it, and without editing asset
-  records.
+- **FR-011b**: A caller with the exact Feature 011 reference capability, approved Administration
+  purpose and impact preview MUST be able to re-parent a location—move an office under a different
+  region, or promote it—without altering any asset that references it or editing asset records.
 - **FR-011c**: System MUST derive every per-office behaviour, including notification recipients and
   availability grouping, from the location table as it stands, so that a newly added office is served
   immediately.
 - **FR-012**: System MUST allow reference records to be deactivated but MUST refuse deletion of any
   record still referenced by an asset or a history entry.
-- **FR-013**: Users MUST be able to add an equipment model and a location only when holding an
-  administrative role.
+- **FR-013**: Users MUST be able to add an equipment model or location only in Administration with the
+  exact approved reference-data purpose, named capability and row scope. An administrative role label
+  alone is insufficient.
 
 **Read model and search**
 
 - **FR-014**: Users MUST be able to search assets by Asset ID, serial number, secondary identifier and
-  model name, matching partial values.
-- **FR-015**: System MUST display, for each asset: Asset ID, model, manufacturer, equipment type,
-  asset group, serial, home office, current status, current location, custodian, assigned project,
-  parent asset, child assets, next calibration due, lifecycle state and notes.
+  equipment model name or equipment type, matching partial values without requiring enum casing or
+  punctuation.
+- **FR-015**: System MUST maintain the complete registry facts but return only the versioned
+  workspace/purpose projection for each asset. Field Work is limited to identity, qualified current
+  context, recorded readiness, permitted actions and short relevant activity; Reports and
+  Administration use their own explicit allowlists.
 - **FR-016**: System MUST exclude Retired assets from default search results and from all availability
   lists, while keeping them retrievable by exact Asset ID and by report.
-- **FR-017**: Users MUST be able to filter assets by current location, status, equipment type, asset
-  group, custodian and assigned project, in combination.
+- **FR-017**: Users MUST be able to filter only the asset rows and dimensions authorized for the active
+  workspace and purpose. Field Work MUST NOT expose organization-wide custodian, maintenance or
+  governance facets; Reports and Administration define separate scoped facets.
 - **FR-018**: System MUST provide a filter for assets currently held by the signed-in user.
-- **FR-019**: System MUST visually distinguish an overdue calibration date from a future one.
+- **FR-019**: Work MUST present calibration only through the signed, server-derived recorded-readiness
+  result and permitted next action; technical maintenance records and evidence remain in
+  Administration or an approved evidential purpose.
 - **FR-020**: System MUST indicate, when displaying cached data, that the data is cached and the time
   it was retrieved.
 - **FR-021**: Users MUST be able to open an asset by scanning a machine-readable tag, and System MUST
@@ -275,11 +294,11 @@ confirm each scan reaches the right asset in one action, or one action plus one 
 
 **Lifecycle**
 
-- **FR-022**: Users holding an administrative role MUST be able to register a new asset, and System
-  MUST record that registration as a history entry.
+- **FR-022**: A user in Administration with `asset.register` and matching row scope MUST be able to
+  register a new asset, and System MUST record that registration as a history entry.
 - **FR-023**: System MUST set a newly registered asset to Available at its home office.
-- **FR-024**: Users holding an administrative role MUST be able to retire an asset, and System MUST
-  require a reason from a fixed list.
+- **FR-024**: A user in Administration with `asset.retire` and matching row scope MUST be able to
+  retire an asset, and System MUST require a reason from a fixed list.
 - **FR-025**: System MUST clear custodian, assigned project and current location on retirement, and
   MUST leave all history entries intact.
 - **FR-026**: System MUST retain a retired asset and its complete history indefinitely. *(Q13 resolved:
@@ -290,14 +309,16 @@ confirm each scan reaches the right asset in one action, or one action plus one 
 
 - **FR-027**: System MUST NOT expose any user-facing write path to current status, current location,
   custodian, assigned project or parent asset.
-- **FR-028**: System MUST deny update privileges on those attributes to every role except System Owner,
-  enforced by the data platform and not solely by the interface.
+- **FR-028**: System MUST deny direct update privileges on those derived attributes to every principal,
+  including SystemOwner. Only named server-authoritative business commands may change their source
+  facts.
 
 **Sensitive data**
 
 - **FR-029**: System MUST NOT store login credentials or passwords in any field, note or attachment.
-- **FR-030**: System MUST restrict reading of SIM ICCID, phone number and static IP to administrative
-  roles and above, enforced at the data layer.
+- **FR-030**: System MUST return SIM ICCID, phone number and static IP only from a named Administration
+  projection when the request has `network.asset.read`, matching row scope and an approved purpose;
+  role membership alone never releases them.
 
 **Localisation**
 

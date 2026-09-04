@@ -34,9 +34,13 @@ triage this prompt implements. Execute from specs/010-web-application-platform/t
 
 ## Still open — do not invent
 
-- **R5** global vs office-scoped admin (use a test-double / feature flag for the race).
+- **D18 authorization mapping** beyond the decided R5 ceiling. OfficeAdmin is assigned-office;
+  SystemOwner has a global row-scope ceiling. Neither receives routes, purposes, capabilities or fields
+  automatically; use capability-bearing test doubles and the purpose-sized projections in
+  `docs/25-need-to-know-access-ux.md`.
 - **R6** Azure enterprise set (does not block local proof).
-- Q18 permanent-component calibration; full docs/15+16 table review; Data Steward role.
+- Q18 permanent-component calibration; full docs/15+16 table review; exact Data Steward capability
+  bundle (it is not a fifth application role).
 
 ## Verified starting state — do not re-derive
 

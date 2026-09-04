@@ -21,9 +21,9 @@ This plan does **not** invent UI screens, redefine transaction command shapes, o
 contract file is not yet present, treat the path as the intended consume target and mark the harness
 task blocked until that contract freezes.
 
-## Spec wording amendments (do not edit `spec.md` in this pass)
+## Spec wording amendments (reconciled)
 
-Apply these when scrubbing 009 `spec.md` / checklist later:
+These scrubs are now reflected in `spec.md` and the checklist:
 
 | Location | Current | Replace with |
 |---|---|---|
@@ -33,8 +33,9 @@ Apply these when scrubbing 009 `spec.md` / checklist later:
 | CHK035 | “without opening the Code App” | Same FR-031 replacement |
 | docs/13 maturity list | “Tenant Implemented” | Same README vocabulary (docs scrub is outside 009 ownership; note only) |
 
-**Recommended one-line note for a future spec scrub**: change FR-031 and FR-041 wording as above;
-do not leave “Code App” or “Tenant Implemented” as production status language.
+The D18 amendment additionally replaces role-only authorization language with the full
+workspace/purpose/capability/row-scope/projection decision from
+`docs/25-need-to-know-access-ux.md`.
 
 ## Role versus 010 and 011
 
@@ -46,7 +47,7 @@ do not leave “Code App” or “Tenant Implemented” as production status lan
 | Five-asset race, registration concurrency, security matrix, device evidence record, cutover checklist, recovery drill | Implement harness targets | — | Define acceptance contracts + evidence tasks |
 | UI / PWA / API / migrations / IaC | Build | Build DM surfaces | Prove / record / refuse-to-claim |
 
-## Blocking assumptions (from `specs/_planning/MULTI-AGENT-OWNERSHIP.md`)
+## Current gates (the former `_planning/MULTI-AGENT-OWNERSHIP.md` table is historical context)
 
 | ID | How 009 treats it |
 |---|---|
@@ -54,7 +55,7 @@ do not leave “Code App” or “Tenant Implemented” as production status lan
 | **R2** atomic command contract | Harnesses blocked on 010 contract freeze before claiming WS-W4 pass. |
 | **R3** full schema | First-proof subset is enough for five-asset and registration proofs; full schema approval remains a gate before Migration Rehearsed / Pilot. |
 | **R4** Q8 / Q9 | Checkout proof fields carry `// ASSUMPTION` where command payloads include expected-return or backdate. |
-| **R5** admin scope | Security-matrix office-scope rows blocked until global vs office-scoped admin is decided; document whichever model is chosen honestly (FR-026). |
+| **R5** admin scope | **DECIDED 2026-09-04** — OfficeAdmin is assigned-office scoped; SystemOwner has a global row-scope ceiling. D18 still requires the active workspace, purpose, named capability and allowlisted projection for every request. |
 | **R6** Azure enterprise | Does **not** block local PostgreSQL proof (US1/US2/parts of US3). **Does** gate Azure Integrated recovery drills, hosted device matrix on published apps, and Production Accepted restore evidence. |
 
 **Gate rule encoded here**: **R1–R4 gate local atomic/identity proof.** **R6 gates Azure recovery drills** and hosted production-environment evidence. Do not refuse to run the five-asset race because Azure subscription work is open.
@@ -93,7 +94,8 @@ do not leave “Code App” or “Tenant Implemented” as production status lan
 | **VI — maintainable by a successor** | Evidence records have owner, date, pass/fail, artifact link; recovery drills are named procedures. | Verbal “we tried it” without retained artifacts. |
 | **VII — no credentials** | Device and security evidence must show Field User stores exclude secured SIM/network fields; logs redact secrets. | Dumping full API responses into evidence packs. |
 
-**Result: PASS** for planning. No constitution exception required. Open product decisions (R1–R5) are assumptions, not principle violations.
+**Result: PASS** for planning. No constitution exception required. Any remaining R1–R4 product
+assumptions are explicit and do not weaken D18 authorization.
 
 ## Project Structure
 
@@ -141,7 +143,7 @@ Prefer dated files under a future `docs/evidence/009/` or CI artifact store once
 | **US1** Apply one complete event or none | **WS-W4** | `five-asset-race.md` | Required | Retest on Dev/UAT after Azure Integrated |
 | **US2** Allocate stable identity safely | **WS-W4** | `registration-concurrency.md` | Required | Retest after Entra-backed registration |
 | **US3** Preserve simultaneous asset facts | **WS-W4** (+ reporting WS-W9 for SC-006) | Covered by race + state assertions in five-asset / security / reporting evidence | Required once R1 frozen | Confirm in-app/approved reports |
-| **US4** Prove authorization through every path | **WS-W12** (needs WS-W3) | `security-matrix.md` | Partial with test tokens if allowed | Full Entra + office matrix |
+| **US4** Prove authorization through every path | **WS-W12** (needs WS-W3) | `security-matrix.md` | Partial with test tokens if allowed | Full Entra + workspace/purpose/capability/row/projection matrix |
 | **US5** Real mobile and offline behavior | **WS-W6** build; **WS-W12** evidence | `device-evidence.md` | Emulator ≠ pass | Hosted iOS/Android matrix required |
 | **US6** Cut over and recover safely | **WS-W11** cutover; **WS-W12** recovery | `cutover-reconciliation.md`, `recovery-drill.md` | Migration dry-run against Postgres | Platform + DB + Blob restore drills |
 

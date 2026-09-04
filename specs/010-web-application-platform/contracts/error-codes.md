@@ -43,7 +43,11 @@ export interface ApiErrorBody {
 | `auth.error.inactiveUser` | `app_user.is_active = false` |
 | `auth.error.clientAuthorityForbidden` | Browser sent role/state authority |
 | `auth.error.identityMismatch` | Offline replay identity ≠ session |
-| `auth.error.officeScope` | Cross-office action refused (**ASSUMPTION: R5**) |
+| `auth.error.officeScope` | Request exceeds the decided row-scope ceiling (OfficeAdmin assigned-office; SystemOwner global ceiling only) |
+| `auth.error.workspace` | Identity is not eligible for the requested Work, Reports or Administration workspace |
+| `auth.error.purpose` | Route purpose is absent or not approved for the caller/context |
+| `auth.error.capability` | Exact named capability is absent; a coarse role cannot substitute |
+| `auth.error.projection` | Requested response/export/document projection is not approved |
 
 ### Command / idempotency — `command.*`
 

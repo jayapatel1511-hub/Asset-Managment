@@ -37,7 +37,10 @@ Power Platform and Zite remain **parked**. No Dataverse adapter, no Zite store, 
 
 **Storage**: PostgreSQL for dictionary, quality, jobs, redirects, retention; private Blob for import sources and export artifacts; reuse `audit_event`, `document`, aliases, outbox — do not duplicate
 
-**Testing**: Domain/unit tests; database constraint tests; API integration against PostgreSQL; role/office direct API tests; dry-run/apply/idempotency; duplicate/redirect/history preservation; export auth/expiry; retention/hold/purge-preview
+**Testing**: Domain/unit tests; database constraint tests; API integration against PostgreSQL; direct
+API role × workspace × purpose × capability × row scope × projection/forbidden-key tests;
+dry-run/apply/idempotency; duplicate/redirect/history preservation; export auth/expiry;
+retention/hold/purge-preview
 
 **Target Platform**: Azure Container Apps (Canadian region); Entra OIDC; Console surface for admin/data-management UI
 
@@ -45,7 +48,9 @@ Power Platform and Zite remain **parked**. No Dataverse adapter, no Zite store, 
 
 **Performance Goals**: Overview and issue search usable at 5,000 assets / 100,000+ transaction lines without full-fleet client download; 5,000-row dry run within approved budget; jobs must not hold locks that disrupt checkout beyond approved budget
 
-**Constraints**: No invented retention periods; no auto-merge on serial; no generic PATCH; Data Steward role shape open; classification labels open; high-impact writes wait for 010 foundations
+**Constraints**: No invented retention periods; no auto-merge on serial; no generic PATCH; OD-2 Data
+Steward bundle and OD-4 classification are decided; exact D18 capability mapping and named owners
+remain; high-impact writes wait for 010 foundations
 
 **Scale/Scope**: US1–US8; ~9 physical entity groups (docs/16 §14); eight HTTP contract families; Console Data Management area (capability owned here; shell owned by WS-W5)
 
@@ -73,17 +78,17 @@ Power Platform and Zite remain **parked**. No Dataverse adapter, no Zite store, 
 | **CLAUDE 19** — Governed exports | Approved templates, server scope, private short-lived artifacts, audit. | Client-side CSV of API pages. |
 | **CLAUDE 20** — Retention / legal hold | Versioned policy; hold; preview; no general delete. | Ad-hoc DELETE for “cleanup”. |
 
-**Blocking assumptions** (from `specs/_planning/MULTI-AGENT-OWNERSHIP.md`):
+**Current gates** (the former `_planning/MULTI-AGENT-OWNERSHIP.md` table is historical context):
 
 | ID | Treatment in 011 |
 |---|---|
 | **R1** three-axis state | Plan against it; mark `R1 APPROVED 2026-09-03`. Quality replay rules and merge state checks use lifecycle / disposition / serviceability / calibration currency. |
 | **R2** atomic command | High-impact writes blocked until 010 freezes command/idempotency/error contracts. |
 | **R3** full schema | Dictionary + quality tables may use first-proof-compatible subset after schema gate; full 011 entities need docs/15 approval including docs/16 §14 additions. |
-| **R5** admin scope | Auth tasks for Office Admin vs global steward blocked until decided. |
+| **R5** admin scope | **DECIDED 2026-09-04** — OfficeAdmin is assigned-office scoped; SystemOwner has a global row-scope ceiling. Data-steward access still requires the Administration workspace, an approved purpose, exact capability and purpose-sized projection under D18. |
 | **R6** Azure enterprise | Does not block local Postgres read/quality proof. |
 
-**Result: PASS** with explicit open-decision STOP gates (not silent product choices).
+**Result: PASS** with explicit remaining STOP gates (not silent product choices); R5 is no longer open.
 
 ---
 
@@ -172,29 +177,26 @@ See [research.md](research.md). Settled for planning:
 
 - [data-model.md](data-model.md) maps docs/16 §14 entities onto PostgreSQL conventions from docs/15.
 - Contracts freeze request/response shapes for dictionary, quality, reference, correction, jobs, duplicates, exports, retention.
-- Open decisions remain STOP gates — plans mark `// ASSUMPTION` only where MULTI-AGENT-OWNERSHIP requires planning against R1; product choices are not invented.
+- Open decisions remain STOP gates. R1–R5 are recorded decisions; D18 implementation/evidence and
+  genuinely open product/enterprise choices are not converted into assumptions or invented.
 
 **Post-design constitution re-check: PASS.** The standing prohibition is any endpoint that accepts arbitrary column patches or SQL.
 
 ---
 
-## Open decisions (STOP gates — do not invent)
+## Current open decisions (STOP gates — do not invent)
 
-| # | Decision | Blocks |
-|---|---|---|
-| OD-1 | Data Steward: distinct Entra/app role vs permission set | US2–US8 authorization |
-| OD-2 | Named Data Owner / steward per domain and office | Issue ownership, alerts |
-| OD-3 | Two-person approval thresholds | High-impact writes |
-| OD-4 | Corporate classification taxonomy labels | Dictionary SC-001 |
-| OD-5 | Retention periods beyond indefinite asset/history | US8 apply (preview/register may stub “unspecified”) |
-| OD-6 | Legal-hold authority and release process | US8 hold release |
-| OD-7 | Office Admin permitted bulk operations | US4 scope |
-| OD-8 | Initial export templates and row/field limits | US7 |
-| OD-9 | Source-file / artifact retention after import | US4 artifacts |
-| OD-10 | Project-master authority and sync contract | US6 |
-| OD-11 | Merge policy when both records have conflicting post-go-live histories | US5 merge |
-| OD-12 | Quality service levels by severity/office | US1 alerts |
-| OD-13 | Dictionary change approval breadth | Dictionary maintenance writes |
+| Decision | Blocks |
+|---|---|
+| Named Data Owner / steward per domain and office | Issue ownership and alerts |
+| Legal/statutory obligations that supersede OD-5 defaults | Any broader retention/purge activation |
+| Project-master authority and sync contract | US6 |
+| Quality service levels by severity/office | US1 production alerts |
+| Dictionary-change approval breadth | Dictionary maintenance writes |
+| Final Entra/group-to-capability mapping inside R5/D18 | All production authorization evidence |
+
+OD-2 through OD-9 and OD-11 are decided in `docs/08-decisions.md`; implementation and evidence are
+still separate. The table above must not reopen them under the plan's older numbering.
 
 Plus **Blocked on 010 WS-W3/W4 foundations** for all write stories (US2 write path after auth decision; US3–US8 writes).
 

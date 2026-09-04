@@ -1,5 +1,11 @@
 # Implementation Plan: Fleet Reporting
 
+> **PRE-PIVOT EXECUTION RECORD — NOT CURRENT IMPLEMENTATION GUIDANCE.** The feature spec plus
+> `docs/23-canonical-product-ux-contract.md` and `docs/25-need-to-know-access-ux.md` govern now.
+> In-app Reports is primary; Power BI is optional. ReportReader-only users receive no Field/Work
+> shell, and general Reports receive no maintenance evidence, certificate links, free text, performer
+> identity, costs, secured attributes or Administration detail.
+
 **Branch**: `006-fleet-reporting` | **Date**: 2026-09-02 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/006-fleet-reporting/spec.md`

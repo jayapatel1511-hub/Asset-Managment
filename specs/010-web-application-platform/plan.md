@@ -5,7 +5,10 @@
 **Input**: Feature specification from `specs/010-web-application-platform/spec.md`  
 **Status**: Draft plan — **not Spec Approved**. Checklist remains 5 of 112 reviewed.
 
-**Governing docs**: constitution 2.0.0, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md` (§3 **APPROVED** — R1 2026-09-03), `specs/REMAINING-WORK.md` (WS-W1…W12, R1–R6).
+**Governing docs**: constitution 2.1.0, `docs/14-webapp-architecture.md`,
+`docs/15-postgres-data-model.md` (§3 **APPROVED** — R1 2026-09-03),
+`docs/23-canonical-product-ux-contract.md`, `docs/25-need-to-know-access-ux.md`, and
+`specs/REMAINING-WORK.md` (WS-W1…W12, R1–R6).
 
 ## Summary
 
@@ -31,7 +34,7 @@ need Azure or Entra (R6 does not block local proof).
 | **R2** atomic command | **FROZEN** for first proof | Silent rewrite of lock/idempotency rules |
 | **R3** schema | First-proof subset **APPROVED**; full catalogue review open | Full WS-W2 parallel beyond subset |
 | **R4** Q8 / Q9 | **APPROVED** | — |
-| **R5** admin scope | Open | Production OfficeAdmin behaviour |
+| **R5** admin scope | **DECIDED 2026-09-04** — OfficeAdmin assigned-office; SystemOwner global row ceiling | D18 workspace/purpose/capability/projection implementation and proof still open |
 | **R6** Azure enterprise | Open | WS-W10 / Azure deploy |
 
 ## Technical Context
@@ -50,8 +53,10 @@ local Docker/Colima Postgres for developer and integration tests.
 concurrency / fault-injection suite for WS-W4; contract tests between `packages/contracts/` and
 `app/src/api/http/`; later device matrix for PWA (WS-W6 / WS-W12).
 
-**Target Platform**: Mobile-first PWA at 390 px, Entra workforce sign-in, Canadian Azure region for
-production data/documents. Power Platform and Zite are **parked** — no Dataverse or Zite work.
+**Target Platform**: Responsive three-surface PWA — Field Work optimized at the 390 px reference;
+Desk Work/Reports and Console Administration desktop-first and responsive without collapsing into
+Field. Entra workforce sign-in; Canadian Azure region for production data/documents. Power Platform
+and Zite are **parked** — no Dataverse or Zite work.
 
 **Project Type**: Monorepo emerging under `app/`, `server/`, `packages/`, `db/`, `infra/` as
 implementation lands.
@@ -60,8 +65,9 @@ implementation lands.
 load targets (5,000 assets / 100k+ lines) belong to WS-W12.
 
 **Constraints**: Browser owns no business authority. One business event = one atomic DB commit.
-No credentials in source, bundle, or Field User offline cache. No empty scaffolding directories.
-Synthetic data refused in production mode.
+Every protected route authorizes workspace, purpose, named capability, row scope and versioned
+projection before fetch. No credentials or non-purpose fields in source, bundle, Field Work responses
+or offline cache. No empty scaffolding directories. Synthetic data refused in production mode.
 
 **Scale/Scope**: ~1,050 source assets; five user stories (US1–US5); work mapped to WS-W1…W12.
 
@@ -77,11 +83,11 @@ Synthetic data refused in production mode.
 | **IV — reference data is picked** | Command payloads carry UUIDs/codes to curated rows; free text only where already decided (notes, site position). Admin stewardship of references is feature 011. | Do not reintroduce free-text manufacturer/model on write commands. |
 | **V — refuse at every layer** | Client feedback + API validation + DB constraints. Race loser gets structured conflict, not a half write. | UI-only disable as “security evidence”. |
 | **VI — maintainable by a successor** | Migrations, contracts, IaC, runbooks, CI in repo; Dev deploy from artifacts + documented enterprise prerequisites. | Undocumented Entra/portal clicks as required steps. |
-| **VII — no credentials** | Entra OIDC; managed identity to Blob/Postgres; no AMS password store; Field User DTOs omit SIM/network/certificate bytes. | Putting storage account keys in client or long-lived CI secrets. |
+| **VII — no credentials / minimum disclosure** | Entra OIDC; managed identity to Blob/Postgres; no AMS password store; purpose-sized allowlists keep maintenance/evidence, cost, actor, audit, quality, secured-network and internal fields out of Field Work/general Reports. | Putting storage keys in clients or trimming a universal record only after it reaches the browser. |
 | **VIII — one atomic commit** | Single Postgres transaction: idempotency claim, locks, validation, header/lines, derived state, relationships, outbox. Same submission ID + hash replays; different hash refused. | Per-line commits or “apply then notify” outside the outbox. |
 
-**Result: PASS** for the planned approach, subject to freezing R1–R4 before WS-W4 implementation.
-Open product fields are marked `ASSUMPTION` in contracts — not silently decided.
+**Result: PASS** for the planned approach. R1–R5 are decided; remaining product/enterprise fields
+and D18 implementation/evidence gaps are explicit rather than silently treated as permission.
 
 ## Project Structure
 
@@ -147,7 +153,7 @@ contracts; feature 009 owns proof harness outcomes that **consume** these 010 co
 | Phase 1 — contracts + first-proof data model | R2 frozen draft, R3 subset | Contracts under `contracts/`; `data-model.md` |
 | Phase 2 — foundation | **WS-W1** | Workspace commands, local Postgres (Docker/Colima), health, `packages/contracts` first files |
 | Phase 3 — schema subset | **WS-W2** (subset) | Migrations for race tables only after R1 |
-| Phase 4 — caller context | **WS-W3** (stub → Entra) | Test doubles until R5/R6; Entra when ready |
+| Phase 4 — caller context | **WS-W3** (stub → Entra) | Capability-bearing test doubles under decided R5 and D18; Entra when R6 is ready |
 | Phase 5 — atomic command MVP | **WS-W4** | Five-asset checkout race + registration proof |
 | Phase 6 — HTTP workflows | **WS-W5** | `app/src/api/http/` checkout→… migration order |
 | Phase 7 — PWA offline | **WS-W6** / US3 | Service worker, IndexedDB, queue, Needs attention |
@@ -184,5 +190,5 @@ a generic table PATCH.
 | Violation / stretch | Why Needed | Simpler Alternative Rejected Because |
 |---|---|---|
 | Dual adapters (mock + HTTP) during transition | UI and 318+ unit tests must keep running while API is built | Big-bang cutover would block all frontend work on Postgres readiness |
-| Test-double auth before Entra (R5/R6) | Local race proof must not wait on enterprise Entra app registration | Blocking WS-W4 on R6 idles the critical path behind procurement |
+| Test-double auth before Entra (R6; R5 decided) | Local race proof must not wait on enterprise Entra app registration; doubles must already carry D18 workspace, purpose, capability, scope and projection context | Blocking WS-W4 on R6 idles the critical path behind procurement |
 | First-proof schema subset before full `docs/15` approval | Prove VIII early with `asset`, transactions, idempotency, sequence, outbox | Waiting for every 011 table before any proof delays the whole programme |

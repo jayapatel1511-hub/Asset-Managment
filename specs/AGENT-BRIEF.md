@@ -1,5 +1,12 @@
 # Agent brief — orientation for anyone (or anything) writing code here
 
+> **LEGACY 2026-09-02 ORIENTATION — DO NOT USE AS CURRENT IMPLEMENTATION AUTHORITY.** Its
+> Windows/Dataverse/Power Automate sequence and maintained-artifact pointers predate the web-platform
+> pivot and D18. Current order is `CLAUDE.md`, `specs/README.md`, `specs/REMAINING-WORK.md`,
+> `docs/14-webapp-architecture.md`, `docs/23-canonical-product-ux-contract.md`,
+> `docs/25-need-to-know-access-ux.md`, then the owning feature. Historical commands below are evidence
+> only.
+
 **Read this before touching a file.** It exists because most of this system is already built, and
 the fastest way to waste a session is to rebuild something that works or to collide with another
 agent on a shared file.

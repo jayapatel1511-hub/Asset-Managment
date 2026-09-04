@@ -6,6 +6,10 @@ derivation and the display-pill precedence order).
 **Consumers**: WS-W1 smoke, Container Apps probes, `app/src/api/http/` initial reads, offline cache
 hydration (approved projections only).
 
+**D18 amendment (2026-09-04):** [the need-to-know contract](../../../docs/25-need-to-know-access-ux.md)
+supersedes the former universal asset DTO. This contract now owns the Work read projection only;
+Reports and Administration use separate route-owned contracts and responses.
+
 ## Health
 
 ```http
@@ -47,89 +51,113 @@ export interface MeResponse {
     displayName: string;
     upn: string;
     roles: Array<"FieldUser" | "OfficeAdmin" | "SystemOwner" | "ReportReader">;
+    capabilities: string[]; // navigation hints only; API recomputes authorization
+    eligibleWorkspaces: Array<"Work" | "Reports" | "Administration">;
+    primaryWorkspace: "Work" | "Reports" | "Administration";
     officeScopes: Array<{
       officeLocationId: string;
       officeName: string;
       scopeType: "Member" | "Administer" | "Report";
     }>;
   };
-  /** ASSUMPTION: R5 mirrored for UI affordances only — not security. */
+  /** Decided R5 ceiling mirrored for UI affordances only — not security. */
   adminScopeMode: "global" | "office";
 }
 ```
 
-## Asset search (minimal)
+## Work asset search (minimal)
 
 ```http
-GET /api/assets?q=&officeId=&disposition=&serviceability=&calibrationCurrency=&limit=&cursor=
+GET /api/assets?q=&officeId=&disposition=&serviceability=&categoryId=&limit=&cursor=
 ```
 
-Authenticated. Server applies role + office scope. Field User responses **omit** secured
-identifiers (ICCID, phone, static IP, etc.).
+Authenticated and Work-only. Before querying, the server validates active workspace, route purpose,
+`asset.operational.read`, row scope, and the applicable Field/Desk Work projection. ReportReader-only
+and Administration-only callers are refused before any asset row/count is fetched. An A/S role in
+Work receives the same Work projection; role does not enrich it.
 
 ```ts
-export interface AssetSearchHit {
-  id: string;                 // UUID
-  assetId: string;            // canonical tag
-  serial: string | null;
-  modelName: string;
-  manufacturer: string;
-  lifecycle: string;          // R1 APPROVED 2026-09-03
-  disposition: string;        // R1 APPROVED 2026-09-03
-  serviceability: string;     // R1 APPROVED 2026-09-03
-  /**
-   * Fourth approved axis — **derived, never a stored column**.
-   * `NotRequired | Unknown | Current | DueSoon | Overdue | Failed`
-   * Derivation and precedence: `transition-table.md` §6 (DC-18, DC-19, DC-20).
-   * DEMO CALL 2026-09-03 (DC-18): `InCalibration` is NOT a currency value — read "at the lab"
-   * off `disposition === "AtCalibrationLab"`.
-   */
-  calibrationCurrency: string;
-  /** Presentation only — from view; never write target. Precedence: `transition-table.md` §7.1 (DC-21) */
-  displayStatus: string;
-  homeOfficeId: string | null;
-  currentLocationId: string | null;
-  custodianUserId: string | null;
-  projectId: string | null;
-  rowVersion: number;
-  // no certificate URLs, no SIM fields
+export interface RecordedReadinessSummary {
+  state: "NoRecordedBlocker" | "AttentionDue" | "Blocked" | "Unknown" | "NotApplicable";
+  reasonCode: string;
+  dueDate?: string;
+  allowedActions: string[];
+  policyVersion: string;
+  evaluatedAt: string;
 }
 
-export interface AssetSearchResponse {
-  items: AssetSearchHit[];
+export interface WorkAssetSearchHit {
+  assetId: string;            // canonical tag
+  friendlyLabel: string;
+  serial?: string | null;     // only when needed for identification/disambiguation
+  modelName: string;
+  categoryName: string;
+  lifecycle: string;
+  disposition: string;
+  serviceability: string;
+  /** Presentation only — from view; never write target. Precedence: `transition-table.md` §7.1 (DC-21) */
+  displayStatus: string;
+  currentContext?: {
+    label: "At" | "With" | "Installed at" | "En route to" | "At calibration lab" | "Last known at";
+    displayValue: string;
+    asOf?: string;
+  };
+  /** Returned only when the recorded result changes this Work decision/next action. */
+  readiness?: RecordedReadinessSummary;
+}
+
+export interface WorkAssetSearchResponse {
+  dataProjectionId: "field_work_asset_v1" | "desk_work_asset_v1";
+  scopeLabel: "Me" | "Office" | "Project";
+  items: WorkAssetSearchHit[];
   nextCursor: string | null;
   generatedAt: string;
 }
 ```
 
+The response contains no database UUID, raw calibration currency/date/history, home-office fallback,
+custodian UPN/user ID, project internal ID, row version, certificate metadata, cost, SIM/network
+field, free-text note, audit metadata, or data-quality field. A workflow-specific command contract
+may return an opaque concurrency token only when that workflow requires one; search does not.
+
 ### Query rules
 
 - `q` matches canonical id, aliases, serial (non-unique), model text — server-side.
-- `disposition`, `serviceability` and `calibrationCurrency` are **fixed-enum filters**, repeatable for OR
-  within one axis and ANDed across axes. They are not a filter DSL — that remains a non-goal below.
-- Values are validated against `transition-table.md` §2 and §6; an unknown value is
+- `disposition`, `serviceability`, and `categoryId` are governed Work filters. Calibration planning
+  and `calibrationCurrency` filtering belong only to Administration → Calibration operations.
+- Values are validated against the owning contracts; an unknown value is
   `command.error.validation`, never a silent empty result.
 - Default `limit` ≤ 50; hard max 100.
 - Unauthorized → `401` / `403` with `auth.error.*` codes, empty body for data.
-- ReportReader: read-only; same omissions for secured fields.
+- ReportReader-only callers use report-owned endpoints/projections; they do not receive this route.
 
-## Asset detail (read)
+## Work asset detail (read)
 
 ```http
 GET /api/assets/:id
 ```
 
-Same field-security rules. Includes alias list and recent transaction summary **without** allowing
-edits. Full timeline endpoints may arrive with WS-W9; minimal detail is enough for deep link US1.
+Eligibility and supported surface are evaluated before the asset is fetched. A denied or out-of-scope
+identifier receives the non-disclosing route policy, so the response cannot confirm whether the
+asset exists. The permitted response answers
+identity, qualified current context, recorded blocker, permitted next action, and a small relevant
+activity subset only. Reports use S19/report routes; Administration uses module-owned routes.
 
 ```ts
-export interface AssetDetailResponse {
-  asset: AssetSearchHit & {
-    aliases: Array<{ value: string; kind: "Temporary" | "Legacy" | "Other" }>;
+export interface WorkAssetDetailResponse {
+  dataProjectionId: "field_work_asset_v1" | "desk_work_asset_v1";
+  asset: WorkAssetSearchHit & {
+    aliases?: Array<{ value: string; kind: "Temporary" | "Legacy" | "Other" }>;
+    recentActivity: Array<{
+      occurredAt: string;
+      summary: string;
+    }>;
   };
-  // sensitiveNetwork?: never for FieldUser
 }
 ```
+
+Aliases and recent activity are separately minimized for the route purpose. There is no optional
+rich block that appears merely because the caller has an admin role.
 
 ## Non-goals for this contract
 
@@ -137,14 +165,18 @@ export interface AssetDetailResponse {
 - Arbitrary SQL / filter DSLs
 - Bulk export (feature 011 / governed exports)
 - Filtering on `displayStatus` — it is a projection, not state; filter the axes instead
-- Offline cache schema (WS-W6) — must project from these DTOs, not raw tables
+- Reports or Administration DTOs; each has its own route/projection contract
+- Offline cache schema (WS-W6) — may cache only the exact approved Work projection, partitioned by
+  environment, tenant, identity, workspace, and projection version; never a richer DTO or raw table
 
 ---
 
 ## Amendments made 2026-09-03 (demo-scoped, reversible)
 
-`docs/19-state-model-decision.md` §9 found three defects in this contract against the approved R1 model. All
-three are fixed above.
+`docs/19-state-model-decision.md` §9 found three defects in the pre-D18 universal contract against
+the approved R1 model. The historical calls below remain as provenance, but D18 supersedes their use
+in Work responses and filters: raw calibration currency is consumed only by an authorized
+maintenance/report projection, while Work receives `RecordedReadinessSummary`.
 
 > **DEMO CALL 2026-09-03 (DC-23)** — `AssetSearchHit` gains `calibrationCurrency`.
 > **Reason:** `docs/19` §9.1 — the read contract exposed 3 of the 4 approved axes. Calibration currency is the

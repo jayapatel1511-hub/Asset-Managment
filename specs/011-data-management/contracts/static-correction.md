@@ -5,6 +5,11 @@
 **Depends on**: **Blocked on 010 WS-W3/W4 foundations**; field dictionary authority modes  
 **Rule**: Named commands only. **No derived-state writes.** No transaction line edit/delete.
 
+**D18 boundary:** Administration → Data governance only. Preview, apply, and approve require
+`data.correction.preview`, `data.correction.apply`, and `data.correction.approve` respectively, plus
+approved purpose, row scope, field policy, and case projection. Work/general Reports receive no
+correction fields, evidence, before/after values, or internal IDs.
+
 ---
 
 ## Allowed command types (initial)
@@ -19,7 +24,7 @@ export type StaticCorrectionCommandType =
   | "CorrectAcquiredDate"
   | "CorrectAssetNotes"
   | "CompleteTemporaryTag"
-  | "CorrectSecondaryIdentifier"; // ICCID/IMEI only when role + dictionary permit
+  | "CorrectSecondaryIdentifier"; // ICCID/IMEI only when capability + dictionary projection permit
 ```
 
 Related **business events** (not static corrections — route to 010 transaction API):
@@ -95,8 +100,8 @@ GET  /api/data-management/corrections/{changeRequestId}
 
 High-impact fields (equipment model, identifiers, ownership): preview mandatory (FR-029).
 
-Separation of duties: requester ≠ approver where configured (**STOP**: OD-3).  
-Office Admin limited to office scope (FR-005).
+Separation of duties follows decided OD-3. OfficeAdmin remains inside assigned-office scope (R5),
+and no action is permitted without the exact correction capability (FR-005).
 
 After apply: related quality issues re-evaluated (FR-030).
 
@@ -113,7 +118,7 @@ After apply: related quality issues re-evaluated (FR-030).
 | `correction.evidenceRequired` | |
 | `correction.previewRequired` | |
 | `correction.selfApprovalForbidden` | |
-| `correction.forbidden` | Role/office/sensitive field |
+| `correction.forbidden` | Workspace/purpose/capability/row scope/sensitive field |
 | `correction.staleRowVersion` | |
 | `correction.externalAuthoritative` | |
 

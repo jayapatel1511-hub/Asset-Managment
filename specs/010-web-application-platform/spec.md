@@ -5,6 +5,12 @@
 **Status**: Draft — platform pivot decided; implementation has not started.  
 **Input**: `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md`, `specs/009-production-readiness/spec.md`, feature specifications 001–008, and the System Owner direction to pivot to a web application.
 
+**Access amendment (D18, 2026-09-04):**
+[`docs/25-need-to-know-access-ux.md`](../../docs/25-need-to-know-access-ux.md) governs Work/Reports/
+Administration separation and purpose-sized read projections. Role + office scope is necessary but
+not sufficient: every read also evaluates workspace, route purpose, named capability, row scope, and
+field policy before fetching/serializing data.
+
 ---
 
 ## Purpose
@@ -32,7 +38,10 @@ A technician opens the AMS URL on a work phone or browser, signs in with their E
 1. **Given** an authorized user, **When** they open the application, **Then** they sign in through Microsoft Entra ID without creating a separate AMS password.
 2. **Given** an unauthorized user, **When** they reach the application, **Then** no asset data is returned and the refusal is understandable.
 3. **Given** a deep link to an asset or installation, **When** an authorized user opens it cold, **Then** the correct screen loads after sign-in.
-4. **Given** a Field User, Office Admin, System Owner, and Report Reader, **When** each signs in, **Then** the API returns only actions and data permitted to that role and office scope.
+4. **Given** a Field User, Office Admin, System Owner, and Report Reader, **When** each signs in and
+   opens the same asset identifier, **Then** the API returns only the versioned projection permitted
+   for that workspace, purpose, capability, row scope, and field policy; no hidden richer record is
+   sent to the browser.
 5. **Given** a sign-out followed by another user signing in on the same device, **When** the second session starts, **Then** no cached data or queued command from the first user is exposed or replayed.
 6. **Given** an application release, **When** the user refreshes or returns later, **Then** the application updates safely without corrupting local drafts or queued commands.
 
@@ -77,15 +86,22 @@ A technician opens the installed web application in a basement or remote site wi
 4. **Given** connectivity returns, **When** replay begins, **Then** commands are sent in the order required to preserve their business meaning.
 5. **Given** the server accepts a queued command but the response is lost, **When** it is retried, **Then** the idempotency result prevents duplication.
 6. **Given** a queued command that conflicts with current server state, **When** replay occurs, **Then** it moves to Needs attention and is not silently discarded or force-applied.
-7. **Given** a Field User, **When** offline data is inspected, **Then** administratively secured identifiers and certificate files are absent.
-8. **Given** a user or environment change, **When** the local store is opened, **Then** data and commands are isolated by tenant, environment, and user identity.
+7. **Given** a Field User, **When** offline data is inspected, **Then** it contains only the exact
+   Field Work projection and none of its forbidden maintenance, evidence, cost, performer, audit,
+   data-quality, secured-network, free-text, internal-ID or unrelated-people fields.
+8. **Given** an identity, environment, workspace, row-scope or capability change, **When** the local
+   store or browser history is opened, **Then** incompatible data and commands are inaccessible and
+   cannot be repainted or replayed.
 9. **Given** a browser that does not support a required offline capability, **When** the application detects it, **Then** it states the limitation and prevents an unsafe assumption of offline readiness.
 
 ---
 
 ### User Story 4 — Store and retrieve calibration evidence privately (Priority: P2)
 
-An office admin records a calibration, uploads its certificate, and retrieves it later from the asset. A failed upload does not lose the calibration fact, a failed calibration does not return the asset to service, and certificate access is authorized by the application.
+An authorized calibration coordinator records a calibration and uploads its certificate; an
+evidence-authorized user retrieves it later through the governed Administration/evidence route, not
+Work Asset Detail. A failed upload does not lose the calibration fact, a failed calibration does not
+return the asset to service, and certificate access is authorized separately by the application.
 
 **Why this priority**: Calibration evidence is the main document workflow and carries compliance consequences.
 
@@ -152,10 +168,21 @@ A successor administrator deploys a version, verifies it, observes health, resto
 - **FR-001**: System MUST run as a standards-based web application without requiring the Power Apps runtime or Dataverse for core operation.
 - **FR-002**: System MUST authenticate workforce users with the organization’s Microsoft Entra tenant using a supported OIDC flow.
 - **FR-003**: System MUST maintain no separate AMS password store.
-- **FR-004**: System MUST enforce role and office scope at the API for every protected read and write.
+- **FR-004**: System MUST enforce identity, tenant/environment, workspace, route purpose, named
+  capability, row scope, and field policy at the API for every protected read and write.
+- **FR-004a**: System MUST separate Work, Reports, and Administration routes/navigation using one
+  governed manifest with exactly one navigation owner and one versioned data-projection ID per route.
+- **FR-004b**: System MUST construct protected responses from server-side field allowlists and MUST
+  NOT serialize a universal record and rely on browser hiding or post-fetch key removal.
+- **FR-004c**: System MUST evaluate direct-route eligibility and supported surface before fetching
+  protected route data; denied/out-of-scope responses disclose no protected count, field, or record existence.
+- **FR-004d**: System MUST clear incompatible navigation, in-memory state, persisted query data,
+  offline data, and browser-history restoration after workspace/identity/tenant/environment change
+  or capability revocation.
 - **FR-005**: System MUST treat the browser as untrusted and MUST NOT accept client-provided authority over current state, role, sequence, or historical snapshots.
 - **FR-006**: System MUST support cold deep links after sign-in.
-- **FR-007**: System MUST isolate local data by tenant, environment, and user.
+- **FR-007**: System MUST isolate local data by tenant, environment, user, workspace, and approved
+  projection version.
 
 ### Atomic commands and history
 
@@ -176,20 +203,24 @@ A successor administrator deploys a version, verifies it, observes health, resto
 ### Offline PWA
 
 - **FR-021**: System MUST provide an installable PWA for supported field devices.
-- **FR-022**: System MUST cache the application shell and approved data required for the declared offline workflows.
+- **FR-022**: System MUST cache the application shell and only the approved purpose-sized projection
+  required for the declared offline workflows.
 - **FR-023**: System MUST persist drafts and queued commands in IndexedDB or an equivalent durable browser store.
 - **FR-024**: System MUST keep queued commands across application restarts and device restarts on supported devices.
 - **FR-025**: System MUST replay queued commands exactly once in the required order when authenticated connectivity returns.
 - **FR-026**: System MUST surface server conflicts for human resolution and MUST NOT silently discard or force-apply them.
 - **FR-027**: System MUST display cache age, last successful sync, pending count, and conflict count.
-- **FR-028**: System MUST exclude secured attributes and certificate bytes from field-user offline storage.
+- **FR-028**: System MUST exclude maintenance records, certificate metadata/bytes, costs, audit and
+  data-quality metadata, secured network/SIM attributes, internal notes/IDs, and unrelated people
+  data from Field responses and offline storage.
 - **FR-029**: System MUST prevent a queued command from replaying under a different identity.
 - **FR-030**: System MUST verify cold-start and replay behavior on every supported browser/device combination before pilot approval.
 
 ### Documents and calibration
 
 - **FR-031**: System MUST store production documents in private object storage and MUST NOT expose an account key to the browser.
-- **FR-032**: System MUST authorize document access through the application’s identity and role model.
+- **FR-032**: System MUST authorize document access using approved evidence purpose, named capability,
+  row scope, document ACL, and audit. Asset-read or general-report permission alone is insufficient.
 - **FR-033**: System MUST retain a calibration fact when its certificate upload fails and MUST allow later attachment.
 - **FR-034**: System MUST enforce approved file types, maximum size, collision-safe naming, integrity hash, and malware-scan disposition.
 - **FR-035**: System MUST preserve replacement and attribution history for documents.
@@ -215,9 +246,12 @@ A successor administrator deploys a version, verifies it, observes health, resto
 ### Reporting and integration
 
 - **FR-051**: System MUST provide read-only web reporting that answers the seven acceptance questions for authorized users.
-- **FR-052**: System MUST exclude secured attributes from general manager/report-reader responses and exports.
+- **FR-052**: System MUST exclude certificate links/metadata, maintenance costs, performer identity,
+  free-text notes, secured attributes, and operational/admin controls from general manager/
+  Report Reader responses and exports. Governed evidence products use separate projections.
 - **FR-053**: System MAY integrate with Teams, email, SharePoint, and Power BI, but failure or absence of those integrations MUST NOT prevent core asset operations.
-- **FR-054**: System MUST expose approved read models/views rather than granting reporting tools unrestricted operational-table access.
+- **FR-054**: System MUST expose versioned, purpose-specific row/field projection views rather than
+  granting reporting tools unrestricted operational-table access or one universal Asset DTO.
 
 ### Migration
 
@@ -252,7 +286,9 @@ A successor administrator deploys a version, verifies it, observes health, resto
 - **SC-006**: A supported phone cold-starts the installed PWA in airplane mode after reboot and opens the approved offline experience.
 - **SC-007**: Thirty queued commands, including intermittent connectivity and five conflicts, are each accepted once or surfaced once for resolution; zero are lost.
 - **SC-008**: A second user signing into the same device cannot read or replay the first user’s local data.
-- **SC-009**: A Field User’s offline store, network responses, reports, and exports contain zero secured identifiers or certificate bytes.
+- **SC-009**: A Field User’s offline store, network responses, DOM, reports, and exports contain zero
+  maintenance records, certificate metadata/bytes, costs, audit/data-quality metadata, secured
+  identifiers, internal notes/IDs, or unrelated people data.
 - **SC-010**: An admin records a calibration fact during an induced upload failure and attaches the certificate later without re-entering or losing the fact.
 - **SC-011**: A failed calibration changes neither last-successful-calibration nor next-due summaries and does not make the asset serviceable.
 - **SC-012**: The application and API deploy from the repository into a fresh non-production Azure environment with no undocumented manual application step.
@@ -260,7 +296,11 @@ A successor administrator deploys a version, verifies it, observes health, resto
 - **SC-014**: Every production release identifies source commit, application revision, schema version, and verification result.
 - **SC-015**: Report Readers answer all seven acceptance questions without a Power Apps runtime licence and without seeing secured attributes.
 - **SC-016**: The production migration runs twice in rehearsal with an empty second-run business-data diff and every source row accounted for.
-- **SC-017**: Core checkout, return, search, and calibration operation continues when Teams, Power BI, and SharePoint integrations are disabled.
+- **SC-017**: For every role/workspace/direct-route combination, response keys exactly equal the
+  declared projection allowlist and denied routes initiate zero protected-data requests.
+- **SC-018**: A Report Reader-only identity receives Reports on desktop and a desktop handoff on
+  mobile, with zero Scan, Checkout, Return, My work, Administration, or Data quality controls/data.
+- **SC-019**: Core checkout, return, search, and calibration operation continues when Teams, Power BI, and SharePoint integrations are disabled.
 
 ---
 
@@ -283,12 +323,14 @@ A successor administrator deploys a version, verifies it, observes health, resto
 1. Approved Azure subscription and owning platform team.
 2. Production region, network exposure, and private-access requirements.
 3. Approved RTO, RPO, HA tier, backup retention, and document-recovery strategy.
-4. Entra app-role versus group mapping.
-5. Global versus office-scoped administration.
-6. Supported iOS/Android browsers and managed-device policy.
-7. Expected-return and backdating product rules.
-8. Project-master integration.
-9. Permanent-component calibration dispatch.
-10. Certificate malware-scanning implementation.
-11. Whether a native wrapper is needed after PWA verification.
-12. Whether Power BI is required after in-app reporting is demonstrated.
+4. Entra/group-to-capability mapping inside the decided R5 scope ceiling and D18 workspaces.
+5. Supported iOS/Android browsers and managed-device policy.
+6. Project-master integration.
+7. Permanent-component calibration dispatch.
+8. Calibration/Safety/Quality readiness policy and kit/component roll-up.
+9. Certificate malware-scanning implementation.
+10. Whether a native wrapper is needed after PWA verification.
+11. Whether Power BI is required after in-app reporting is demonstrated.
+
+R5 office/global scope and R4/Q8/Q9 expected-return/backdating rules are decided in
+`docs/08-decisions.md`; they are not open platform questions.

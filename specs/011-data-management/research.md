@@ -38,11 +38,14 @@
 
 ---
 
-## R-05 Data Steward role
+## R-05 Data Steward capability bundle
 
 **Question**: Distinct role or permission set?  
-**Status**: Open (OD-1).  
-**Plan treatment**: Contracts speak of “steward capability”; tasks mark authorization implementation blocked until OD-1 + R5. Do not silently grant every Office Admin global stewardship.
+**Status**: Decided (OD-2, 2026-09-04): capability bundle, not a fifth application role. R5 is also
+decided: OfficeAdmin is assigned-office scoped and SystemOwner has a global row ceiling.
+**Plan treatment**: Contracts speak of named stewardship capabilities inside Administration. Neither
+OfficeAdmin nor SystemOwner receives the bundle automatically; D18 purpose and projection rules still
+apply.
 
 ---
 

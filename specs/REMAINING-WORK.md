@@ -8,9 +8,11 @@ Read, in order:
 2. `.specify/memory/constitution.md`
 3. `docs/14-webapp-architecture.md`
 4. `docs/15-postgres-data-model.md`
-5. `specs/009-production-readiness/spec.md`
-6. `specs/010-web-application-platform/spec.md`
-7. `docs/06-delivery-plan.md`
+5. `docs/23-canonical-product-ux-contract.md`
+6. `docs/25-need-to-know-access-ux.md`
+7. `specs/009-production-readiness/spec.md`
+8. `specs/010-web-application-platform/spec.md`
+9. `docs/06-delivery-plan.md`
 
 The previous workstream map optimized local feature construction and then a Dataverse production route. Both produced useful requirements and mock evidence. The active remaining work is now the TypeScript/PostgreSQL/PWA/Azure path.
 
@@ -24,7 +26,7 @@ The previous workstream map optimized local feature construction and then a Data
 - Feature 009: **Spec Draft**, production-readiness evidence gate — [plan](009-production-readiness/plan.md) / [tasks](009-production-readiness/tasks.md) / [contracts](009-production-readiness/contracts/) written 2026-09-03
 - Feature 010: **Spec Draft**, active platform — [plan](010-web-application-platform/plan.md) / [tasks](010-web-application-platform/tasks.md) / [contracts](010-web-application-platform/contracts/) (R2 draft) / data-model written 2026-09-03
 - Feature 011: **Spec Draft** — [plan](011-data-management/plan.md) / [tasks](011-data-management/tasks.md) / [contracts](011-data-management/contracts/) written 2026-09-03; write stories blocked on 010 W3/W4
-- Constitution: **2.0.0**, web pivot recorded
+- Constitution: **2.1.0**, web pivot plus D18 three-workspace/need-to-know boundary recorded
 - Power Platform: **parked 2026-09-03**; the Dataverse adapter is no longer imported
 - Zite: **parked 2026-09-03**
 - Pilot: not approved
@@ -36,9 +38,10 @@ wrong, and leaving them would be worse than having written nothing. What follows
 actually true, and — more usefully — what each thing has been *evidenced* to do, in the vocabulary
 of § Progress labels below.
 
-The governing freeze for this pass is [`_planning/BUILD-FREEZE.md`](_planning/BUILD-FREEZE.md);
-every assumption taken to get past a blocker is recorded in `docs/08-decisions.md` and is still
-awaiting Jay's confirmation.
+[`_planning/BUILD-FREEZE.md`](_planning/BUILD-FREEZE.md) is the historical coordination freeze for
+the 2026-09-03 local build, not current product authority. Current open/decided status lives in
+`docs/08-decisions.md`; notably R5 is decided, A-STATE was superseded, and D18 now governs access,
+workspace composition, projections and cache invalidation.
 
 | | State | Evidence |
 |---|---|---|
@@ -46,8 +49,8 @@ awaiting Jay's confirmation.
 | **HTTP API** (`server/`) | **API Implemented** | Fastify over **containerised PostgreSQL 17**, both drivers green, **386 tests**; every `AmsBackend` method has a route, checked mechanically by `tests/contract.test.ts` |
 | **PostgreSQL schema/migrations** | **implemented** | `db/migrations/` — **twelve** forward-only files, a `schema_migration` ledger, `npm run db:migrate` / `db:check`; second run is a no-op; drift refused three ways |
 | **Database-enforced invariants** | **implemented** | append-only history incl. TRUNCATE, asset-ID immutability, relationship acyclicity, installation spans, rule-12 environment guard, four-axis state |
-| **Identity / authorization** | **implemented**, unprovisioned | pluggable provider; Entra OIDC written and proven against a *fabricated* issuer; deny-by-default on every `/api/*`; role × office matrix tested by direct API call. **R6 (a real tenant) is still an Englobe IT dependency** |
-| **PWA offline shell / IndexedDB** | **implemented** | partitioned by tenant + environment + user; drafts, durable command queue, replay, conflicts |
+| **Identity / authorization** | **legacy subset implemented; D18 not proved**, unprovisioned | pluggable provider; Entra OIDC written and proven against a *fabricated* issuer; deny-by-default on every `/api/*`; role × office tests exist, but the newer workspace/purpose/capability/projection, zero-fetch, document and revocation matrix remains. **R6 (a real tenant) is still an Englobe IT dependency** |
+| **PWA offline shell / IndexedDB** | **legacy partition implemented; D18 not proved** | tenant + environment + user partition, drafts, durable command queue, replay and conflicts exist; workspace/projection partition and scope/capability-revocation purge remain |
 | **Blob document path** | **implemented behind an interface** | local `DocumentStore`; Azure Blob is a second implementation (assumption A-DOC). No Azure resource created |
 | **Outbox / workers** | **implemented and wired** | the outbox row commits inside the business event's own transaction — CLAUDE.md rule 2's last clause is now literal, not aspirational. Worker and scheduler start in `main.ts` |
 | **UI — S01 Field home** | **rebuilt** | D2 accepted the Console Mobile layout; built in Fluent + Englobe green per **G-24 = A**. Search moved to `/search` |
@@ -59,7 +62,7 @@ awaiting Jay's confirmation.
 | PostgreSQL migration rehearsal | **not completed** | WS-W11 |
 
 **One command proves it**: `scripts/verify.sh` — container up, migrations from empty, idempotent
-re-run, typecheck, server suite on **both** drivers, client suite, client build.
+re-run, typecheck, **lint**, server suite on **both** drivers, client suite, client build.
 
 **Proven in a real browser, not only in tests**: a checkout committed through the actual UI as
 `TXN-000015`, landing in PostgreSQL with the right custodian, project and appended history; role
@@ -110,14 +113,14 @@ new is being introduced.*
 | ~~**R2**~~ | **FROZEN for first proof** — `010/contracts/transaction-command.md` (+ auth, errors, outbox) | Unblocked for WS-W4; extend carefully for later event types | Jay |
 | ~~**R3**~~ | **First-proof subset APPROVED** — `010/data-model.md`. Full `docs/15`+`16` still needs table-by-table review for complete WS-W2 | Unblocked for race migrations; full parallel schema still gated | Jay |
 | ~~**R4**~~ | **Q8 confirmed** (optional +14d); **Q9 decided** (admin backdate ≤30d, refuse crossing history) | Unblocked for checkout command fields | Jay |
-| **R5** | Global vs office-scoped administrator | Authorization model, WS-W3 | **Jay** |
+| ~~**R5**~~ | **DECIDED 2026-09-04** — OfficeAdmin assigned-office scoped; SystemOwner global row-scope ceiling | Role ceiling closed. D18 capability/workspace/projection mapping and proof remain | Jay |
 | **R6** | G0.2 enterprise set — Azure subscription, Canadian region, Entra app registration owner, RTO/RPO, DNS/TLS, alert owner | Azure deployment only. **Does not block local development** | **Englobe IT**, not Jay alone |
 
 ### 2. Artifacts that do not exist
 
 | Missing | Note |
 |---|---|
-| ~~`plan.md` / `tasks.md` / `contracts/` for 009, 010, 011~~ | **Closed 2026-09-03** via multi-agent planning (`specs/_planning/MULTI-AGENT-OWNERSHIP.md`). Specs remain Draft. **R1–R4 closed same day**; remaining STOP gates are **R5** (admin scope) and product opens for later stories. |
+| ~~`plan.md` / `tasks.md` / `contracts/` for 009, 010, 011~~ | **Closed 2026-09-03** via multi-agent planning (`specs/_planning/MULTI-AGENT-OWNERSHIP.md`). Specs remain Draft. **R1–R5 are decided**; D18 capability/projection gates and product opens for later stories remain. |
 | `db/` | No migrations, no migration runner — **unblocked to start** first-proof subset |
 | `packages/contracts/` | Spec contracts exist under `specs/010…/contracts/` and `specs/011…/contracts/`; shared TypeScript package not created yet — `app/` and `server/` still agree by hand |
 | `infra/` | No IaC |
@@ -134,11 +137,12 @@ new is being introduced.*
 
 The container change removes the largest technical excuse for waiting. The first proof —
 WS-W4's five-asset checkout race — needs **no Azure, no Entra, no subscription and no spend**.
-**R1–R4 are closed (2026-09-03).** Remaining local prerequisites: Postgres container + implementing
+**R1–R5 are closed.** Remaining local prerequisites: Postgres container + implementing
 `010/tasks.md` foundational → WS-W4. G0.2 (R6) gates deployment, not development.
 
 **The critical path is now implementation of the first-proof race**, not a product undecided.
-R5 still blocks production auth scope; it does not block the local five-asset proof with test doubles.
+D18's exact capability/workspace/projection mapping still blocks access conformance; it does not
+block the local five-asset proof with purpose-sized test doubles.
 
 ---
 
@@ -156,7 +160,7 @@ Record in `docs/08-decisions.md`:
 - Q10 project source
 - Q11 reporting audience
 - Q18 component calibration
-- global versus office-scoped administrator
+- ~~global versus office-scoped administrator~~ — decided R5
 - permanent home-office rehome behavior
 - failed calibration versus physical lab receipt
 - structured ownership values
@@ -171,11 +175,11 @@ web-app target. `docs/17-ux-audit.md` is the audit that produced two of them.
 
 | Decision | What it settles here |
 |---|---|
-| **Three surfaces** — Field (mobile), Desk (desktop user), Console (desktop admin) | Answers "supported device/browser matrix" above, from the product side. One codebase, one URL; per-route `surfaces: ("field"\|"desk"\|"console")[]` in a single manifest. The phone is a deliberate slice — find, check out, return, transfer, report fault, deploy/recover, reserve — and nothing else. Feeds **WS-W5** and **WS-W6** |
+| **Three surfaces / three workspaces** — Field Work, Desk Work/Reports, Console Administration | Answers the product side of "supported device/browser matrix". One codebase, one URL, with D18 eligibility and a route/purpose manifest. The phone is a deliberate Work slice — Home, Assets, Scan, My work, More; find, check out, return, transfer, report fault and approved deploy/recover actions. Reservations are absent from Field and may enter Desk Work only through an approved capability and complete workflow. Feeds **WS-W5** and **WS-W6** |
 | **Categories are rows, hierarchical** | Resolves `docs/15-postgres-data-model.md`'s explicitly undecided `equipment_type` / `asset_group` ("fixed **or** curated reference", § line 192-193) in favour of a **curated reference table**, self-referential, on the `location` precedent. Its own § 56 already prefers reference tables "for values that administrators may extend". Unique key stays `(manufacturer, model, equipment_type)`. Feeds **WS-W2** and **feature 011** |
 | **Carrier and retirement reason become reference tables; the four-sensor kit-role cap is removed by decomposition** — fixed role *types* plus a 1..N index | `docs/15` currently has `retirement_reason` as an enum. Role types stay fixed because the transaction service branches on them. Feeds **WS-W2** |
 | **Vehicles are ordinary assets; reservations are in scope** | Adds a `reservation` table. **A reservation is not a state** — with this branch's `lifecycle` / `disposition` / `serviceability` split the point is sharper than it was under the single status: a booking is a future claim, orthogonal to all three. It advises exactly one command — checkout — and the overlap rule needs the API/database to enforce it, since no exclusion constraint exists. Feeds **WS-W2** and **WS-W4** |
-| **"Add an employee" = attributes of existing staff only** | Home office and offices administered. **No staff table.** Identity stays Entra (§ 4.5's four app roles). Still coupled to Q17: if licensing forces unlicensed technicians, non-user custodians stop being optional. Feeds **WS-W3** and **feature 011** |
+| **"Add an employee" = attributes of existing staff only** | Home office and offices administered. **No staff table.** Identity stays Entra (§ 4.5's four app roles). Q17 closed with the Power Platform parking; final Entra assignment and any non-user-custodian need are enterprise/product decisions, not a Code App licensing dependency. Feeds **WS-W3** and **feature 011** |
 
 Master's WS-A…WS-I workstreams are complete and are **not** carried forward into this map — the
 evidence is `docs/09-build-report.md` and the git history. Master's WS-J (surfaces), WS-K (vehicles and
@@ -204,7 +208,7 @@ technician's screens" is a UI gap that WS-W5 must own.
 - ~~lifecycle / disposition / serviceability / calibration currency~~ — approved
 - canonical Asset ID and aliases;
 - stable user identity by Entra tenant/object ID;
-- role and office-scope model (**R5 open**);
+- role and office-scope ceiling (**R5 decided**); exact D18 capability/workspace/projection mapping remains;
 - component exceptions (Q18 open).
 
 ### G0.4 Atomic command contract
@@ -291,7 +295,7 @@ Approve `docs/15-postgres-data-model.md`, including every table, constraint, ind
 
 ### Deliverables
 
-- [ ] user/role/office scope tables
+- [ ] user/role/office scope, capability, purpose, workspace, and projection-policy tables
 - [ ] equipment model, location and project tables
 - [ ] asset and identifier/alias tables
 - [ ] transaction and transaction-line tables
@@ -323,7 +327,7 @@ Approve `docs/15-postgres-data-model.md`, including every table, constraint, ind
 
 ## WS-W3 — Identity, session and authorization
 
-**Runs after:** role/office decision and shared contract freeze  
+**Runs after:** decided R5 ceiling and D18 capability/workspace/projection contract freeze
 **Can run with:** WS-W2, WS-W4
 
 ### Owns
@@ -331,7 +335,7 @@ Approve `docs/15-postgres-data-model.md`, including every table, constraint, ind
 - Entra application integration
 - server session/BFF boundary
 - user synchronization
-- role and office-scope authorization middleware
+- role-ceiling, workspace, purpose, named-capability, row/office-scope, and field-projection authorization middleware
 - CSRF/redirect/logout protections
 - direct authorization tests
 
@@ -343,17 +347,23 @@ Approve `docs/15-postgres-data-model.md`, including every table, constraint, ind
 - [ ] stable tenant/object-ID user key
 - [ ] Field User, Office Admin, System Owner, Report Reader
 - [ ] API office-scope checks
+- [ ] eligible Work / Reports / Administration workspaces and primary workspace
+- [ ] named purpose/capability mapping and versioned response projections
+- [ ] forbidden direct-route zero-fetch/no-existence-leak behavior
+- [ ] cache partition/purge after workspace, scope or capability change
 - [ ] disabled user handling
 - [ ] same-device user-change handling contract
 - [ ] deep-link after sign-in
-- [ ] direct API cross-role/cross-office test suite
+- [ ] full direct API workspace/purpose/capability/row/projection negative matrix
 
 ### Must not own
 
 - UI-only permission checks as security evidence
 - broad Graph permissions without an approved requirement
 
-**Definition of done:** Authorized test users receive only permitted API data/actions; unauthorized direct requests are refused.
+**Definition of done:** Authorized test users receive only the exact permitted purpose-sized API
+data/actions; forbidden direct requests are refused before protected fetch, and revocation cannot
+restore privileged content from cache or browser history.
 
 ---
 
@@ -463,11 +473,15 @@ Five-asset checkout:
 
 ### Rules
 
-- cache partition: tenant + environment + user object ID
-- no restricted SIM/network fields or certificate bytes for Field Users
+- cache partition: tenant + environment + user object ID + active workspace + projection version
+- exact D18 response allowlists only; Field stores no maintenance/evidence history, certificate data,
+  cost, performer identity, data-quality detail, audit/lineage, secured network fields, free text or
+  internal identifiers
 - pending is not accepted
 - replay while app is active; Background Sync is optional enhancement
 - no replay under another identity
+- purge or make privileged cached/query/history state inaccessible after identity, workspace,
+  row-scope, capability or projection-version change
 - commands persist through app/device restarts
 - conflicts are visible and never silently dropped
 
@@ -670,7 +684,7 @@ Production load remains blocked by model and conflict sign-offs.
 
 ### Security
 
-- direct API role/office matrix
+- direct API role × workspace × purpose × capability × row scope × projection matrix
 - insecure object access tests
 - CSRF/session/redirect tests
 - document authorization
@@ -838,3 +852,117 @@ Use only:
 - Production Accepted
 
 Do not label a feature **Built** without stating which level has been evidenced.
+
+
+---
+
+## Status — 2026-09-04
+
+`scripts/verify.sh` exits 0 across all eight stages: **546** server tests against PostgreSQL 17,
+**534** against PGlite, **545** client tests, plus lint and a client build.
+
+### Closed since the 2026-09-03 entry above
+
+| | Was | Now |
+|---|---|---|
+| **Seven approved transitions** | approved, generated, and unreachable over HTTP | `MarkOutOfService`, `ReturnToService`, `RehomeAsset`, `AttachComponent`, `DetachComponent`, `Audit`, `Correction` — commands. Legacy role-floor tests exist; D18 requires named action capability, purpose, row scope and projection in addition to the coarse role ceiling. 32 server tests, 17 client |
+| **Feature 011 write stories** | US1/US2 only | **US3 corrections, US4 imports, US5 duplicates, US6 lineage, US7 export persistence, US8 retention** — `0017`…`0020`, `server/src/modules/data-management/`, 41 tests |
+| **`Asset` DTO** | `lifecycle` + the collapsed pill | the three stored axes, because FR-018's separation stopped at the database (`docs/08` **D9**) |
+| **Client documents** | no methods at all | upload session, proxy PUT, list, metadata, download authorization, download, calibration summary — on `AmsBackend`, the HTTP adapter and the mock (T062) |
+| **Offline capability detection** | not started | `offline/capabilities.ts`; the app no longer promises offline on a browser that cannot deliver it (T048) |
+| **`npm run lint`** | did not exist | ESLint + `scripts/lint-rules.mjs`, wired into `verify.sh`. Found eleven real defects on its first run (T088) |
+| **Metrics** | counters only | per-route latency keyed by route **pattern**, so no asset id reaches `/api/metrics` (FR-046) |
+| **PostgreSQL migration load** | `04_load.py` still wrote JSON for the mock | `npm run migrate:load` — dry run, apply, reconciliation, idempotent re-run, written report (FR-056/057). **The rehearsal itself still needs a Dev/UAT environment (R6)** |
+
+### Closed later the same day — reviews, gates, and the running portal
+
+| | Was | Now |
+|---|---|---|
+| **R5** admin scope | the last blocking product decision | **Decided** — OfficeAdmin office-scoped, SystemOwner global (`docs/08` § R5). It closed a real hole: `POST /api/assets` accepted any `homeoffice` from the body, so a Toronto admin could register into Ottawa (`registration.error.officeScope`) |
+| **OD-2…OD-11** | interim safe behaviour | **Decided** — `docs/08` § Self-approved product decisions. OD-4 removed the `Unapproved:` prefix from 459 dictionary entries; OD-5 turned the retention register from placeholders into approved policy, which needed migration `0021` because `0018`'s CHECK had assumed "approved" implies a number |
+| **Requirements checklists** | 12 of 385 reviewed | **reviewed with per-item evidence** across all six features (001, 002, 003, 009, 010, 011). Counts move — a later writer re-opened several against D18 — so read each file's own header rather than a number here |
+| **Migration sign-offs** | both unchecked | **both signed**, and each says plainly it was signed by *the build*, not by Jay, and that he has not read the rows. `03_models_review.md` is *approved with a recorded correction* — the invented calibration intervals |
+| **Utilisation report** | endpoint existed, **nothing called it** | wired. **One request, down from 1,027** — development-sequence item 15 landed server-side and was never connected (`docs/27` § 5) |
+| **`/api/assets` paging** | `limit`/`offset` accepted and ignored | honoured, capped at 1,000, `x-ams-total-count`, paged **after** office scoping. No default limit, deliberately |
+| **`migrationsource` in the DTO** | sent to every role | out of `assetFromRow`; provenance is the authorized `GET /api/assets/:id/provenance` |
+| **More-screen navigation** | offered Reports to a Field User who gets 403 | gated on the roles the destination admits (`features/more/rowPolicy.ts`), verified live in both directions |
+
+### Closed after that — the D18 need-to-know access model
+
+`docs/25-need-to-know-access-ux.md` was approved as D18 on 2026-09-04, and constitution v2.1.0 made
+the workspace/purpose/capability/scope/projection intersection governing. That answered the open
+question below and turned the divergence into a gap, which is now closed for the read paths. Full
+record: [`docs/28-d18-implementation-conformance.md`](../docs/28-d18-implementation-conformance.md).
+
+| Was | Now |
+|---|---|
+| Field Home showed **107 overdue and 608 unknown** fleet calibration records to anyone signed in | personal content only. The fleet call is **not made** — verified in the browser's network panel, not merely hidden |
+| Field's fourth tab was a national maintenance queue | **My work** (§ 5). The queue is `/admin/calibration`, Console-only, `maintenance.plan.read` |
+| A Field User could render `/admin` by typing it | generic **Not authorized**, and **no API request is issued** — the gate sits outside the page element so no page effect runs |
+| A Report Reader inherited the whole Field shell | no Field shell. On a phone, § 5.6's desktop handoff naming the identity and destination, fetching nothing. On a desktop, lands in Reports |
+| One shell held every destination a multi-role account could reach | Work / Reports / Administration switcher; each rail rebuilt from the manifest, and the Work and Administration rails share **no** destination |
+| `scopeRestrictedFields` took a full `Asset` and nulled three SIM fields | eight **versioned allowlists** that *build* each response (§ 10: "Do not serialize one universal Asset DTO and remove keys afterward"). Same person, same asset: 14 keys in Work, 21 in Administration |
+| `requireAnyRole()` admitted every caller to calibration records | `maintenance.records.read` (NTK-008). A Field User gets the readiness signal instead, under a policy version |
+| The offline cache stored calibration dates on a phone | found by `tsc` when the projected-away fields became optional. The cache holds the readiness signal, and the partition now includes **workspace** and **projection version** — CLAUDE.md's own offline rule, previously three-fifths true |
+| `/api/me` called **ten times per page load**; the workspace lived in five separate `useState`s | one shared value each. Both are the utilisation report's 1,027-request defect at a smaller scale, and both are invisible in tests because the mock has no connection limit |
+
+Two modelling errors are recorded there too, because both were caught in a browser and neither by a
+test: the surface was briefly narrowed by *eligibility* (a Report Reader got the desktop Reports page
+squeezed into 375 px) and then derived from *viewport width* (a Field User at a 1400 px desk was told
+their own home page was "available on desktop"). `docs/23` § 5.1 forbids the second in as many
+words — "not from a CSS-width test".
+
+### Not ours to close
+
+- ~~**`docs/27` § 6 — is D18 a target or the current contract?**~~ **Answered 2026-09-04: it is the
+  contract.** `docs/25` was approved by Jay as System Owner and the constitution made it governing.
+  Two narrower parts remain open — the **459-entry dictionary re-specification** (NTK-020) is not
+  started, and the **final Entra group-to-capability mapping** (§ 16) is still an identity-design
+  decision; the mapping in `server/src/auth/capabilities.ts` is derived from the pre-D18 role gates
+  and broadens nothing, which makes it a placeholder that behaves correctly rather than that
+  decision. **Jay.**
+- **The readiness policy** (NTK-007a) — Calibration Owner + Safety/Quality Owner + System Owner must
+  freeze what Current / DueSoon / Overdue / Failed / Unknown mean, the job-window rule, and the
+  kit roll-up. Until then `policyVersion` is `unapproved` and `Blocked` is structurally unreachable:
+  the server states an overdue date and never claims the block, which is what § 8.1 authorizes.
+  **Jay + Calibration + Safety/Quality.**
+- **Who may read certificate evidence, financial fields, or create compliance packs** (§ 16). Those
+  capabilities are `gated`: **no role holds them**, so every route requiring one refuses everybody
+  including a System Owner. That is § 13's acceptance scenario, implemented. **Jay.**
+- **`docs/27` § 7 — should a replay of another caller's submission ID dedupe or refuse?** Framed
+  elsewhere as low-urgency hardening; the fix silently changes **transaction semantics**, which
+  `CLAUDE.md` § Ask before doing reserves. **Jay.**
+- **R6** — subscription, Canadian region, Entra app registration owner, RTO/RPO and HA tier, DNS/TLS
+  owner, alert owner. **Englobe IT.** No Azure resource exists and none was created.
+- **Q18** permanent-component calibration — implemented on an *assumed* reading; answering it the
+  other way changes what the synthetic generator produces. **Jay.**
+- Four named gaps that need inputs nobody has supplied: the **cutover runbook** (needs a date), the
+  **deployment record** shape (needs a pipeline), **Ottawa pilot entry/exit criteria** (needs the
+  pilot's scope), and a **performance budget** (needs the production tier).
+- The **device matrix** (T053), the **migration rehearsal** (WS-W11), and **pilot acceptance**.
+
+Still not *Azure Integrated*, *Security Verified*, *Device Verified*, *Migration Rehearsed* or
+*Pilot Accepted*. It is a complete, evidenced local system with feature 011's write half built, its
+reviews done, its two migration gates signed by the build rather than by a person, and D18's read
+paths conformant.
+
+**"Security Verified" is still false and it is worth saying why precisely.** `docs/25` § 14 requires
+seven separate kinds of evidence. Four now exist: manifest tests, API allowlist/negative-field tests
+across every projection, direct-route tests, and NTK-014's cancellation and purge behaviour proved
+through the HTTP adapter. Missing are the full role × workspace × surface matrix, an end-to-end
+IndexedDB inspection after a live workspace switch, a real-device walkthrough, screen-reader and
+keyboard evidence, and tenant/Entra/document-ACL verification. A projection test proves returned
+fields; it does not prove identity.
+
+**A requirement-by-requirement verdict** — all 22 of `docs/25` § 12's functional requirements, with
+the evidence behind each — is `docs/28-d18-implementation-conformance.md` § 5d. The short form: of
+15 P0 requirements, 12 are done and verified in the running system, 2 are gated by decisions that
+are not a build's to make and are implemented as refusals meanwhile, and 1 is partial. Of 5
+applicable P1 requirements, 3 are done, 1 waits on accessibility evidence, and 1 (NTK-020's
+459-entry dictionary) is decision-heavy and not started.
+
+The full re-audit is `docs/24-conformance-reaudit.md`; the authorization divergence and its
+now-answered question are `docs/27-authorization-model-divergence.md`; the D18 implementation record,
+including a release-bundle finding this work surfaced but did not cause, is
+`docs/28-d18-implementation-conformance.md`; every decision taken to get here is
+`docs/08-decisions.md` **D7**–**D17** plus § Self-approved product decisions.

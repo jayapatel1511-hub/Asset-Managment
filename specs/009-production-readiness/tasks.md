@@ -12,7 +12,9 @@ description: "Task list for feature 009 — Production Readiness (evidence gate)
 
 **Organization**: Tasks follow user stories US1–US6. Map to **WS-W4** (atomic/identity local proof) and **WS-W12** (security, device, cutover, recovery, pilot). Device harness targets are built under WS-W6; 009 records evidence.
 
-**Read first**: `specs/_planning/MULTI-AGENT-OWNERSHIP.md`, constitution, `CLAUDE.md`, `specs/REMAINING-WORK.md` (WS-W4, WS-W12, pilot gate).
+**Read first**: constitution, `CLAUDE.md`, `docs/23-canonical-product-ux-contract.md`,
+`docs/25-need-to-know-access-ux.md`, and `specs/REMAINING-WORK.md` (WS-W4, WS-W12, pilot gate).
+`specs/_planning/MULTI-AGENT-OWNERSHIP.md` is historical ownership context only.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -31,7 +33,7 @@ description: "Task list for feature 009 — Production Readiness (evidence gate)
 
 - **R1–R4** must be decided/frozen enough before claiming local WS-W4 pass
 - **R2** 010 atomic command contract freeze blocks T020+ implementation claims
-- **R5** blocks full office-scope matrix rows
+- **R5** is decided: OfficeAdmin is assigned-office scoped; SystemOwner has a global row-scope ceiling
 - **R6** blocks Azure recovery drills and hosted production-env device claims — does **not** block local five-asset race
 
 ---
@@ -113,15 +115,25 @@ description: "Task list for feature 009 — Production Readiness (evidence gate)
 
 ## Phase 6: User Story 4 — Prove authorization through every path (P2) / WS-W12
 
-**Goal**: Role × office direct API matrix; no secured fields in Field User cache or ordinary manager reports (SC-009, SC-010). Depends on WS-W3; R5 for office-scope honesty.
+**Goal**: Prove the workspace × purpose × capability × row-scope × projection matrix through every path;
+forbidden direct routes fetch no protected data, and Field Work / general Reports receive only their
+allowlisted projections (SC-009, SC-010, SC-016–SC-018). Depends on WS-W3.
 
-- [ ] T029 [US4] Fill `contracts/security-matrix.md` role × office matrix for the **decided** admin model (global **or** office-scoped — document honestly per FR-026); mark R5-blocked rows until decided
-- [ ] T030 [P] [US4] Direct API tests: Field User cannot read secured SIM/network attributes on any path
-- [ ] T031 [P] [US4] Direct API tests: office-scoped admin cannot write another office (**or** N/A with documented global admin)
-- [ ] T032 [P] [US4] Ordinary manager reporting / approved views contain no secured SIM/network columns (SC-010)
+- [ ] T029 [US4] Freeze `contracts/security-matrix.md` for the decided R5 model and D18 dimensions:
+  identity, tenant/environment, workspace, purpose, named capability, row scope and projection
+- [ ] T030 [P] [US4] Field Work direct-response/cache/export tests: assert exact allowlist and zero
+  calibration/evidence, maintenance, cost, performer, quality, audit, secured-network, free-text and
+  internal-identifier fields
+- [ ] T031 [P] [US4] Direct API tests: OfficeAdmin cannot read or write another office; SystemOwner is
+  denied without the exact workspace, purpose, capability or projection despite its global row ceiling
+- [ ] T032 [P] [US4] General Reports tests: exact allowlist, no secured or evidential fields, read-only
+  Reports navigation and zero Work/Scan/Administration fetches for ReportReader (SC-010, SC-018)
 - [ ] T033 [P] [US4] Server refuses relationship cycles, self-parenting, second open parent, historical line edits
-- [ ] T034 [P] [US4] Automation / worker identity is least-privilege (not broad owner) — assert via role claims in harness
-- [ ] T035 [US4] Export and report paths included in SC-009 forbidden-action sweep — UI-only checks do **not** count
+- [ ] T034 [P] [US4] Automation / worker identity is least privilege — assert its exact purpose,
+  capabilities, row scope and projection rather than a broad owner role
+- [ ] T035 [US4] Include document, export, report and wrong-workspace direct routes in the SC-009 sweep;
+  assert authorization occurs before lookup, zero protected fetches, no existence leak, and cache purge
+  after workspace/identity/capability change (SC-016–SC-017). UI-only checks do **not** count
 - [ ] T036 [US4] **Refuse-to-claim**: Security Verified requires dated matrix evidence; interface filtering is never the boundary
 
 **Checkpoint**: Security Verified eligible only after T029–T036 pass in the target environment (full Entra on Azure Integrated).
@@ -183,7 +195,8 @@ description: "Task list for feature 009 — Production Readiness (evidence gate)
 - **Foundational (Phase 2)**: blocks all pass claims; waits on 010 contract freeze + Postgres
 - **US1 / US2 (Phases 3–4)**: after Phase 2; **WS-W4**; R1–R4; local OK without R6
 - **US3 (Phase 5)**: after US1 command path; R1
-- **US4 (Phase 6)**: after WS-W3; R5 for office rows; full Security Verified after Azure Integrated
+- **US4 (Phase 6)**: after WS-W3; R5 is decided; full D18/Entra matrix and cache evidence remain required
+  after Azure Integrated
 - **US5 (Phase 7)**: after WS-W6 client exists; Device Verified needs hosted evidence
 - **US6 (Phase 8)**: cutover after WS-W11; recovery drills after R6 / WS-W10
 - **Polish (Phase 9)**: after intended stories; pilot gate last
@@ -221,3 +234,25 @@ US3 state facts → US4 security matrix → US5 device → US6 cutover/recovery 
 - Do not report a proof task complete without dated evidence artifact
 - Do not invent screens; point builders at feature **010**
 - Do not redefine 010 command JSON in 009 contracts
+
+
+---
+
+## Ledger reconcile — 2026-09-04
+
+Feature 009's checkboxes were not part of this pass and are **not** individually reconciled. What
+changed underneath them:
+
+- The **five-asset race** and the registration burst have run against containerised PostgreSQL
+  since 2026-09-03 (`server/tests/concurrency.test.ts`, 34 tests, including an opposite-lock-order
+  control that deadlocks with SQLSTATE 40P01 — the control is what proves the ordered path is doing
+  the work rather than getting lucky).
+- The legacy **role × office matrix** is exercised by direct API call
+  (`tests/authorization.test.ts`, 57), but that evidence does not prove the newer D18
+  workspace/purpose/capability/projection, zero-fetch, document and cache-revocation requirements.
+- **Health, readiness and metrics** are implemented, and metrics now carry per-route latency keyed
+  by route PATTERN so no asset id reaches `/api/metrics` (`tests/health.test.ts`).
+- Everything in G0.2 / R6 — subscription, region, Entra tenant, DNS/TLS, RTO/RPO, alert owner —
+  remains an Englobe IT dependency. No Azure resource exists and none was created.
+
+Nothing here is *Security Verified*, *Device Verified*, *Migration Rehearsed* or *Pilot Accepted*.

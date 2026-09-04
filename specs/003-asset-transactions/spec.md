@@ -8,6 +8,11 @@
 
 **Input**: `IM30 - Asset Managment via M365.docx` § What We Need → Asset Transactions, § Basic User Experience, § Key Design Principles; `Asset AMS - SharePoint.xlsx` sheets *Assets - Action History* (action taxonomy) and *Start Here* (Checkout / Return / Transfer form drafts, checkout→deployment→transfer→return→retirement flow); `docs/01-data-model.md` (state machine), `docs/03-automation.md` (flow F1)
 
+> **D18 access/presentation amendment (2026-09-04):** transaction authority requires the active Work
+> or Administration purpose, the exact named action capability and matching row scope. Field Work gets
+> a short relevant activity projection, never unrestricted history, performer identity or free-text
+> notes. See [`docs/25-need-to-know-access-ux.md`](../../docs/25-need-to-know-access-ux.md).
+
 ## User Scenarios & Testing *(mandatory)*
 
 This is the feature that makes the registry true. Everything in 001 displays state; this feature is the
@@ -31,17 +36,22 @@ almost every current data problem. It answers acceptance questions 2, 3 and 6 by
 they depend on. Nothing else in this feature has value without it — you cannot return what was never
 checked out.
 
+Checkout is an independently testable implementation slice, not a viable pilot by itself. Pilot
+acceptance requires the closed Checkout + Return loop.
+
 **Independent Test**: Give a technician five physical items and a project number and ask them to check
 them out on a phone. Then verify from a second device that all five show as theirs, on that project,
-and that a history entry exists for each. Fully testable with Return not yet built.
+and that a history entry exists for each. This verifies Checkout independently; it does not qualify a
+pilot until Return also passes.
 
 **Acceptance Scenarios**:
 
 1. **Given** five Available assets, **When** the technician submits a checkout naming a project,
    **Then** one transaction and five lines are recorded, and all five assets show status CheckedOut with
    that technician as custodian and that project assigned.
-2. **Given** any asset in the cart is not Available, **When** the technician tries to add it, **Then**
-   it is refused at the point of adding, naming its current status and who holds it.
+2. **Given** any asset in the cart is not available, **When** the technician tries to add it, **Then**
+   it is refused at the point of adding with the recorded blocker and permitted next step. An unrelated
+   custodian's identity is not returned merely to explain the refusal.
 3. **Given** an asset became unavailable between being added to the cart and submission, **When**
    submission occurs, **Then** the whole submission is refused, the offending asset is named, and no
    asset in the cart is checked out.
@@ -56,9 +66,9 @@ and that a history entry exists for each. Fully testable with Return not yet bui
    added.
 8. **Given** a valid submission, **When** it completes, **Then** the technician is shown a confirmation
    naming the transaction and listing what is now theirs.
-9. **Given** a transaction line has been recorded, **When** any user with any role other than System
-   Owner attempts to alter or delete it, **Then** it is refused by the data platform, not merely hidden
-   in the interface.
+9. **Given** a transaction line has been recorded, **When** any user or service principal—including
+   SystemOwner—attempts to alter or delete it, **Then** it is refused by the data platform, not merely
+   hidden in the interface. Corrections are new linked events.
 10. **Given** a transaction line describing an illegal transition is inserted directly through the
     platform's API, bypassing the app entirely, **Then** it is rejected, logged with the asset and the
     submitter, and the asset's state is unchanged.
@@ -230,8 +240,9 @@ in a repair queue, and can later be marked repaired and returned to service.
 - **Returning an asset whose primary was already returned** by someone else. Must not fail obscurely.
 - **A transaction that arrives out of order** after an offline replay, describing a transition that was
   legal when made but is not now. Must be surfaced to a human, never force-applied.
-- **The derived-state processor fails partway** through a multi-line transaction. Unprocessed lines must
-  be identifiable and reprocessable, and the asset must not be left in a half-updated state.
+- **The authoritative transaction fails partway** through a multi-line command. The database rolls back
+  the header, every line, all derived state/relationships, audit and outbox together; there is no
+  partially accepted line to reprocess.
 - **A transaction backdated across another transaction.** Recording Monday's return on Wednesday, when
   a Tuesday checkout already exists, produces a history that does not replay cleanly.
 - **An asset transferred to a location that is later deactivated.** History keeps the reference.
@@ -269,8 +280,8 @@ in a repair queue, and can later be marked repaired and returned to service.
 
 **Immutability**
 
-- **FR-011**: System MUST deny update and delete on transaction lines to every role except System Owner,
-  enforced by the data platform.
+- **FR-011**: System MUST deny update and delete on transaction lines to every principal, including
+  SystemOwner, enforced by the data platform.
 - **FR-012**: System MUST support correction only by recording a further transaction, never by altering
   a recorded line.
 - **FR-013**: System MUST retain transaction history for the life of the asset and beyond its
@@ -280,16 +291,19 @@ in a repair queue, and can later be marked repaired and returned to service.
 
 - **FR-014**: System MUST derive asset status, current location, custodian, assigned project and parent
   from recorded transaction lines, and MUST NOT accept those values as direct user input.
-- **FR-015**: System MUST process the lines of one transaction in order, and MUST NOT process two
-  transactions for the same asset concurrently.
-- **FR-016**: System MUST mark each line as processed once its effects are applied, and MUST make
-  unprocessed lines identifiable and reprocessable.
+- **FR-015**: System MUST lock affected assets in deterministic order and apply all lines, derived
+  state, relationship effects, audit and outbox inside one database transaction. Incompatible
+  concurrent commands for one asset MUST produce exactly one accepted outcome.
+- **FR-016**: An `Accepted` result MUST mean the complete transaction is durably committed and its
+  authoritative resulting state is available in the response. A fault at any point MUST roll back
+  every effect. No accepted line-level `processed` flag or delayed reprocessing path is permitted.
 - **FR-017**: System MUST clear custodian and assigned project on return, and MUST set the current
   location to the return location.
 - **FR-018**: System MUST leave status unchanged on transfer while updating whichever of custodian,
   location and project the transfer names.
-- **FR-019**: System MUST reach the same current state whether a transaction's lines are processed
-  immediately or after a delay.
+- **FR-019**: Retrying a request after a lost response MUST return the same stable committed outcome
+  through idempotency; asynchronous automation may notify or reconcile but MUST NOT finish an
+  already-accepted business state change line by line.
 
 **Validation and conflict prevention**
 
@@ -302,7 +316,9 @@ in a repair queue, and can later be marked repaired and returned to service.
 - **FR-024**: System MUST reject a line describing a disallowed transition even when it arrives through
   the platform API rather than the application, MUST log the rejection with asset and submitter, and
   MUST leave asset state unchanged.
-- **FR-025**: System MUST restrict returning an asset to its custodian or an administrator.
+- **FR-025**: System MUST restrict returning an asset to its custodian/explicitly responsible workflow
+  or a caller with `transaction.return.any` in the correct workspace, purpose and row scope; an
+  administrator role label alone is insufficient.
 - **FR-026**: System MUST refuse to check out an asset that is a permanent component of another asset,
   directing the user to the parent instead.
 - **FR-027**: System MUST refuse a checkout, transfer or deployment naming an inactive project.
@@ -325,8 +341,9 @@ in a repair queue, and can later be marked repaired and returned to service.
   rule now carries the SLM pre-amp and element from Q5. This keeps the deployment form short and makes
   FR-026 — refusing to check out a component alone — the operative rule for 232 SIM records.)*
 - **FR-032a**: System MUST record a permanent component relationship as standing rather than
-  per-transaction, and MUST allow an administrator to attach and detach one — a SIM is moved between
-  modems rarely, but it is not immovable.
+  per-transaction, and MUST allow only a caller with the exact component-relationship capability,
+  Administration purpose and matching row scope to attach or detach one—a SIM is moved between modems
+  rarely, but it is not immovable.
 - **FR-032b**: [NEEDS CLARIFICATION: Q18 — a permanent component that is calibrated separately (an
   SLM pre-amp or element under Q5; a SIM's modem) must reach the lab without its parent. FR-032 says
   the parent's line is the component's history and FR-026 keeps it out of checkout, but nothing says
@@ -337,8 +354,10 @@ in a repair queue, and can later be marked repaired and returned to service.
 
 **History**
 
-- **FR-033**: Users MUST be able to view an asset's complete history, newest first, showing date,
-  action, from, to, performer and notes.
+- **FR-033**: The system MUST retain complete asset history. Field/Desk Work receives only a short,
+  purpose-relevant activity projection without unrelated performer identity or unrestricted free text;
+  complete evidential history requires its own approved Reports/Administration purpose, capability and
+  projection.
 - **FR-034**: System MUST show attachment and detachment as history events naming the other asset and
   the role.
 - **FR-035**: System MUST support reconstructing an asset's status, location, custodian and project as
@@ -355,7 +374,8 @@ in a repair queue, and can later be marked repaired and returned to service.
 **Timing and authority**
 
 - **FR-041**: System MUST default a transaction's timestamp to the moment of recording.
-- **FR-042**: Administrators MUST be able to record a transaction with a past date, within a bounded
+- **FR-042**: A caller with `transaction.backdate` in the correct workspace, purpose and row scope MUST
+  be able to record a transaction with a past date, within a bounded
   window. [NEEDS CLARIFICATION: Q9 — permitted at all? The proposal is administrators only, up to 30
   days back. Backdating across an existing later transaction also needs a rule: refuse, or accept and
   flag the asset's history as non-linear]
@@ -404,12 +424,12 @@ in a repair queue, and can later be marked repaired and returned to service.
   Verified by deliberate concurrent submission from two devices.
 - **SC-005**: Every cell of the transition matrix — allowed and disallowed — is exercised by an automated
   test, and every disallowed transition submitted directly to the platform API is rejected and logged.
-- **SC-006**: Current state is correct within 60 seconds of a submission being accepted, at the 95th
-  percentile.
+- **SC-006**: For 100% of accepted submissions, the response and immediate authoritative readback
+  agree with the fully committed transaction; no later processor is required to make state true.
 - **SC-007**: An asset's state at any past timestamp, reconstructed from its lines, matches the derived
   values recorded at that time, for 100% of a sampled 50 assets across 30 days.
-- **SC-008**: Zero transaction lines are updated or deleted by any non-System-Owner principal, verified
-  by audit log over the pilot.
+- **SC-008**: Zero transaction lines are updated or deleted by any principal, including SystemOwner,
+  verified by database controls and audit evidence over the pilot.
 - **SC-009**: A partial multi-asset submission never occurs — zero transactions exist with fewer lines
   than the user submitted, across the pilot.
 - **SC-010**: 100% of submissions made offline arrive exactly once, in order, verified over 30 queued
@@ -423,9 +443,9 @@ in a repair queue, and can later be marked repaired and returned to service.
 - Every state change worth knowing about is worth recording as a transaction. There is no "quick fix"
   path that adjusts state without a history entry, for anyone, including the System Owner — who repairs
   defects by recording compensating transactions.
-- A short delay between submission and visible state change is acceptable, provided the app confirms
-  the submission immediately and shows the pending state. Technicians will not wait on a spinner, but
-  they will accept "recorded, updating shortly".
+- A locally queued or in-flight proposal may be labelled Pending before server acceptance. After the
+  server returns `Accepted`, state is already authoritative and complete; the UI must not say
+  "recorded, updating shortly" for unfinished business-state work.
 - The interface is not a security boundary. Every rule stated here is enforced where the data is
   written, and the interface's checks exist to give a fast, explained refusal rather than to provide
   the guarantee.

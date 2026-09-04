@@ -8,6 +8,13 @@
 
 **Input**: `IM30 - Asset Managment via M365.docx` § What We Need → Asset Transactions (Assignment, Transfer), § Future Enhancements; `Asset AMS - SharePoint.xlsx` sheets *Assets - Current Deployment* (16 defined columns) and *Start Here* (Deployment Form draft, Configuration form draft, checkout→deployment→transfer→return→retirement flow, coordinate fields)
 
+> **Canonical UX/access amendment (2026-09-04):** Deploy is independently testable, but the pilot
+> requires the closed Deploy + installation-scoped Recover loop in
+> [`docs/23-canonical-product-ux-contract.md`](../../docs/23-canonical-product-ux-contract.md).
+> Field responses use the D18 Work projection and do not reveal unrelated holder identity merely to
+> explain a refusal; see
+> [`docs/25-need-to-know-access-ux.md`](../../docs/25-need-to-know-access-ux.md).
+
 ## User Scenarios & Testing *(mandatory)*
 
 Checkout says an instrument left the office with a person. Deployment says it is bolted to a pier at
@@ -36,7 +43,8 @@ is the answer the business actually needs.
 
 **Independent Test**: Install a real station of seven components, then ask someone who was not present
 to state from the app what is at that site, how each sensor is oriented, and what it is logging
-through. Testable with Undeploy not yet built.
+through. This verifies Deploy independently; it does not qualify a pilot until installation-scoped
+Recover also passes.
 
 **Acceptance Scenarios**:
 
@@ -51,7 +59,8 @@ through. Testable with Undeploy not yet built.
 4. **Given** a deployment, **When** it is recorded, **Then** the power source and the site detail —
    location type, site name, specific position — are captured.
 5. **Given** a component that is not currently held by the person deploying it, **When** they attempt to
-   include it, **Then** it is refused, naming who holds it.
+   include it, **Then** it is refused with the recorded blocker and approved next step; unrelated
+   holder identity is omitted unless coordination purpose and field policy explicitly permit it.
 6. **Given** a data logger already deployed elsewhere, **When** it is included in a new deployment,
    **Then** it is refused until it is recovered.
 7. **Given** a deployment naming no data logger, **When** it is submitted, **Then** it is refused — a

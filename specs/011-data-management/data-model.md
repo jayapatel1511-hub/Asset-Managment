@@ -1,7 +1,7 @@
 # Data Model: Feature 011 Additions
 
 **Date**: 2026-09-03  
-**Status**: Draft for schema approval. Logical source: `docs/16-data-management.md` §14. Physical conventions: `docs/15-postgres-data-model.md` §1–2.  
+**Status**: Draft for schema approval. Logical source: `docs/16-data-management.md` §14. Physical conventions: `docs/15-postgres-data-model.md` §1–2. D18 requires purpose/capability/projection metadata from `docs/25-need-to-know-access-ux.md`.
 **ASSUMPTION: R3** — these tables (or equivalents) must be accepted into the canonical schema before migrations ship.
 
 Reuse existing `audit_event`, `document`, asset aliases, `outbox_event`, `app_user`, roles and office scope. Do not duplicate them.
@@ -32,10 +32,17 @@ Committed machine-readable dictionary also loaded/synced for API checks.
 | `owner_role` | text | yes | Data Owner concept |
 | `steward_role` | text | yes | |
 | `authority_mode` | text | yes | enum above |
-| `classification` | text | yes | **OD-4** — placeholder until taxonomy approved; refuse inventing labels in prod |
-| `read_roles` | text[] | yes | |
-| `write_roles` | text[] | yes | |
-| `export_roles` | text[] | yes | |
+| `classification` | text | yes | **OD-4 decided:** Internal / Confidential / Restricted; classification is a handling floor, not access entitlement |
+| `read_roles` | text[] | yes | Coarse assignment ceiling only; never sufficient to return a field |
+| `write_roles` | text[] | yes | Coarse assignment ceiling only; named capability remains required |
+| `export_roles` | text[] | yes | Coarse assignment ceiling only; purpose/template policy remains required |
+| `allowed_purposes` | text[] | yes | Work, report, admin, evidence, audit, or another approved purpose identifier |
+| `read_capabilities` | text[] | yes | Named claims permitted to receive the field within purpose and row scope |
+| `write_capabilities` | text[] | yes | Named claims permitted to submit the field through an approved command |
+| `export_capabilities` | text[] | yes | Named claims plus governed product/template required for export |
+| `projection_ids` | text[] | yes | Versioned response allowlists allowed to include the field |
+| `presentation_tier` | text | yes | Summary / Operational / Maintenance / Evidence / Governance / Technical |
+| `masking_policy` | text | yes | None or approved masking/redaction policy ID; no improvised client masking |
 | `offline_cache_allowed` | boolean | yes | |
 | `retention_class` | text | yes | |
 | `quality_rule_ids` | text[] | no | |
@@ -45,6 +52,10 @@ Committed machine-readable dictionary also loaded/synced for API checks.
 | audit + row_version | | | |
 
 Unique: `(entity_name, field_name)` current.
+
+The dictionary is enforced server-side. A field is returned only when its allowed purpose,
+capability, projection ID, row scope, and offline/export policy all permit it. `read_roles` alone
+never authorizes delivery, and the browser never receives a richer object for later hiding.
 
 ---
 

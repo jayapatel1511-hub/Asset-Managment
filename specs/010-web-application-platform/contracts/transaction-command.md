@@ -180,7 +180,9 @@ Checkout validation — **rule R-02 in `transition-table.md` §3.2 is normative*
   `conflict.error.assetNotEligible`.
 - `serviceability === "Serviceable"`. Refusal `transition.error.serviceability`.
 - Project active when `projectId` required.
-- Office scope: caller may act on assets in scope (**ASSUMPTION: R5**).
+- Authorization: caller is within the decided R5 row ceiling and the active workspace, route purpose
+  and exact command capability all permit Checkout. SystemOwner's global row ceiling is not a command
+  capability.
 - Invalid fifth line → zero writes.
 - Overlap race → one `Applied`, one conflict code.
 
@@ -189,7 +191,7 @@ Checkout validation — **rule R-02 in `transition-table.md` §3.2 is normative*
 1. No partial line set committed.
 2. Lock order is UUID ascending regardless of input order.
 3. 100 replays of accepted key → one transaction.
-4. Header/lines immutable to ordinary roles.
+4. Header/lines immutable to every principal, including SystemOwner; corrections are new linked events.
 5. `ReportFault` does not clear disposition/project/custody — `transition-table.md` R-12.
 6. Outbox rows exist only inside the same commit as acceptance.
 7. Checkout of a `NeedsRepair` or `OutOfService` asset is refused — `transition-table.md` R-02 / DC-02.

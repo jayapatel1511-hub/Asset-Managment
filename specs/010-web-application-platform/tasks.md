@@ -9,9 +9,10 @@ description: "Task list for feature 010 — Web Application Platform"
 **Prerequisites**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md),
 [data-model.md](data-model.md), contracts under [contracts/](contracts/)
 
-**Status**: Spec **Draft** — do **not** label Spec Approved. Checklist is 5 of 112 reviewed
+**Status**: Spec **Draft** — do **not** label Spec Approved. Checklist is 99 of 112 reviewed
 (Jay gate — T084). **Tasks reconciled 2026-09-03 against the working tree: 67 of 86 checked.**
-Unchecked items are genuinely unbuilt or blocked (R5/R6, alias table, corrections, IaC, etc.).
+Unchecked items are genuinely unbuilt or blocked (D18 enforcement/evidence, R6, IaC, device and
+recovery gates, etc.).
 See the ledger note at the end of this file.
 
 **Tests**: Required. App suite must stay green. WS-W4 concurrency proofs run against **networked
@@ -47,7 +48,7 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ## Phase 1: Setup
 
-- [x] T001 Read constitution 2.0.0, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md` (§3 APPROVED), `specs/REMAINING-WORK.md` R1–R6 / WS-W1…W12, and every file under `specs/010-web-application-platform/contracts/`
+- [x] T001 Read constitution 2.1.0, `docs/14-webapp-architecture.md`, `docs/15-postgres-data-model.md` (§3 APPROVED), `docs/23-canonical-product-ux-contract.md`, `docs/25-need-to-know-access-ux.md`, `specs/REMAINING-WORK.md` R1–R6 / WS-W1…W12, and every file under `specs/010-web-application-platform/contracts/`
 - [x] T002 [P] Confirm local Docker/Colima can run Postgres; note major version to pin (align with Azure Flexible Server target)
 - [x] T003 [P] Confirm `cd app && npm test` baseline stays green; record count — do not reduce it
 
@@ -86,15 +87,18 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ## Phase 4: User Story 1 — Identity & entry (Priority: P1) [US1] [W3]
 
-**Goal**: Authorized users reach one app; API enforces role/office; browser role untrusted.
+**Goal**: Authorized users reach one app; API enforces role ceiling + workspace + purpose + named
+capability + row/office scope + versioned field projection; browser claims remain untrusted.
 
 **Independent Test**: Per-role sign-in (or test double), deep link, sign-out isolation.
 
-**Note**: Entra full path needs R6 inputs; admin matrix needs R5. Local proof may use test doubles per [contracts/auth-caller-context.md](contracts/auth-caller-context.md).
+**Note**: Entra full path needs R6 inputs. R5 is decided; D18 capability/projection mapping and its
+negative matrix remain. Local proof may use capability-bearing test doubles per
+[contracts/auth-caller-context.md](contracts/auth-caller-context.md).
 
 ### Tests
 
-- [x] T017 [P] [US1] [W3] Direct API tests: unauthenticated → no asset data; forbidden role → `auth.error.forbidden`
+- [x] T017 [P] [US1] [W3] Baseline direct API tests: unauthenticated → no asset data; forbidden role → `auth.error.forbidden`. **Does not close D18**; add workspace/purpose/capability/projection and forbidden-key cases
 - [x] T018 [P] [US1] [W3] Browser-supplied role in body → `auth.error.clientAuthorityForbidden`
 - [x] T019 [US1] [W3] Same-device user switch contract: prior queue not replayed (`auth.error.identityMismatch`) — **behaviour yes** (client `replay.ts` holds per-command; never sent). Named API error code is not the mechanism
 
@@ -102,7 +106,9 @@ agent. Implementation tasks name future paths; create directories when the first
 
 - [x] T020 [US1] [W3] `server/src/auth/` — resolve `CallerContext` from session; test-auth mode only when `AMS_AUTH_MODE=test` and non-prod
 - [x] T021 [US1] [W3] `GET /api/me` per health-and-read contract
-- [ ] T022 [US1] [W3] **STOP until R5 decided** before locking production OfficeAdmin global vs office behaviour; keep single helper behind `adminScopeMode`
+- [ ] T022 [US1] [W3] Implement the decided R5 ceiling (OfficeAdmin assigned-office; SystemOwner
+  global row ceiling) together with the D18 workspace/purpose/capability/row/projection intersection;
+  remove the temporary `adminScopeMode` decision switch once full negative-matrix evidence exists
 - [ ] T023 [US1] [W3] Entra OIDC + BFF cookies when R6 app registration exists — replace test doubles in Dev
 - [x] T024 [P] [US1] Deep-link after sign-in preserves asset URL
 - [x] T025 [P] [US1] Minimal `GET /api/assets` search with Field User field redaction
@@ -130,7 +136,7 @@ agent. Implementation tasks name future paths; create directories when the first
 - [x] T032 [P] [US2] [W4] Reversed asset order → no unsafe deadlock (UUID lock order)
 - [x] T033 [P] [US2] [W4] Client before/after state ignored or refused; outcome server-computed (**R1 APPROVED 2026-09-03**)
 - [x] T034 [P] [US2] [W4] Accepted header/lines cannot be UPDATEd/DELETEd as app role
-- [ ] T035 [P] [US2] [W4] `ReportFault` on deployed asset changes serviceability only — **not evidenced.** `ReportFault` exists; under the stored `status` model it maps to `NeedsRepair` (A-STATE / DC-22 is owned elsewhere). No test that a Deployed asset keeps disposition while only serviceability changes
+- [x] T035 [P] [US2] [W4] `ReportFault` on deployed asset changes serviceability only — **evidenced 2026-09-04.** `server/tests/stateCommands.test.ts` § T035 deploys a station and faults a component: serviceability becomes `NeedsRepair` while `disposition` stays `Deployed` and location, custodian and project are unchanged. The migrated dataset has no Deployed row, which is why the state had to be created rather than found
 - [x] T036 [P] [US2] [W4] Registration: 100 concurrent under one prefix → 100 distinct IDs; browser never reserves sequence
 - [x] T037 [US2] [W4] Encode Q8/Q9 fields per frozen contract — until then keep **`R4 APPROVED 2026-09-03`** in schema/tests
 
@@ -148,22 +154,29 @@ agent. Implementation tasks name future paths; create directories when the first
 
 ## Phase 6: User Story 3 — PWA offline (Priority: P2) [US3] [W6]
 
-**Goal**: Cold start, queue, ordered replay, Needs attention; partition by tenant/env/user.
+**Goal**: Cold start, queue, ordered replay, Needs attention; partition by
+tenant/environment/user/workspace/projection and purge on incompatible authorization change.
 
 *Runs after HTTP/cache contracts usable (post T042).*
 
 ### Tests
 
-- [x] T043 [P] [US3] [W6] IndexedDB partition key isolation tests
+- [x] T043 [P] [US3] [W6] Legacy IndexedDB tenant/environment/user partition isolation tests
+- [ ] T043a [P] [US3] [W6] Add workspace/projection partition plus row-scope/capability-revocation
+  purge and browser-history restoration tests (D18)
 - [x] T044 [P] [US3] [W6] Queue survives restart; pending ≠ accepted
 - [x] T045 [P] [US3] [W6] Replay order + idempotent retry after lost 200
 - [x] T046 [P] [US3] [W6] Conflict → Needs attention; never silent drop
-- [x] T047 [P] [US3] [W6] Field User store contains no secured SIM/network/certificate bytes
-- [ ] T048 [US3] [W6] Unsupported capability detection before claiming offline-ready
+- [x] T047 [P] [US3] [W6] Legacy Field User store scan contains no secured SIM/network/certificate bytes
+- [ ] T047a [P] [US3] [W6] Assert the complete Field Work allowlist and absence of maintenance,
+  evidence metadata, costs, performer/audit/data-quality detail, free text, internal IDs and unrelated
+  people in responses, DOM, query state and every cache
+- [x] T048 [US3] [W6] Unsupported capability detection before claiming offline-ready — `app/src/offline/capabilities.ts`; IndexedDB / service worker / Cache Storage required, persistent storage optional (`limited`, not `unsupported`); surfaced by `OfflineBar` as a warning phrased in the user's terms, never an API name. 7 tests
 
 ### Implementation
 
-- [x] T049 [US3] [W6] `app/src/offline/` — schema version, cache projections from approved DTOs, drafts, command queue
+- [x] T049 [US3] [W6] `app/src/offline/` — legacy schema version/cache, drafts and command queue;
+  D18 purpose-specific projection migration remains T043a/T047a
 - [x] T050 [US3] [W6] Service worker + web manifest; update strategy preserving queued commands
 - [x] T051 [US3] [W6] Replay coordinator while app active; Background Sync optional only
 - [ ] T052 [US3] [W6] UI: cache age, last sync, pending count, conflict count, Needs attention — **2 of 4.** Pending badges More / Needs attention; conflicts are Rejected rows. `cacheAgeMs()` exists; OfflineBar is online/offline only; last successful sync is not displayed
@@ -190,7 +203,7 @@ agent. Implementation tasks name future paths; create directories when the first
 - [x] T059 [US4] [W7] `server/src/documents/` per [contracts/document-blob.md](contracts/document-blob.md)
 - [x] T060 [US4] [W7] Managed identity / local emulator path for Dev; never ship account key to client
 - [x] T061 [US4] [W7] Malware-scan disposition hook — **ASSUMPTION** until Open Decision #10 closes
-- [ ] T062 [P] [US4] [W5] HTTP adapter methods for upload session / complete / download auth — `app/src/api/http/index.ts` has no document methods
+- [x] T062 [P] [US4] [W5] HTTP adapter methods for upload session / complete / download auth — `createUploadSession`, `uploadDocumentContent`, `listDocuments`, `getDocument`, `authorizeDocumentDownload`, `downloadDocument`, `getCalibrationDocumentSummary` on `AmsBackend`, the HTTP adapter and the mock. Download authorizes first, every time — the answer is about this instant, never a token (rule 11)
 
 **Checkpoint**: SC-009/SC-010/SC-011 evidenced in Dev.
 
@@ -224,29 +237,29 @@ agent. Implementation tasks name future paths; create directories when the first
 - [x] T075 [W5] calibration dispatch / physical return — **dispatch (`SendToCalibration`) yes; no dedicated physical-return command** (return-from-lab is ordinary Return)
 - [x] T076 [W5] calibration record / correction — **record (`POST /api/calibrations`) yes; Correction command no** (T091)
 - [x] T077 [W5] retire / rehome — **retire yes; Rehome command no** (T092)
-- [ ] T078 [W5] component attach / detach — only as part of deploy / recover / swap; no standalone attach/detach command
+- [x] T078 [W5] component attach / detach — `AttachComponent` (R-20) and `DetachComponent` (R-21) as standalone commands, evaluated by the two-asset rules in `app/src/domain/transition.ts` because the child's disposition is defined in terms of the parent's
 - [x] T079 [W5] deploy / recover
 - [x] T080 [W5] component swap / configuration change
-- [ ] T081 [W5] audit — configuration-change writes an `Audit` line; no standalone inventory-audit command
+- [x] T081 [W5] audit — `Audit` (R-24) as a standalone command. DC-15: a pure observation that changes no axis and no derived field, legal from `Retired`, with the observed condition on the line
 - [ ] T082 [W5] Each workflow: contract tests, auth, atomicity/idempotency, structured codes, no direct state edit
 
 ---
 
 ## Phase 10: Polish & cross-cutting
 
-- [ ] T083 [P] Record every closed ASSUMPTION (R1–R5, Q8/Q9, scan route) into `docs/08-decisions.md` when Jay decides — **orchestrator / Jay**; this feature’s contracts already mark them
-- [ ] T084 [P] Continue 010 checklist review (107 remaining) — Jay gate, not silent agent checkmarks
+- [ ] T083 [P] Confirm R1–R5 and Q8/Q9 remain recorded in `docs/08-decisions.md`; record the scan-route decision and any other still-open assumption only when Jay decides — **orchestrator / Jay**
+- [ ] T084 [P] Resolve the 13 unchecked 010 checklist items with the named D18, device, recovery, deployment and enterprise evidence — no silent agent checkmarks
 - [x] T085 Final verification: app tests green; integration race suite green on container Postgres; no Dataverse/Zite paths reintroduced
 - [ ] T086 Do **not** mark feature Spec Approved or API Implemented without dated evidence matching progress labels in `REMAINING-WORK.md`
 
 ### Remaining (added 2026-09-03 — not in the original 86)
 
-- [ ] T087 [W1] Health contract: readiness probe + `HealthResponse` shape (version, schemaVersion, `checks.database`) — T010 remainder
-- [ ] T088 [W1] Root `lint` script (T011 listed it; it does not exist)
-- [ ] T089 [W2] `asset_identifier` (first-proof table; aliases for temporary/legacy tags). Do not treat `istemporarytag` regex as a substitute
-- [ ] T090 [W5] Complete-temporary-tag workflow that keeps the old tag as a searchable alias — blocked on T089 and the identity-model question in `REMAINING-WORK.md`
-- [ ] T091 [W5] Correction as a compensating event (FR-017 / rule 5) — not a transaction type today
-- [ ] T092 [W5] Rehome (permanent home-office change) as a named command — Transfer does not move `homeoffice`
+- [x] T087 [W1] Health contract: readiness probe + `HealthResponse` shape — `server/src/observability/health.ts`; `/health`, `/api/health`, `/health/ready`, `/api/health/ready`
+- [x] T088 [W1] Root `lint` script — `npm run lint` = ESLint (`eslint.config.js`, flat, every rule an error) + `scripts/lint-rules.mjs` (rules 1, 10, 14, parked surfaces, `.only` in a committed test, migration numbering). Found and fixed 11 real defects on its first run, including a `usePageChrome` effect that lied about what it closed over
+- [x] T089 [W2] `asset_identifier` — `db/migrations/0014_first_proof_identity.sql`
+- [x] T090 [W5] Complete-temporary-tag workflow that keeps the old tag as a searchable alias — `POST /api/assets/complete-temporary-tag`; the correction module deliberately routes here rather than reimplementing it (`correction.useBusinessEvent`)
+- [x] T091 [W5] Correction as a compensating event (FR-017 / rule 5) — R-25 in `server/src/services/stateCommandService.ts`, `correctionoftransaction` + CHECK constraints in `db/migrations/0017_corrections_and_audit.sql`, and `audit_event` for the non-transaction half. The corrected axes are DERIVED by the server from the original line's before-state and the corrected inputs, never named by the browser — see that function's header for why that is the only reading that satisfies both R-25 and rule 1
+- [x] T092 [W5] Rehome (permanent home-office change) as a named command — R-18. `homeoffice` joins `DerivedFields` so the rule lives in `deriveState` with every other rule rather than in a one-off service write. Refuses a non-office destination and a no-op rehome
 
 ---
 
@@ -257,7 +270,7 @@ T001–T003 Setup
     → T004 R1 STOP / T005 R2 STOP (gates)
     → T006–T012 WS-W1
     → T013–T016 WS-W2 subset (needs R1)
-    → T017–T025 US1 / W3 (Entra needs R6; R5 stops admin freeze)
+    → T017–T025 US1 / W3 (R5 decided; D18 enforcement remains; Entra needs R6)
     → T026–T042 US2 / W4 MVP  ← first production proof
     → T070–T082 W5 workflows ∥ T043–T053 W6 ∥ T054–T062 W7 ∥ T063 W8
     → T064 W9
@@ -280,13 +293,13 @@ Phase 1–2 → R1/R2 gates → Phase 3 subset → Phase 5 (US2) → **stop and 
 US1 stubs are enough for that proof. US3–US5 follow. Do not start more operational screens before
 the command boundary exists.
 
-## ASSUMPTIONs encoded (open questions)
+## Decision and assumption markers
 
 | Marker | Topic | Blocks |
 |---|---|---|
 | `R1 APPROVED 2026-09-03` | Three-axis state columns / transitions | Migrations + derive logic |
 | `R4 APPROVED 2026-09-03` | Q8 expected return; Q9 backdating / `effectiveAt` | Checkout field freeze |
-| `ASSUMPTION: R5` | Global vs office-scoped OfficeAdmin | Auth matrix production behaviour |
+| `R5 DECIDED 2026-09-04` | OfficeAdmin assigned-office; SystemOwner global row ceiling | D18 capability/projection matrix still requires implementation and evidence |
 | R6 | Azure enterprise set | W10 deploy only — **not** local W4 |
 | Document scan route | Open Decision #10 | Quarantine automation |
 | Error HTTP status for business refusal | 200+`ok:false` vs 409 | Freeze with R2 |
@@ -302,7 +315,8 @@ Did not re-run the suite; counts below are from that tree plus `docs/21` / `REMA
 | Unchecked original | 84 | **19** |
 | Added remaining | — | T087–T092 (all unchecked) |
 
-**Left unchecked on purpose:** T010 (readiness/contract shape), T022 (R5), T023 (R6 Entra tenant),
+**Left unchecked on purpose:** T010 (readiness/contract shape), T022 (D18 implementation against
+decided R5), T023 (R6 Entra tenant),
 T035 (serviceability-only on Deployed — not evidenced under stored `status`), T048 (capability
 detection), T052 (cache age / last sync UI), T053 (device matrix), T062 (HTTP document adapter),
 T065–T067 (`infra/`), T068 (PostgreSQL `04_load.py` still JSON), T069 (pilot restore evidence),

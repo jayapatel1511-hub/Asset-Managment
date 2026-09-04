@@ -5,6 +5,12 @@
 **Status**: Draft — partial capabilities existed across features 001, 002, 006, 009 and 010; this feature defines the missing end-to-end data-management capability.  
 **Input**: `docs/00-brief.md`, `docs/04-migration.md`, `docs/13-production-readiness-review.md`, `docs/16-data-management.md`, and feature specifications 001, 002, 006, 009 and 010.
 
+**Access amendment (D18, 2026-09-04):** Data Management belongs only to the Administration
+workspace and exact data-governance capabilities. General Report Readers receive neither its routes
+nor its issue/dictionary/job payloads; approved report metrics and audit evidence use separate
+purpose-sized projections. See
+[`docs/25-need-to-know-access-ux.md`](../../docs/25-need-to-know-access-ux.md).
+
 ---
 
 ## Purpose
@@ -22,13 +28,17 @@ It does **not** create a direct table editor. It must not provide a shortcut aro
 | Persona | Needs |
 |---|---|
 | Office Admin | Resolve office-scoped incomplete records, correct approved static facts, manage permitted local reference data and run approved exports |
-| Data Steward | Maintain global reference/master data, manage quality rules/issues, review bulk jobs, resolve duplicate candidates and govern lineage |
+| Data Steward responsibility | Capability bundle assigned within the decided OfficeAdmin/SystemOwner scope; maintain permitted reference/master data, quality rules/issues, bulk jobs, duplicate candidates and lineage |
 | Data Owner | Approve definitions, quality thresholds, authoritative sources, high-impact operations and retention rules |
 | System Owner | Configure permissions and exceptional controls; approve or perform tightly controlled cross-office operations |
 | Platform Operator | Run and monitor jobs, backups and recovery without deciding business meaning |
-| Auditor / Report Reader | Read quality, lineage, change, export, retention and reconciliation evidence without changing data |
+| Auditor | Read only the case-scoped quality, lineage, change, export, retention and reconciliation evidence approved for an engagement |
+| Report Reader | Uses the separate Reports workspace only; receives approved aggregate metrics/exports, not Data Management routes or records |
 
-`Data Steward` is a responsibility concept. Whether it becomes a distinct application role or a restricted permission set is an open decision; the final authorization model must make the capability explicit.
+`Data Steward` is a responsibility/capability bundle, not a fifth application role (OD-2). It is
+bounded by R5: assigned-office scope for OfficeAdmin and a global ceiling for SystemOwner. Every
+route/action still requires its exact purpose and capability; neither role receives the whole bundle
+automatically.
 
 ---
 
@@ -135,7 +145,9 @@ A quality rule identifies two asset records as possible duplicates. A steward co
 **Acceptance Scenarios**:
 
 1. **Given** two records sharing a serial, **When** a duplicate rule runs, **Then** they are candidates only; neither is automatically merged.
-2. **Given** a candidate, **When** a steward reviews it, **Then** identities, aliases, model, source lineage, current state, history counts, calibrations, documents, relationships and conflicts are visible.
+2. **Given** a candidate, **When** a steward reviews it, **Then** the base comparison shows only the
+   identity and current conflict facts needed for the decision; history, calibration, document, and
+   lineage sections appear only through their separately approved purpose/capability/projection.
 3. **Given** two legitimate related physical assets, **When** marked Not Duplicate or Related Physical Assets, **Then** future detection respects that reviewed decision unless material evidence changes.
 4. **Given** uncertain evidence, **When** Needs Physical Audit is selected, **Then** an assigned issue and due date are created.
 5. **Given** an approved merge, **When** it applies, **Then** one survivor is selected, old identifiers remain searchable, the merged-away record cannot receive new operational events, and no immutable transaction line is rewritten.
@@ -173,13 +185,19 @@ A manager needs an office inventory export, or a Data Steward needs a controlled
 
 **Why this priority**: Export is a likely path for sensitive data to escape normal application controls. It must be designed as a governed operation rather than a generic Download All button.
 
-**Independent Test**: Generate the same export as a Field User, Office Admin, Data Steward and Report Reader. Verify allowed templates, field redaction, office scope, audit, private download and expiry.
+**Independent Test**: Generate the same export as a Field User, an OfficeAdmin with and without the
+required stewardship/export capabilities, a SystemOwner with and without them, and a ReportReader.
+Verify allowed templates, field projection, row scope, audit, private download and expiry.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user, **When** they open export options, **Then** only approved templates permitted to their role are available.
+1. **Given** a user in an eligible Reports or Administration purpose, **When** they open export
+   options, **Then** only templates permitted by workspace, purpose, capability, row/field scope, and
+   projection are available; role alone lists nothing.
 2. **Given** an export request, **When** it runs, **Then** office scope, row filters and field-level restrictions are enforced server-side.
-3. **Given** a general manager export, **When** generated, **Then** restricted identifiers are absent rather than merely hidden in the interface.
+3. **Given** a general manager export, **When** generated, **Then** certificate links/metadata,
+   free-text notes, performer identity, maintenance cost, and secured network identifiers are absent
+   rather than merely hidden in the interface, regardless of the actor's other roles.
 4. **Given** an export, **When** it is created, **Then** requester, purpose, template/version, filters, columns, row count, classification and expiry are recorded.
 5. **Given** an export artifact, **When** downloaded, **Then** access requires authentication and is audited where policy requires.
 6. **Given** an expired export, **When** a download is attempted, **Then** access is refused and the artifact is deleted according to policy unless an approved hold applies.
@@ -238,10 +256,15 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 ### Governance and authority
 
 - **FR-001**: System MUST identify a business owner and steward responsibility for every managed data domain.
-- **FR-002**: System MUST maintain a field-level data dictionary containing definition, type, allowed values, authority, classification, read/write/export roles, offline permission, retention class, lineage and quality rules.
+- **FR-002**: System MUST maintain a field-level data dictionary containing definition, type, allowed
+  values, authority, classification, coarse responsibility roles, allowed purposes,
+  read/write/export capabilities, projection IDs, presentation tier, masking/offline policy,
+  retention class, lineage, and quality rules. Role alone never authorizes a field.
 - **FR-003**: System MUST designate every managed attribute as SystemDerived, AMSManaged, ExternalAuthoritative, ImportedOnce or ReferenceOnly.
 - **FR-004**: System MUST prevent ordinary local edits to SystemDerived attributes and MUST control overrides to ExternalAuthoritative attributes.
-- **FR-005**: System MUST enforce role and office scope for all data-management reads and operations.
+- **FR-005**: System MUST enforce active Administration workspace, approved purpose, exact
+  capability, decided R5 row/office ceiling, field policy, and versioned projection for all
+  data-management reads and operations.
 - **FR-006**: System MUST support separation of duties for configurable high-impact operations.
 - **FR-007**: System MUST record requester, approver where required, reason, evidence, before/after values, effective time and applied time for managed changes.
 - **FR-008**: System MUST prevent a generic data-management endpoint from bypassing domain-specific validation.
@@ -254,7 +277,9 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 - **FR-012**: System MUST close a resolved issue only after successful re-evaluation or approved manual verification.
 - **FR-013**: System MUST require reason, approver and expiry for a temporary waiver and MUST re-evaluate it after expiry.
 - **FR-014**: System MUST preserve false-positive and prior-rule-version history.
-- **FR-015**: System MUST provide quality counts and trends by domain, office, rule, severity, owner and age, with data currency.
+- **FR-015**: System MUST provide quality counts and trends by domain, office, rule, severity, owner
+  and age, with data currency, visible scope label, and projection version. Issue/rule/owner detail
+  remains absent from any separate general Reports aggregate.
 - **FR-016**: System MUST alert the named owner when an issue crosses its approved criticality or age threshold.
 - **FR-017**: System MUST include rules for identity, reference integrity, operational replay, relationships/installations, calibration/documents, authorization/export and environment contamination.
 
@@ -296,7 +321,9 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 ### Duplicate resolution
 
 - **FR-044**: System MUST treat duplicate detection as candidate generation and MUST NOT auto-merge assets based only on serial, model, tag similarity or other configurable evidence.
-- **FR-045**: Duplicate review MUST show identity, aliases, source lineage, current state, histories, calibration, documents, relationships, installations and conflicting fields.
+- **FR-045**: Duplicate review MUST show the minimum identity and conflict comparison needed for the
+  governed case. Histories, calibration, documents, people, and lineage require their separate
+  approved purpose/capabilities/projections and MUST NOT be bundled automatically into every review.
 - **FR-046**: System MUST support NotDuplicate, RelatedPhysicalAssets, MergeRecords, RetireErroneousRecord and NeedsPhysicalAudit outcomes.
 - **FR-047**: An approved merge MUST select a survivor, retain old identifiers, preserve both source UUIDs/histories, create a permanent redirect and prevent new operations against the merged-away record.
 - **FR-048**: System MUST NOT rewrite immutable transaction lines as part of a post-go-live merge.
@@ -312,19 +339,27 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 - **FR-055**: Synchronization MUST be idempotent and preserve historical references after source deactivation.
 - **FR-056**: System MUST alert when authoritative-source data is stale or reconciliation repeatedly fails.
 - **FR-057**: Every imported, synchronized, manually corrected, derived, migrated or synthetic record MUST retain its applicable source and transformation provenance.
-- **FR-058**: Users MUST be able to see the origin of important current facts and the event/correction that last established them.
+- **FR-058**: Authorized users MUST be able to see the origin of important current facts and the
+  event/correction that last established them only through a purpose/capability/row/field projection
+  that requires that lineage; Work and general Reports do not inherit it.
 - **FR-059**: Rule, mapping and transformation versions MUST be retained so a prior result can be explained.
 
 ### Exports
 
-- **FR-060**: System MUST provide only approved export templates to each role.
-- **FR-061**: System MUST enforce row, office and field-level restrictions server-side for exports.
-- **FR-062**: General report/export products MUST exclude restricted identifiers unless the requester and template are specifically authorized.
+- **FR-060**: System MUST provide only export templates matching the active Reports/Administration
+  workspace, approved purpose, named capability, row/field scope, and projection; role is only a
+  coarse assignment ceiling.
+- **FR-061**: System MUST enforce workspace, approved purpose, named capability, row/office scope,
+  field policy, template version, and data projection server-side for exports.
+- **FR-062**: General report/export products MUST always exclude certificate links/metadata,
+  free-text notes, performer identity, maintenance cost, and secured network identifiers regardless
+  of the actor's other roles. A richer evidential/administrative product is a separate governed template.
 - **FR-063**: Every export MUST record requester, purpose, template/version, filters, columns, row count, classification, creation and expiry.
 - **FR-064**: Export artifacts MUST be private, authenticated and short-lived unless an approved exception or hold applies.
 - **FR-065**: System MUST delete or make inaccessible an expired export according to policy and MUST record download access where required.
 - **FR-066**: System MUST enforce approval for configured large or restricted exports.
-- **FR-067**: Field Users MUST NOT receive a general fleet-wide raw-data export.
+- **FR-067**: Field Work MUST have no export surface, template, artifact metadata, or general
+  fleet-wide raw-data export. A user with another eligible workspace must enter it explicitly.
 
 ### Retention and legal hold
 
@@ -343,7 +378,8 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 - **FR-077**: Long-running data jobs MUST expose progress, checkpoints and a retry-safe operational state.
 - **FR-078**: Job workers MUST be idempotent and MUST alert a named owner when stuck or terminally failed.
 - **FR-079**: Sensitive values MUST be redacted from logs, validation messages and unauthorized job artifacts.
-- **FR-080**: Data-management queries MUST use server-side filtering/paging and MUST NOT require loading the full fleet into the browser.
+- **FR-080**: Data-management queries MUST use versioned server-side projection allowlists,
+  filtering, and paging and MUST NOT load a universal record or the full fleet into the browser/cache.
 - **FR-081**: Data-management jobs MUST avoid holding locks that disrupt ordinary field operations beyond an approved budget.
 - **FR-082**: System MUST preserve environment isolation and MUST structurally refuse production/synthetic contamination.
 - **FR-083**: Every data-management operation MUST emit audit and correlation evidence sufficient to reconstruct what was requested, approved, validated and applied.
@@ -369,7 +405,9 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 
 ## Success Criteria
 
-- **SC-001**: 100% of production fields have a data-dictionary entry naming definition, authority, classification, access, offline rule, retention and quality ownership before production acceptance.
+- **SC-001**: 100% of production fields have a data-dictionary entry naming definition, authority,
+  classification, responsibility, allowed purposes, read/write/export capabilities, projection IDs,
+  presentation tier, masking/offline policy, retention, and quality ownership before production acceptance.
 - **SC-002**: Every critical/high quality issue has an owner and due date; zero critical issues are silently hidden or represented only as an aggregate count.
 - **SC-003**: Re-running quality rules creates zero duplicate open issues for the same rule/record/scope.
 - **SC-004**: 100% of claimed resolutions are rule-verified or carry approved manual verification.
@@ -381,7 +419,10 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 - **SC-010**: 100% of duplicate candidates are human-reviewed; zero valid shared-serial asset pairs are automatically merged.
 - **SC-011**: A post-go-live duplicate merge preserves both original histories, redirects the old identifier, prevents new operations on the merged-away record and rewrites zero immutable transaction lines.
 - **SC-012**: Every synchronized source run reports new, changed, missing and conflicting records and can explain every applied field by source and mapping version.
-- **SC-013**: A Field User, Office Admin, Data Steward and Report Reader each receive only permitted export templates and fields in direct authorization tests.
+- **SC-013**: A Field User, Office Admin with/without export capability, SystemOwner with/without
+  export capability, and Report Reader each receive only workspace/purpose/capability-approved
+  templates and fields in direct authorization tests. Field Work and a general Report Reader receive
+  no Administration export templates.
 - **SC-014**: 100% of exports are privately stored, audited and inaccessible after expiry unless an approved hold/exception applies.
 - **SC-015**: A retention preview identifies held records and changes zero records; an apply run changes only approved eligible records and reconciles database/document outcomes exactly.
 - **SC-016**: Zero production business-history records are deleted through ordinary application screens or generic APIs.
@@ -397,7 +438,8 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 - Existing operational events remain the authority for current asset state.
 - The existing migration pipeline remains the first implementation of profiling, mapping, row-level outcomes and sign-off discipline.
 - The data dictionary is committed in a machine-readable form and rendered for users; the precise file format is a planning decision.
-- Data Steward may be a separate role or a permission set, but stewardship powers must be explicit and auditable.
+- Data Steward is an OD-2 capability bundle within OfficeAdmin/SystemOwner scope, not a separate app
+  role; stewardship powers remain explicit and auditable.
 - Retention periods other than already approved indefinite asset/history retention require business/legal policy input.
 - Post-go-live record merge uses redirect/canonical mapping rather than rewriting immutable event history.
 - External project and directory synchronization is added only after field authority and conflict behavior are approved.
@@ -408,16 +450,13 @@ A Data Owner reviews the retention register, previews records eligible for an ap
 
 ## Open Decisions
 
-1. Whether Data Steward is a distinct application/Entra role.
-2. Named Data Owner and steward for each domain and office.
-3. Approval thresholds and two-person controls.
-4. Corporate data-classification labels.
-5. Retention periods beyond the existing asset/history decision.
-6. Legal-hold authority and release process.
-7. Permitted Office Admin bulk operations.
-8. Initial approved export templates and limits.
-9. Source-file and job-artifact retention.
-10. Project-master authority and synchronization contract.
-11. Resolution policy for duplicates with conflicting post-go-live histories.
-12. Quality issue service levels by severity.
-13. Whether data-dictionary changes require Data Owner approval for every field or only classified/high-impact fields.
+1. Named Data Owner and steward for each domain and office.
+2. Any legal/statutory retention obligation that supersedes or narrows OD-5's approved defaults.
+3. Project-master authority and synchronization contract.
+4. Quality issue service levels by severity.
+5. Whether data-dictionary changes require Data Owner approval for every field or only
+   classified/high-impact fields.
+6. Final Entra/group-to-capability mapping inside R5/D18.
+
+OD-2 through OD-9 and OD-11 are decided in `docs/08-decisions.md`; they are no longer open feature
+questions. Their implementation and conformance evidence remain separate work.

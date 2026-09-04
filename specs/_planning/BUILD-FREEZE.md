@@ -1,5 +1,10 @@
 # Build freeze — end-to-end completion, 2026-09-03
 
+> **HISTORICAL COORDINATION SNAPSHOT — DO NOT IMPLEMENT AS CURRENT AUTHORITY.** R5 is decided,
+> A-STATE was superseded by stored authoritative axes, and D18 extends A-TENANT with active workspace,
+> projection version and revocation purge. Use `CLAUDE.md`, `docs/23`, `docs/25`, current feature specs
+> and `specs/REMAINING-WORK.md`. The frozen shapes below explain the 2026-09-03 build only.
+
 Frozen boundaries for the parallel completion of the local end-to-end build (app → HTTP API →
 PostgreSQL). Every agent working this pass reads this file first and stays inside its lane.
 

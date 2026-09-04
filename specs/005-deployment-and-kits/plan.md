@@ -1,5 +1,9 @@
 # Implementation Plan: Deployment & Kits
 
+> **PRE-PIVOT EXECUTION RECORD — NOT CURRENT IMPLEMENTATION GUIDANCE.** Dataverse adapter work in
+> this plan is parked. Current API/PostgreSQL contracts and `docs/23`/`docs/25` govern, including
+> task-sized Work projections and separate Administration detail.
+
 **Branch**: `005-deployment-and-kits` | **Date**: 2026-09-02 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/005-deployment-and-kits/spec.md`

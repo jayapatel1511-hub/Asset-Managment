@@ -270,9 +270,11 @@ system can export active project numbers, in which case sync and make the table 
 
 ### Q11. Who needs report access?
 
-Feature 006 serves managers and project managers who will not have an application licence. The
-recipient list determines the distribution mechanism and the licence cost. Needed before feature 006,
-not before planning starts.
+Feature 006 serves managers and project managers through a separate read-only Reports workspace.
+The decision must name recipient groups, approved purposes, capabilities, row scope, projections,
+export rights and evidence-pack eligibility. In-app Reports is primary; distribution-channel cost or
+Power BI licensing matters only if that optional channel is later adopted. Needed before report
+access can be approved, not before planning starts.
 
 **Blocks**: 006
 
@@ -300,13 +302,13 @@ retention policy demands it, not a default to build in now.
 
 ## Added 2026-09-02
 
-### Q14. May the synthetic dataset be loaded into `Englobe-AMS-Dev`?
+### Q14. May the synthetic dataset be loaded into an approved Dev environment?
 
-**At stake**: Feature 007 US5 — exercising flows F1–F5 and the Power BI model against twenty years
-of fictional history before any production history exists. Every synthetic row carries a marker
-naming its seed, so bulk removal by marker is mechanical. `CLAUDE.md` requires asking before
-anything that deletes data in Dev, which the removal step does. Production is excluded outright by
-the spec (FR-009).
+**At stake**: Feature 007 US5 — exercising the production-shaped API/PostgreSQL loader, command
+validation, workers, reconciliation and in-app Reports against twenty years of fictional history
+before production history exists. Every synthetic row carries a marker naming its seed, so bulk
+removal by marker is mechanical. `CLAUDE.md` still requires approval before any Dev deletion.
+Production is excluded outright by the spec (FR-009).
 
 **Recommendation**: Yes, with the loader refusing any environment other than a development one, and
 removal by marker permitted.
@@ -342,19 +344,13 @@ manifest as a catalogue extension (007 FR-031). Alternatively an admin adds the 
 
 ---
 
-### Q17. Per-app or Premium licensing for code apps?
+### Q17. Per-app or Premium licensing for code apps? — CLOSED
 
-**Evidence**: `docs/08-decisions.md` has carried this as an OPEN row since 2026-09-02 with no owner
-and no question number. The code-apps documentation says every end user needs Power Apps Premium;
-the Dataverse licensing documentation says "per app or per user". Two Microsoft sources disagree.
-
-**At stake**: Roughly four times the programme's dominant cost — on the order of $5 versus $20 per
-user per month across some 45 users.
-
-**Recommendation**: Ask the reseller for a written answer citing the current SKU terms before Step 0
-commits to a count. Pilot on Premium for Ottawa only if the answer is slow.
-
-**Blocks**: `docs/06-delivery-plan.md` Step 0 licensing
+**Closed 2026-09-03 by the production platform pivot.** This was a Power Apps/Dataverse pricing
+question and is retained only as historical research. The active React/Node.js-TypeScript/PostgreSQL web target
+does not purchase a Code App entitlement, so Q17 no longer blocks delivery or the custody model.
+Real Entra application assignment, Azure licensing and hosting inputs remain under R6; report
+recipients and purposes remain Q11/D18. Those are different decisions and must not be relabelled Q17.
 
 ---
 
@@ -395,10 +391,10 @@ to do with the equipment.
 | Q6, reminder cadence, inactive-project rule | Confirming — or reversing — what the build proceeded on |
 | ~~Q8~~ / ~~Q9~~ | **Closed 2026-09-03** (R4) |
 | Q10–Q12, Q14–Q16, Q18 | Still open; not on five-asset race critical path |
-| Q10, Q11, Q12 | Phase 2/3 scope; Q11 also decides Power BI reader licensing |
+| Q10, Q11, Q12 | Phase 2/3 scope; Q11 decides report/evidence recipients and access products |
 | Q14 | 007 US5, the Dev load |
 | Q15, Q16 | 007 generator inputs — proceeded on the recommendation |
-| Q17 | Step 0 licensing purchase |
+| ~~Q17~~ | **Closed 2026-09-03** by the platform pivot; no active gate |
 | Q18 | 003/004 component-despatch rule; what 007 FR-019 generates |
 
 Answers are recorded in `docs/08-decisions.md` with date and rationale, the corresponding

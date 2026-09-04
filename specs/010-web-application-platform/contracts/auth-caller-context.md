@@ -1,6 +1,6 @@
 # Contract: Auth Caller Context
 
-**Feature**: 010 | **Date**: 2026-09-03 | **Status**: Draft  
+**Feature**: 010 | **Date**: 2026-09-03 | **Status**: Draft; D18 read-projection amendment 2026-09-04
 **Consumers**: every protected `server/` route, offline replay identity checks, WS-W3, WS-W12
 direct API matrix.
 
@@ -8,6 +8,9 @@ direct API matrix.
 
 The browser **never** supplies authoritative role, office scope, or user id. Those come from the
 authenticated session after Entra OIDC (production) or an explicit test double (local proof only).
+Role is an access ceiling, not a response shape. The server also resolves named capabilities and
+intersects them with workspace, route purpose, row scope, and field policy before reading data; see
+`docs/25-need-to-know-access-ux.md`.
 
 ## Production identity
 
@@ -46,15 +49,12 @@ export interface CallerContext {
   upn: string;
   isActive: boolean;
   roles: AppRole[];            // current rows only
+  capabilities: string[];      // server-resolved named claims; never browser authority
   officeScopes: OfficeScopeEntry[];
   /** Correlation for logs; not a security claim. */
   correlationId: string;
-  /**
-   * ASSUMPTION: R5 — whether OfficeAdmin is global or must match officeScopes.
-   * Until decided, SystemOwner is global; OfficeAdmin checks must be written behind
-   * a single helper that can flip when R5 closes.
-   */
-  adminScopeMode: "global" | "office"; // config / feature flag from approved decision
+  /** D18/R5: fixed by server policy, never browser-selectable. */
+  adminScopeMode: "global" | "office"; // OfficeAdmin=office; SystemOwner=global where exact capability permits
 }
 ```
 
@@ -71,13 +71,17 @@ If the request body or headers include any of the following as authority, ignore
 
 | Action | Minimum |
 |---|---|
-| Read asset in office | Role permits read + office scope (FieldUser member / Report / Admin per matrix) |
-| Checkout / Return / Transfer | FieldUser or OfficeAdmin + custody/office rules |
-| Calibration certificate download | Role + document ACL; FieldUser may be denied secured docs |
+| Read asset in Work | Work capability + row scope + `field_work_asset_v1` or `desk_work_asset_v1`; no universal Asset response |
+| Read asset in Reports | Report purpose/capability + row scope + report projection; no operational actions |
+| Read asset in Administration | Exact admin capability + row scope + task projection; admin role alone is insufficient |
+| Checkout / Return / Transfer | Exact action capability + actor/row scope + current-state and workflow rules; role alone is insufficient |
+| Calibration certificate download | Approved evidence purpose + `maintenance.evidence.read` + row scope + document ACL + audit; asset read is insufficient |
 | Reference-data write | Not this contract — feature 011 |
-| Cross-office admin | **ASSUMPTION: R5** |
+| Cross-office admin | R5: OfficeAdmin refused outside assigned office; SystemOwner only with exact global action capability |
 
 Exact role×action matrix is finalized in WS-W3 tests; this contract forbids trusting the browser.
+The D18 test matrix is role × workspace × purpose × capability × row scope × projection. A hidden UI
+element, `isAdmin` boolean, or broad `requireAnyRole` read is not an authorization decision.
 
 ## Session lifecycle
 
@@ -88,6 +92,8 @@ export interface SessionIsolationRules {
     environmentId: string;
     tenantId: string;
     entraObjectId: string;
+    workspace: "Work" | "Reports" | "Administration";
+    dataProjectionId: string;
   };
   onSignOut: "seal-partition-no-replay";
   onUserSwitchSameDevice: "never-replay-prior-queue";
@@ -100,13 +106,14 @@ session identity differs (`command.error.identityMismatch`).
 
 ## Local / CI test double
 
-Until Entra (R6) and admin scope (R5) are available:
+Until Entra (R6) is available, the test double mirrors decided R5 scope:
 
 ```ts
 export interface TestCallerOverrides {
   /** Only enabled when AMS_AUTH_MODE=test and non-production environment. */
   userId: string;
   roles: AppRole[];
+  capabilities: string[];
   officeScopes: OfficeScopeEntry[];
   adminScopeMode: "global" | "office";
 }

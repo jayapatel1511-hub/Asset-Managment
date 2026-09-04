@@ -1,5 +1,9 @@
 # Multi-agent planning — 009 / 010 / 011
 
+> **HISTORICAL PLANNING SNAPSHOT.** File ownership and initial plan delivery are retained as an
+> audit trail, but its assumptions and follow-on rule are not current authority. Use `CLAUDE.md`,
+> `docs/23`, `docs/25`, current feature specs/contracts and `specs/REMAINING-WORK.md`.
+
 **Date**: 2026-09-03  
 **Branch**: master  
 **Status**: **Complete** — plan/tasks/contracts written; **R1–R4 closed 2026-09-03** (Jay: *"okay update all"*). Index in `specs/README.md` and `specs/REMAINING-WORK.md`.
@@ -19,7 +23,7 @@ Power Platform and Zite are **parked**. Do not plan Dataverse or Zite work.
 | **R2** atomic command | **FROZEN** for first proof | `010/contracts/transaction-command.md` |
 | **R3** schema | First-proof subset **APPROVED** | `010/data-model.md`; full docs/15+16 review still open |
 | **R4** Q8 / Q9 | **APPROVED** | Optional expected return; admin backdate ≤30d with refuse-on-cross |
-| **R5** admin scope | Open | Auth tasks / production OfficeAdmin |
+| **R5** admin scope | **DECIDED 2026-09-04** — OfficeAdmin assigned-office; SystemOwner global row ceiling | D18 still requires exact workspace/purpose/capability/projection enforcement and evidence |
 | **R6** Azure enterprise | Open | Does **not** block local Postgres proof |
 
 ## File ownership
